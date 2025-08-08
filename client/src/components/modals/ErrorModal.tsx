@@ -14,7 +14,7 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, message, onClose }) => 
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.header}>
-                    <h3>⚠️ Неправильный ход</h3>
+                    <h3>⚠️ Wrong move</h3>
                     <button className={styles.closeButton} onClick={onClose}>×</button>
                 </div>
                 <div className={styles.content}>
@@ -22,7 +22,7 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, message, onClose }) => 
                 </div>
                 <div className={styles.footer}>
                     <button className={styles.okButton} onClick={onClose}>
-                        Понятно
+                        Ok
                     </button>
                 </div>
             </div>
