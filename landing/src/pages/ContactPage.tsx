@@ -1,32 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Mail, Phone, MapPin, Clock, Send, MessageCircle, HelpCircle, Shield } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, MessageCircle, HelpCircle, Shield } from 'lucide-react';
 
-const ContactPage: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-
+const ContactPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
 
   const contactMethods = [
     {
@@ -52,16 +32,6 @@ const ContactPage: React.FC = () => {
     }
   ];
 
-  const departments = [
-    { value: 'general', label: 'General Inquiry' },
-    { value: 'technical', label: 'Technical Support' },
-    { value: 'account', label: 'Account Issues' },
-    { value: 'payment', label: 'Payment & Billing' },
-    { value: 'tournament', label: 'Tournament Support' },
-    { value: 'security', label: 'Security & Fair Play' },
-    { value: 'partnership', label: 'Business Partnership' },
-    { value: 'press', label: 'Press & Media' }
-  ];
 
   return (
     <>
@@ -109,68 +79,112 @@ const ContactPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Contact Form & Info */}
+        {/* Contact Information */}
         <section className="py-20 bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-gray-800 rounded-xl p-8 border border-gray-700">
+                <h3 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">Contact Information</h3>
 
-              {/* Contact Information */}
-              <div className="space-y-8">
-                <div className="bg-gray-800 rounded-xl p-8 border border-gray-700">
-                  <h3 className="text-2xl font-bold mb-6 text-white">Contact Information</h3>
-
-                  <div className="space-y-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-white mb-1">Headquarters</h4>
-                        <p className="text-gray-400">
-                          123 Gaming Street<br />
-                          San Francisco, CA 94105<br />
-                          United States
-                        </p>
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-6 h-6 text-white" />
                     </div>
-
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Clock className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-white mb-1">Business Hours</h4>
-                        <p className="text-gray-400">
-                          Monday - Friday: 9:00 AM - 6:00 PM PST<br />
-                          Saturday: 10:00 AM - 4:00 PM PST<br />
-                          Sunday: Closed
-                        </p>
-                      </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2">Headquarters</h4>
+                      <p className="text-gray-400">
+                        Archiepiskopou Makariou III<br />
+                        Larnaca, 84 Office 1 6017<br />
+                        Cyprus
+                      </p>
                     </div>
+                  </div>
 
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Shield className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-white mb-1">Security Issues</h4>
-                        <p className="text-gray-400">
-                          For security-related concerns:<br />
-                          security@skillgame.pro<br />
-                          Available 24/7
-                        </p>
-                      </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2">Email Support</h4>
+                      <p className="text-gray-400">
+                        General: support@skillgame.pro<br />
+                        Technical: tech@skillgame.pro<br />
+                        Business: business@skillgame.pro
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2">Phone Support</h4>
+                      <p className="text-gray-400">
+                        Main: +1 (555) 123-4567<br />
+                        Technical: +1 (555) 123-4568<br />
+                        International: +357 24 123 456
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2">Business Hours</h4>
+                      <p className="text-gray-400">
+                        Monday - Friday: 9:00 AM - 6:00 PM PST<br />
+                        Saturday: 10:00 AM - 4:00 PM PST<br />
+                        Sunday: Closed
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Shield className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2">Security Issues</h4>
+                      <p className="text-gray-400">
+                        For security-related concerns:<br />
+                        security@skillgame.pro<br />
+                        Available 24/7
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2">Live Chat</h4>
+                      <p className="text-gray-400">
+                        Available 24/7 for urgent issues<br />
+                        Instant support for players<br />
+                        Quick problem resolution
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gray-800 rounded-xl p-8 border border-gray-700">
-                  <h3 className="text-2xl font-bold mb-4 text-white">Quick Response</h3>
+                <div className="mt-8 pt-8 border-t border-gray-700">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                      <p className="text-blue-400 text-sm">
+                        <strong>Pro Tip:</strong> Include your username and any relevant game/tournament IDs to help us assist you faster.
+                      </p>
+                    </div>
 
-                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                    <p className="text-blue-400 text-sm">
-                      <strong>Pro Tip:</strong> Include your username and any relevant game/tournament IDs to help us assist you faster.
-                    </p>
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                      <p className="text-green-400 text-sm">
+                        <strong>Average Response Time:</strong> Email support responds within 2-4 hours during business hours.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
