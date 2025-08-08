@@ -100,7 +100,7 @@ const GameSelection: React.FC = () => {
                   </div>
                 </div>
                 
-                <a href='https://cabinetsklg.koltech.dev/register' className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center gap-2 group">
+                <a href='https://platform.skillgame.pro/register' className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center gap-2 group">
                   <Crown className="w-4 h-4" />
                     Play Now
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

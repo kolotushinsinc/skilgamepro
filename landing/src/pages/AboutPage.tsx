@@ -217,7 +217,7 @@ const AboutPage: React.FC = () => {
                 Become part of a growing community of strategic gamers from around the world.
                 Whether you're a casual player or a competitive champion, there's a place for you at Skill Game.
               </p>
-              <a href='https://cabinetsklg.koltech.dev/register' className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transform hover:scale-105 transition-all duration-200">
+              <a href='https://platform.skillgame.pro/register' className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transform hover:scale-105 transition-all duration-200">
                 Start Playing Today
               </a>
             </div>

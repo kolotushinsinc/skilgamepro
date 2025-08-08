@@ -38,10 +38,10 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            <a href='https://cabinetsklg.koltech.dev/login' className="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+            <a href='https://platform.skillgame.pro/login' className="px-4 py-2 text-gray-300 hover:text-white transition-colors">
               Sign In
             </a>
-            <a href='https://cabinetsklg.koltech.dev/register' className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all">
+            <a href='https://platform.skillgame.pro/register' className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all">
               Sign Up
             </a>
           </div>
@@ -80,10 +80,10 @@ const Header: React.FC = () => {
                 Contact
               </Link>
               <div className="flex flex-col gap-2 pt-4 border-t border-gray-800">
-                <a href='https://cabinetsklg.koltech.dev/login' className="d-flex px-4 py-2 text-gray-300 hover:text-white transition-colors text-center">
+                <a href='https://platform.skillgame.pro/login' className="d-flex px-4 py-2 text-gray-300 hover:text-white transition-colors text-center">
                   Sign In
                 </a>
-                <a href='https://cabinetsklg.koltech.dev/register' className="d-flex px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black text-center font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all">
+                <a href='https://platform.skillgame.pro/register' className="d-flex px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black text-center font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all">
                   Sign Up
                 </a>
               </div>

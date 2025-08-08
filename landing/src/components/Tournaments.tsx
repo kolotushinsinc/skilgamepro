@@ -131,7 +131,7 @@ const Tournaments: React.FC = () => {
                 </div>
               </div>
               
-              <a href='https://cabinetsklg.koltech.dev/register' className={`w-full flex justify-center py-3 rounded-lg font-semibold transition-all duration-200 ${
+              <a href='https://platform.skillgame.pro/register' className={`w-full flex justify-center py-3 rounded-lg font-semibold transition-all duration-200 ${
                 tournament.status === 'live' 
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700' 
                   : tournament.status === 'upcoming'

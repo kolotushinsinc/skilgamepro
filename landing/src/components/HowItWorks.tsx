@@ -81,7 +81,7 @@ const HowItWorks: React.FC = () => {
           <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-8 border border-gray-600">
             <h3 className="text-2xl font-bold mb-4 text-white">Ready to Start Your Journey?</h3>
             <p className="text-gray-300 mb-6">Join thousands of players competing for real money prizes every day.</p>
-            <a href='https://cabinetsklg.koltech.dev/register' className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transform hover:scale-105 transition-all duration-200">
+            <a href='https://platform.skillgame.pro/register' className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transform hover:scale-105 transition-all duration-200">
               Create Free Account
             </a>
           </div>

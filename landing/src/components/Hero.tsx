@@ -22,16 +22,12 @@ const Hero: React.FC = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link  to={{
-                pathname: `${links.SIGN_IN_LINK}`,
-            }} className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
+            <a  href="https://platform.skillgame.pro/login" className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
               Sign In
-            </Link>
-            <Link to={{
-                pathname: `${links.SIGN_UP_LINK}`,
-            }} className="px-8 py-4 border-2 border-yellow-500 text-yellow-500 font-semibold rounded-lg hover:bg-yellow-500 hover:text-black transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
+            </a>
+            <a href="https://platform.skillgame.pro/register" className="px-8 py-4 border-2 border-yellow-500 text-yellow-500 font-semibold rounded-lg hover:bg-yellow-500 hover:text-black transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
               Sign Up
-            </Link>
+            </a>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
