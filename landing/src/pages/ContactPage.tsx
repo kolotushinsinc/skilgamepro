@@ -17,13 +17,6 @@ const ContactPage = () => {
       response: 'Response within 24 hours'
     },
     {
-      icon: Phone,
-      title: 'Phone Support',
-      description: 'Speak directly with our support specialists',
-      contact: '+1 (555) 123-4567',
-      response: 'Mon-Fri 9AM-6PM PST'
-    },
-    {
       icon: HelpCircle,
       title: 'Help Center',
       description: 'Browse our comprehensive FAQ and guides',
@@ -63,7 +56,7 @@ const ContactPage = () => {
               Get In Touch
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
               {contactMethods.map((method, index) => (
                 <div key={index} className="bg-gray-900 rounded-xl p-6 border border-gray-700 hover:border-blue-500 transition-all duration-300 text-center">
                   <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -111,20 +104,6 @@ const ContactPage = () => {
                         General: support@skillgame.pro<br />
                         Technical: tech@skillgame.pro<br />
                         Business: business@skillgame.pro
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">Phone Support</h4>
-                      <p className="text-gray-400">
-                        Main: +1 (555) 123-4567<br />
-                        Technical: +1 (555) 123-4568<br />
-                        International: +357 24 123 456
                       </p>
                     </div>
                   </div>
