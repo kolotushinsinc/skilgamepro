@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    port: 5176,
+    port: 5178,
     allowedHosts: [
       'crm.skillgame.pro' // Добавь сюда свой домен
     ]
