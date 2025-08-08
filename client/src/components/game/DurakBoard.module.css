@@ -1,0 +1,975 @@
+.durakBoard {
+    width: 100%;
+    height: 100%;
+    min-height: 720px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #0f4c3a 0%, #1a5f4a 50%, #0f4c3a 100%);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    padding: 12px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto auto;
+    grid-gap: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.gameInfo {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: white;
+    gap: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.playerInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.playerName {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.playerScore {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.trumpInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.trumpCard {
+    width: 60px;
+    height: 84px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 12px;
+    position: relative;
+}
+
+.trumpLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+}
+
+.deckInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.deckCount {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.deckLabel {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.gameTable {
+    display: grid;
+    grid-template-rows: 80px auto 90px;
+    width: 100%;
+    gap: 20px;
+    min-height: 420px;
+    align-items: center;
+    justify-items: center;
+}
+
+.opponentHand {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cardBack {
+    width: 50px;
+    height: 70px;
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tableArea {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    min-height: 220px;
+    max-height: 280px;
+}
+
+.tablePairs {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 12px 0;
+    flex: 1;
+    min-height: 150px;
+}
+
+.cardPair {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+}
+
+.attackCard,
+.defendCard {
+    width: 60px;
+    height: 84px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: cardSlideIn 0.5s ease-out;
+}
+
+.attackCard {
+    border: 2px solid #ff6b6b;
+}
+
+.defendCard {
+    border: 2px solid #4ecdc4;
+    transform: translateY(-10px) rotate(15deg);
+    z-index: 2;
+    animation: cardDefend 0.6s ease-out;
+}
+
+.defendSlot {
+    width: 60px;
+    height: 84px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    transform: translateY(-10px) rotate(15deg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.defendSlot:hover,
+.canDefend {
+    border-color: #4ecdc4;
+    background: rgba(78, 205, 196, 0.1);
+    transform: translateY(-10px) rotate(15deg) scale(1.05);
+}
+
+.dragHover {
+    border-color: #4ecdc4 !important;
+    background: rgba(78, 205, 196, 0.2) !important;
+    transform: translateY(-10px) rotate(15deg) scale(1.1) !important;
+}
+
+.defendHint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.playerHand {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.playerCard {
+    width: 60px;
+    height: 84px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.playerCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+}
+
+.playerCard.canPlay {
+    border: 2px solid #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    animation: cardGlow 2s ease-in-out infinite alternate;
+}
+
+.playerCard.selected {
+    transform: translateY(-10px);
+    border: 2px solid #3b82f6;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+    animation: cardSelected 0.3s ease-out;
+}
+
+.playableIndicator {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #10b981;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    animation: indicatorBounce 1s ease-in-out infinite;
+}
+
+.cardRank {
+    font-size: 14px;
+    font-weight: bold;
+    color: #000000 !important;
+}
+
+.cardSuit {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.hearts,
+.diamonds {
+    color: #dc2626 !important;
+}
+
+.clubs,
+.spades {
+    color: #000000 !important;
+}
+
+.gameControls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 0;
+    min-height: 48px;
+}
+
+.controlButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.controlButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.passButton {
+    background: #f59e0b;
+    color: white;
+}
+
+.passButton:hover:not(:disabled) {
+    background: #d97706;
+}
+
+.takeButton {
+    background: #dc2626;
+    color: white;
+}
+
+.takeButton:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+.gameStatus {
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gameStatus.attacking {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.gameStatus.defending {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.gameStatus.waiting {
+    background: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+    border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+.gameStatus.finished {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.phaseIndicator {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dragPreview {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1000;
+    transform: translate(-50%, -50%) rotate(5deg);
+    opacity: 0.8;
+}
+
+.dropZone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.dropZone.active {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+/* Animations */
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes cardDefend {
+    from {
+        opacity: 0;
+        transform: translateY(20px) rotate(0deg) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-10px) rotate(15deg) scale(1);
+    }
+}
+
+@keyframes cardGlow {
+    from {
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+    to {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+    }
+}
+
+@keyframes cardSelected {
+    0% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-15px) scale(1.05);
+    }
+    100% {
+        transform: translateY(-10px) scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes defendSlotPulse {
+    0%, 100% {
+        border-color: #10b981;
+        box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+    }
+    50% {
+        border-color: #059669;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+    }
+}
+
+@keyframes indicatorBounce {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.gameStatus {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.controlButton {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.controlButton:hover:not(:disabled) {
+    animation: pulse 0.3s ease-in-out;
+}
+
+.tablePairs {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.trumpCard {
+    animation: cardSlideIn 0.5s ease-out;
+}
+
+.instructions {
+    text-align: center;
+    padding: 10px 14px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
+    font-size: 13px;
+    color: #93c5fd;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+/* Prevent layout shifts with fixed dimensions */
+.cardPair {
+    min-width: 60px;
+    min-height: 100px;
+    flex-shrink: 0;
+}
+
+.playerCard,
+.attackCard,
+.defendCard,
+.defendSlot {
+    flex-shrink: 0;
+}
+
+.cardBack {
+    flex-shrink: 0;
+}
+
+/* Beautiful table area styling */
+.tableArea::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6);
+    border-radius: 16px 16px 0 0;
+}
+
+/* Responsive Design with Grid Layout */
+@media (max-width: 768px) {
+    .durakBoard {
+        padding: 8px;
+        grid-gap: 8px;
+        min-height: 650px;
+    }
+    
+    .gameInfo {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        text-align: center;
+        padding: 8px 10px;
+        gap: 10px;
+    }
+    
+    .gameTable {
+        grid-template-rows: 75px auto 85px;
+        gap: 18px;
+        min-height: 400px;
+    }
+    
+    .tableArea {
+        padding: 18px;
+        min-height: 200px;
+        max-height: 240px;
+    }
+    
+    .tablePairs {
+        gap: 14px;
+        min-height: 130px;
+    }
+    
+    /* Enhanced tablet touch targets */
+    .playerCard,
+    .attackCard,
+    .defendCard,
+    .defendSlot {
+        width: 52px;
+        height: 72px;
+        font-size: 11px;
+        padding: 3px;
+        margin: 1px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+    
+    .playerCard:active {
+        transform: scale(0.95);
+    }
+    
+    .defendSlot {
+        border: 2px dashed rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .defendSlot.canDefend {
+        border-color: #4ecdc4;
+        background: rgba(78, 205, 196, 0.15);
+    }
+    
+    .cardRank {
+        font-size: 12px;
+    }
+    
+    .cardSuit {
+        font-size: 14px;
+    }
+    
+    .trumpCard {
+        width: 48px;
+        height: 67px;
+        font-size: 11px;
+    }
+    
+    .playerHand,
+    .opponentHand {
+        height: 80px;
+        gap: 5px;
+        padding: 6px 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .cardBack {
+        width: 48px;
+        height: 67px;
+        font-size: 16px;
+        margin: 1px;
+    }
+    
+    .cardPair {
+        min-width: 52px;
+        min-height: 90px;
+        margin: 0 2px;
+    }
+    
+    .controlButton {
+        padding: 10px 16px;
+        font-size: 13px;
+        min-width: 90px;
+        min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+    
+    .controlButton:active {
+        transform: scale(0.95);
+    }
+    
+    .gameControls {
+        gap: 10px;
+        min-height: 50px;
+    }
+    
+    .gameStatus {
+        font-size: 13px;
+        padding: 8px 12px;
+        min-height: 36px;
+    }
+    
+    .instructions {
+        font-size: 12px;
+        padding: 6px 10px;
+        min-height: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .durakBoard {
+        padding: 6px;
+        grid-gap: 6px;
+        min-height: 650px;
+    }
+    
+    .gameInfo {
+        padding: 6px 8px;
+        gap: 8px;
+    }
+    
+    .gameTable {
+        grid-template-rows: 70px auto 80px;
+        gap: 15px;
+        min-height: 420px;
+    }
+    
+    .tableArea {
+        padding: 16px;
+        min-height: 200px;
+        max-height: 250px;
+    }
+    
+    .tablePairs {
+        gap: 12px;
+        min-height: 140px;
+    }
+    
+    /* Enhanced mobile touch targets */
+    .playerCard,
+    .attackCard,
+    .defendCard,
+    .defendSlot {
+        width: 48px;
+        height: 66px;
+        font-size: 10px;
+        padding: 3px;
+        margin: 2px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+    
+    .playerCard {
+        min-height: 66px;
+        transform: scale(1);
+        transition: transform 0.1s ease;
+    }
+    
+    .playerCard:active {
+        transform: scale(0.95);
+        border-color: #3b82f6;
+    }
+    
+    .playerCard.canPlay {
+        border: 3px solid #10b981;
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+    }
+    
+    .playerCard.selected {
+        transform: scale(1.05);
+        border: 3px solid #3b82f6;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+        z-index: 10;
+    }
+    
+    .defendSlot {
+        border: 3px dashed rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.1);
+        min-height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: manipulation;
+    }
+    
+    .defendSlot.canDefend {
+        border-color: #4ecdc4;
+        background: rgba(78, 205, 196, 0.2);
+        animation: mobilePulse 1.5s ease-in-out infinite;
+    }
+    
+    .defendSlot:active {
+        background: rgba(78, 205, 196, 0.3);
+        transform: scale(0.95);
+    }
+    
+    @keyframes mobilePulse {
+        0%, 100% {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 8px rgba(78, 205, 196, 0.4);
+        }
+        50% {
+            border-color: #059669;
+            box-shadow: 0 0 16px rgba(78, 205, 196, 0.7);
+        }
+    }
+    
+    .cardRank {
+        font-size: 11px;
+        font-weight: bold;
+    }
+    
+    .cardSuit {
+        font-size: 13px;
+        font-weight: bold;
+    }
+    
+    .trumpCard {
+        width: 42px;
+        height: 58px;
+        font-size: 10px;
+    }
+    
+    .playerHand,
+    .opponentHand {
+        height: 80px;
+        gap: 4px;
+        padding: 6px 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .cardBack {
+        width: 42px;
+        height: 58px;
+        font-size: 14px;
+        margin: 2px;
+    }
+    
+    .cardPair {
+        min-width: 48px;
+        min-height: 80px;
+        margin: 0 4px;
+    }
+    
+    /* Enhanced mobile controls */
+    .controlButton {
+        padding: 12px 16px;
+        font-size: 14px;
+        min-width: 100px;
+        min-height: 48px;
+        border-radius: 12px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        font-weight: 600;
+    }
+    
+    .controlButton:active {
+        transform: scale(0.95);
+    }
+    
+    .gameControls {
+        gap: 12px;
+        min-height: 60px;
+        padding: 8px 0;
+    }
+    
+    .gameStatus {
+        font-size: 13px;
+        padding: 8px 12px;
+        min-height: 36px;
+    }
+    
+    .instructions {
+        font-size: 12px;
+        padding: 8px 12px;
+        min-height: 32px;
+    }
+    
+    .playerInfo {
+        gap: 4px;
+    }
+    
+    .playerName {
+        font-size: 12px;
+    }
+    
+    .playerScore {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+    
+    .trumpLabel,
+    .deckLabel {
+        font-size: 11px;
+    }
+    
+    .deckCount {
+        font-size: 13px;
+    }
+    
+    .phaseIndicator {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+    
+    .defendHint {
+        font-size: 11px;
+        gap: 2px;
+        font-weight: 600;
+    }
+    
+    /* Mobile-specific enhancements */
+    .playableIndicator {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+        top: -6px;
+        right: -6px;
+    }
+    
+    /* Disable hover effects on mobile */
+    .playerCard:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .playerCard.canPlay:hover {
+        animation: none;
+    }
+}
+
+/* Ensure no layout shifts */
+.durakBoard * {
+    box-sizing: border-box;
+}
+
+/* Smooth transitions only for non-layout properties */
+.playerCard:hover,
+.controlButton:hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Disable transitions that cause layout shifts */
+.tablePairs,
+.playerHand,
+.opponentHand {
+    transition: none;
+}
+
+/* Enhanced visual effects */
+.tableArea:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    transition: box-shadow 0.3s ease;
+}
+
+.gameInfo:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.3s ease;
+}
