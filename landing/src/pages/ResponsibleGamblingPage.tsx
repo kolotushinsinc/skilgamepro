@@ -252,8 +252,7 @@ const ResponsibleGambling: React.FC = () => {
                 <p>If you or someone you know needs help with gambling issues, please contact us immediately:</p>
                 <ul>
                     <li><strong>Responsible Gambling Helpline:</strong> 1-888-SKILL-GAME</li>
-                    <li><strong>Email Support:</strong> responsible@skillgame.com</li>
-                    <li><strong>Live Chat:</strong> Available 24/7 through our website</li>
+                    <li><strong>Email Support:</strong> responsible@skillgame.pro</li>
                     <li><strong>Emergency Support:</strong> For immediate crisis intervention</li>
                 </ul>
 

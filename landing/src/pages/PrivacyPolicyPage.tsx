@@ -216,13 +216,13 @@ const PrivacyPolicy: React.FC = () => {
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Contact Us</h2>
                             <p>If you have questions about this Privacy Policy or wish to exercise your privacy rights, please contact us at:</p>
                             <ul>
-                                <li>Email: privacy@skillgame.com</li>
+                                <li>Email: privacy@skillgame.pro</li>
                                 <li>Mail: [Company Address]</li>
                                 <li>Phone: [Contact Number]</li>
                             </ul>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Data Protection Officer</h2>
-                            <p>For data protection inquiries, you may contact our Data Protection Officer at dpo@skillgame.com</p>
+                            <p>For data protection inquiries, you may contact our Data Protection Officer at dpo@skillgame.pro</p>
                             {/* ` }} /> */}
                         </div>
                     </div>

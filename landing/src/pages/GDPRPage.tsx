@@ -83,7 +83,7 @@ const GDPRPage: React.FC = () => {
                 <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Contact Us</h2>
                 <p>If you have any questions about this GDPR Policy or wish to exercise your rights, please contact our Data Protection Officer:</p>
                 <ul>
-                    <li><strong>Email:</strong> dpo@skillgame.com</li>
+                    <li><strong>Email:</strong> dpo@skillgame.pro</li>
                     <li><strong>Mail:</strong> Data Protection Officer, Skill Game Limited, [Company Address]</li>
                 </ul>
                 <p>You also have the right to lodge a complaint with a supervisory authority, in particular in the Member State of your habitual residence, place of work or place of the alleged infringement.</p>

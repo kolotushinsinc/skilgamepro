@@ -261,7 +261,6 @@ const PaymentPolicy: React.FC = () => {
                             <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Payment Support</h3>
                             <ul>
                                 <li>24/7 customer support for payment issues</li>
-                                <li>Live chat, email, and phone support options</li>
                                 <li>Dedicated payment specialists for complex issues</li>
                                 <li>Multi-language support for international users</li>
                             </ul>

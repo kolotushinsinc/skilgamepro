@@ -33,15 +33,8 @@ const ContactPage: React.FC = () => {
       icon: Mail,
       title: 'Email Support',
       description: 'Get help with your account, games, or technical issues',
-      contact: 'support@skillgame.com',
+      contact: 'support@skillgame.pro',
       response: 'Response within 24 hours'
-    },
-    {
-      icon: MessageCircle,
-      title: 'Live Chat',
-      description: 'Chat with our support team in real-time',
-      contact: 'Available 24/7',
-      response: 'Instant response'
     },
     {
       icon: Phone,
@@ -163,7 +156,7 @@ const ContactPage: React.FC = () => {
                         <h4 className="font-semibold text-white mb-1">Security Issues</h4>
                         <p className="text-gray-400">
                           For security-related concerns:<br />
-                          security@skillgame.com<br />
+                          security@skillgame.pro<br />
                           Available 24/7
                         </p>
                       </div>
@@ -173,9 +166,7 @@ const ContactPage: React.FC = () => {
 
                 <div className="bg-gray-800 rounded-xl p-8 border border-gray-700">
                   <h3 className="text-2xl font-bold mb-4 text-white">Quick Response</h3>
-                  <p className="text-gray-400 mb-4">
-                    We typically respond to all inquiries within 24 hours. For urgent matters, please use our live chat feature for immediate assistance.
-                  </p>
+
                   <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                     <p className="text-blue-400 text-sm">
                       <strong>Pro Tip:</strong> Include your username and any relevant game/tournament IDs to help us assist you faster.
