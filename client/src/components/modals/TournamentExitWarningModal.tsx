@@ -52,18 +52,18 @@ const TournamentExitWarningModal: React.FC<TournamentExitWarningModalProps> = ({
             <div className={styles.modal}>
                 <div className={styles.header}>
                     <span className={styles.icon}>⚠️</span>
-                    <h2 className={styles.title}>Предупреждение о выходе из турнира</h2>
+                    <h2 className={styles.title}>Warning about leaving the tournament</h2>
                 </div>
 
                 <div className={styles.content}>
                     <p className={styles.message}>
-                        Вы покинули турнирный матч в турнире <strong>"{tournamentName}"</strong>
+                        You left a tournament match in a tournament <strong>"{tournamentName}"</strong>
                     </p>
                     
                     <div className={styles.warningBox}>
                         <p>
-                            У вас есть <strong className={styles.countdown}>{countdown} секунд</strong> 
-                            чтобы вернуться в игру, иначе вы автоматически проиграете матч!
+                            Do you have <strong className={styles.countdown}>{countdown} seconds</strong> 
+                            to get back into the game, otherwise you will automatically lose the match!
                         </p>
                     </div>
 
@@ -83,13 +83,13 @@ const TournamentExitWarningModal: React.FC<TournamentExitWarningModalProps> = ({
                         onClick={handleReturnToGame}
                         className={styles.returnButton}
                     >
-                        🎮 Вернуться к игре
+                        🎮 Return to the game
                     </button>
                     <button 
                         onClick={onConfirmExit}
                         className={styles.exitButton}
                     >
-                        🚪 Покинуть турнир
+                        🚪 Leave the tournament
                     </button>
                 </div>
             </div>

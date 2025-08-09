@@ -25,29 +25,29 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
             case 'win':
                 return {
                     icon: '🏆',
-                    title: 'Поздравляем!',
-                    message: 'Вы выиграли!',
+                    title: 'Congratulations!',
+                    message: 'You won!',
                     className: styles.winResult
                 };
             case 'lose':
                 return {
                     icon: '😔',
-                    title: 'Поражение',
-                    message: opponentName ? `Вы проиграли. Победитель: ${opponentName}` : 'Вы проиграли',
+                    title: 'Defeat',
+                    message: opponentName ? `You lost. Winner.: ${opponentName}` : 'You lost',
                     className: styles.loseResult
                 };
             case 'draw':
                 return {
                     icon: '🤝',
-                    title: 'Ничья',
-                    message: 'Игра завершилась вничью',
+                    title: 'Draw',
+                    message: 'The game ended in a draw',
                     className: styles.drawResult
                 };
             default:
                 return {
                     icon: '🎮',
-                    title: 'Игра завершена',
-                    message: 'Игра завершена',
+                    title: 'Game over',
+                    message: 'Game over',
                     className: styles.defaultResult
                 };
         }
@@ -70,20 +70,20 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
                 
                 <div className={styles.footer}>
                     <div className={styles.countdown}>
-                        <p>Возврат в лобби через: <span className={styles.countdownNumber}>{countdown} сек</span></p>
+                        <p>Return to lobby via: <span className={styles.countdownNumber}>{countdown} сек</span></p>
                     </div>
                     <div className={styles.actions}>
                         <button 
                             className={`${styles.button} ${styles.primaryButton}`} 
                             onClick={onBackToLobby}
                         >
-                            Вернуться в лобби
+                            Return to lobby
                         </button>
                         <button 
                             className={`${styles.button} ${styles.secondaryButton}`} 
                             onClick={onClose}
                         >
-                            Остаться
+                            Stay
                         </button>
                     </div>
                 </div>
