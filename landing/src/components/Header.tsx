@@ -58,7 +58,7 @@ const Header: React.FC = () => {
               </button>
               
               {isGamesDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-gray-800/95 backdrop-blur-sm border border-gray-700 rounded-xl shadow-2xl z-50">
+                <div className="absolute top-full left-0 mt-2 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50">
                   <div className="p-2">
                     <div className="space-y-1">
                       {games.map((game) => (
