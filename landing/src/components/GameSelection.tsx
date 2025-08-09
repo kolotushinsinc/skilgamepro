@@ -39,6 +39,42 @@ const GameSelection: React.FC = () => {
       players: '12,445',
       prize: '$5,000',
       difficulty: 'Beginner'
+    },
+    {
+      id: 'bingo',
+      title: 'Bingo',
+      description: 'Is a popular game where players mark off numbers on a card as they are called out randomly by a host.',
+      image: 'https://avatars.mds.yandex.net/i?id=abe8723d93205892f919d0635deafded_l-5341604-images-thumbs&n=13',
+      players: '15,234',
+      prize: '$50,000',
+      difficulty: 'Beginner'
+    },
+    {
+      id: 'domino',
+      title: 'Domino',
+      description: 'Is a classic tile-based game where players take turns matching tiles with identical numbers of dots',
+      image: 'https://wallpapers.com/images/hd/domino-2858-x-2037-background-51j0j2sp58c1n3b1.jpg',
+      players: '8,567',
+      prize: '$25,000',
+      difficulty: 'Advanced'
+    },
+    {
+      id: 'durak',
+      title: 'Durak',
+      description: 'The game is typically played by 2 to 6 players, with the objective being to get rid of all your cards before your opponents.',
+      image: 'https://play-lh.googleusercontent.com/iExl3GyKHtppXeORDO5YshBcrFD7xc6BSvj4NTl5wT-Zq53LBM93Nyx6AfrRUQTP77A=w1024-h500',
+      players: '6,892',
+      prize: '$30,000',
+      difficulty: 'Expert'
+    },
+    {
+      id: 'dice',
+      title: 'Dice',
+      description: 'Players take turns rolling the dice and trying to achieve specific combinations or highest scores based on the rules of the game.',
+      image: 'https://i.pinimg.com/originals/18/fd/e1/18fde15323d44e0c2d6bcd23e6f2c93f.jpg',
+      players: '12,445',
+      prize: '$5,000',
+      difficulty: 'Advanced'
     }
   ];
 
@@ -66,10 +102,10 @@ const GameSelection: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {games.map((game) => (
-            <div key={game.id} className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:transform hover:scale-105">
+            <div key={game.id} className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:transform hover:scale-105 h-full flex flex-col">
               <div className="relative overflow-hidden">
-                <img 
-                  src={game.image} 
+                <img
+                  src={game.image}
                   alt={game.title}
                   className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
@@ -79,9 +115,9 @@ const GameSelection: React.FC = () => {
                 </div>
               </div>
               
-              <div className="p-6">
+              <div className="p-6 flex flex-col flex-grow">
                 <h3 className="text-2xl font-bold mb-2 text-white">{game.title}</h3>
-                <p className="text-gray-400 mb-4 text-sm">{game.description}</p>
+                <p className="text-gray-400 mb-4 text-sm flex-grow">{game.description}</p>
                 
                 <div className="space-y-2 mb-6">
                   <div className="flex items-center justify-between">
@@ -100,7 +136,7 @@ const GameSelection: React.FC = () => {
                   </div>
                 </div>
                 
-                <a href='https://platform.skillgame.pro/register' className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center gap-2 group">
+                <a href="https://platform.skillgame.pro/register" className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center gap-2 group mt-auto">
                   <Crown className="w-4 h-4" />
                     Play Now
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

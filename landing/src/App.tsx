@@ -5,6 +5,10 @@ import ChessPage from './pages/ChessPage';
 import CheckersPage from './pages/CheckersPage';
 import BackgammonPage from './pages/BackgammonPage';
 import TicTacToePage from './pages/TicTacToePage';
+import BingoPage from './pages/BingoPage';
+import DominoPage from './pages/DominoPage';
+import DicePage from './pages/DicePage';
+import DurakPage from './pages/DurakPage';
 import AboutPage from './pages/AboutPage';
 // import CookieBanner from './components/CookieBanner';
 
@@ -35,6 +39,10 @@ function App() {
           <Route path="/checkers" element={<CheckersPage />} />
           <Route path="/backgammon" element={<BackgammonPage />} />
           <Route path="/tic-tac-toe" element={<TicTacToePage />} />
+          <Route path="/bingo" element={<BingoPage />} />
+          <Route path="/domino" element={<DominoPage />} />
+          <Route path="/dice" element={<DicePage />} />
+          <Route path="/durak" element={<DurakPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/aml" element={<AMLPage />} />

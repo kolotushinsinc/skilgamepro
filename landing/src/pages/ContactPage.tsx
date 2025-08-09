@@ -122,33 +122,6 @@ const ContactPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Shield className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">Security Issues</h4>
-                      <p className="text-gray-400">
-                        For security-related concerns:<br />
-                        security@skillgame.pro<br />
-                        Available 24/7
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <MessageCircle className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">Live Chat</h4>
-                      <p className="text-gray-400">
-                        Available 24/7 for urgent issues<br />
-                        Instant support for players<br />
-                        Quick problem resolution
-                      </p>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="mt-8 pt-8 border-t border-gray-700">
