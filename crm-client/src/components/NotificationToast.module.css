@@ -1,0 +1,167 @@
+.toastContainer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast {
+  position: absolute;
+  right: 0;
+  width: 350px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-left: 4px solid #3b82f6;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.toast.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast.hidden {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.toast.new_message {
+  border-left-color: #3b82f6;
+}
+
+.toast.chat_assigned {
+  border-left-color: #10b981;
+}
+
+.toast.chat_closed {
+  border-left-color: #f59e0b;
+}
+
+.toast:hover {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  transform: translateX(-5px);
+}
+
+.toastContent {
+  padding: 16px;
+}
+
+.toastHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toast.new_message .icon {
+  color: #3b82f6;
+}
+
+.toast.chat_assigned .icon {
+  color: #10b981;
+}
+
+.toast.chat_closed .icon {
+  color: #f59e0b;
+}
+
+.toastTitle {
+  font-weight: 600;
+  color: #1f2937;
+  flex-grow: 1;
+  font-size: 14px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 2px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.toastMessage {
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+  word-break: break-word;
+}
+
+.toastTime {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Animation keyframes */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .toastContainer {
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+  }
+  
+  .toast {
+    width: 100%;
+    position: relative;
+    right: auto;
+  }
+  
+  .toast.visible {
+    transform: translateY(0);
+  }
+  
+  .toast.hidden {
+    transform: translateY(100%);
+  }
+  
+  .toast:hover {
+    transform: translateY(-5px);
+  }
+}

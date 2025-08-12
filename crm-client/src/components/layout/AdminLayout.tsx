@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import NotificationToast from '../NotificationToast';
 import styles from './AdminLayout.module.css';
 
 const AdminLayout: React.FC = () => {
@@ -10,6 +11,7 @@ const AdminLayout: React.FC = () => {
             <main className={styles.mainContent}>
                 <Outlet />
             </main>
+            <NotificationToast />
         </div>
     );
 };

@@ -9,6 +9,7 @@ import adminRoutes from './routes/admin.routes';
 import tournamentRoutes from './routes/tournament.routes';
 import notificationRoutes from './routes/notification.routes';
 import paymentRoutes from './routes/payment.routes';
+import chatRoutes from './routes/chat.routes';
 
 dotenv.config();
 
@@ -33,5 +34,6 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/chat', chatRoutes);
 
 export default app;

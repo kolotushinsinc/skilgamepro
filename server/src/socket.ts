@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import User, { IUser } from './models/User.model';
 import GameRecord from './models/GameRecord.model';
 import Transaction from './models/Transaction.model';
+import Chat, { IMessage } from './models/Chat.model';
 import { IGameLogic, GameState, GameMove } from './games/game.logic.interface';
 import { ticTacToeLogic } from './games/tic-tac-toe.logic';
 import { checkersLogic } from './games/checkers.logic';
@@ -44,6 +45,12 @@ export interface Room {
 
 export const rooms: Record<string, Room> = {};
 export const userSocketMap: Record<string, string> = {};
+export const chatUserSockets: Record<string, string> = {}; // For chat connections
+
+// Simple ID generator for chat messages
+const generateChatId = (): string => {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+};
 
 let globalIO: Server | null = null;
 
@@ -319,10 +326,21 @@ export const initializeSocket = (io: Server) => {
 
     io.use(async (socket: Socket, next: (err?: Error) => void) => {
         try {
-            const token = socket.handshake.auth.token;
-            if (!token) return next(new Error('Authentication error'));
+            let token = socket.handshake.auth.token;
+            
+            // Allow guest connections (no token)
+            if (!token) {
+                (socket as any).user = null; // Guest user
+                return next();
+            }
+            
+            // Remove "Bearer " prefix if present
+            if (token.startsWith('Bearer ')) {
+                token = token.slice(7);
+            }
+            
             const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-            const user = await User.findById(decoded.id).select('username avatar balance').lean();
+            const user = await User.findById(decoded.id).select('username avatar balance role').lean();
             if (!user) return next(new Error('User not found'));
             (socket as any).user = user;
             next();
@@ -332,28 +350,35 @@ export const initializeSocket = (io: Server) => {
     });
 
     io.on('connection', (socket: Socket) => {
-        const initialUser = (socket as any).user as IUser;
-        // @ts-ignore
-        userSocketMap[initialUser._id.toString()] = socket.id;
-
-        const previousRoom = Object.values(rooms).find(r =>
+        const initialUser = (socket as any).user as IUser | null;
+        
+        // Only map authenticated users
+        if (initialUser) {
             // @ts-ignore
-            r.disconnectTimer && r.players.some(p => p.user._id.toString() === initialUser._id.toString())
-        );
+            userSocketMap[initialUser._id.toString()] = socket.id;
+        }
 
-        if (previousRoom) {
-            console.log(`[+] Player ${initialUser.username} reconnected to room ${previousRoom.id}`);
-            
-            clearTimeout(previousRoom.disconnectTimer);
-            previousRoom.disconnectTimer = undefined;
+        // Only handle game reconnection for authenticated users
+        if (initialUser) {
+            const previousRoom = Object.values(rooms).find(r =>
+                // @ts-ignore
+                r.disconnectTimer && r.players.some(p => p.user._id.toString() === initialUser._id.toString())
+            );
 
-            // @ts-ignore
-            const playerInRoom = previousRoom.players.find(p => p.user._id.toString() === initialUser._id.toString())!;
-            playerInRoom.socketId = socket.id;
-            
-            socket.join(previousRoom.id);
-            io.to(previousRoom.id).emit('playerReconnected', { message: `Player ${initialUser.username} returned to the game!` });
-            io.to(previousRoom.id).emit('gameUpdate', getPublicRoomState(previousRoom));
+            if (previousRoom) {
+                console.log(`[+] Player ${initialUser.username} reconnected to room ${previousRoom.id}`);
+                
+                clearTimeout(previousRoom.disconnectTimer);
+                previousRoom.disconnectTimer = undefined;
+
+                // @ts-ignore
+                const playerInRoom = previousRoom.players.find(p => p.user._id.toString() === initialUser._id.toString())!;
+                playerInRoom.socketId = socket.id;
+                
+                socket.join(previousRoom.id);
+                io.to(previousRoom.id).emit('playerReconnected', { message: `Player ${initialUser.username} returned to the game!` });
+                io.to(previousRoom.id).emit('gameUpdate', getPublicRoomState(previousRoom));
+            }
         }
 
 
@@ -453,6 +478,10 @@ export const initializeSocket = (io: Server) => {
         });
 
         socket.on('createRoom', async ({ gameType, bet }: { gameType: Room['gameType'], bet: number }) => {
+            if (!initialUser) {
+                return socket.emit('error', { message: 'Authentication required' });
+            }
+            
             const gameLogic = gameLogics[gameType];
             if (!gameLogic || !gameLogic.createInitialState) return socket.emit('error', { message: "Game unavailable." });
             
@@ -491,6 +520,10 @@ export const initializeSocket = (io: Server) => {
         });
 
         socket.on('joinRoom', async (roomId: string) => {
+            if (!initialUser) {
+                return socket.emit('error', { message: 'Authentication required' });
+            }
+            
             const room = rooms[roomId];
             const currentUser = await User.findById(initialUser._id);
 
@@ -619,9 +652,13 @@ export const initializeSocket = (io: Server) => {
         });
         
         socket.on('disconnect', () => {
-            console.log(`[-] User disconnected: ${initialUser.username}`);
-            // @ts-ignore
-            delete userSocketMap[initialUser._id.toString()];
+            if (initialUser) {
+                console.log(`[-] User disconnected: ${initialUser.username}`);
+                // @ts-ignore
+                delete userSocketMap[initialUser._id.toString()];
+            } else {
+                console.log(`[-] Guest user disconnected`);
+            }
 
             const roomId = Object.keys(rooms).find(id => rooms[id].players.some(p => p.socketId === socket.id));
             if (!roomId) return;
@@ -641,6 +678,392 @@ export const initializeSocket = (io: Server) => {
                     endGame(io, room, remainingPlayer.user._id.toString());
                 }, 60000);
             }
+        });
+
+        // ============ CHAT EVENT HANDLERS ============
+        
+        // Join chat room
+        socket.on('joinChat', async (chatId: string) => {
+            try {
+                const userId = (socket as any).user?._id?.toString();
+                const chat = await Chat.findOne({ id: chatId });
+                
+                if (!chat) {
+                    return socket.emit('chatError', { message: 'Chat not found' });
+                }
+
+                // Check permissions
+                let isAdmin = false;
+                let isOwner = false;
+                let isAssigned = false;
+                let isGuest = false;
+
+                if (userId) {
+                    const user = await User.findById(userId);
+                    isAdmin = user?.role === 'ADMIN';
+                    isOwner = chat.userId?.toString() === userId;
+                    isAssigned = chat.assignedAdmin?.toString() === userId;
+                } else {
+                    // Guest user - check if this is their chat
+                    isGuest = !!chat.guestId;
+                }
+
+                if (!isAdmin && !isOwner && !isAssigned && !isGuest) {
+                    return socket.emit('chatError', { message: 'Access denied to this chat' });
+                }
+
+                socket.join(`chat-${chatId}`);
+                
+                // Track user socket for chat
+                if (userId) {
+                    chatUserSockets[userId] = socket.id;
+                } else {
+                    // Track guest socket
+                    chatUserSockets[`guest-${chatId}`] = socket.id;
+                }
+
+                socket.emit('chatJoined', {
+                    chatId,
+                    message: 'Successfully joined chat',
+                    chat: chat
+                });
+
+                console.log(`User ${userId || 'Guest'} joined chat ${chatId}`);
+            } catch (error) {
+                console.error('Error joining chat:', error);
+                socket.emit('chatError', { message: 'Error joining chat' });
+            }
+        });
+
+        // Leave chat room
+        socket.on('leaveChat', (chatId: string) => {
+            socket.leave(`chat-${chatId}`);
+            const userId = (socket as any).user?._id?.toString();
+            
+            if (userId && chatUserSockets[userId] === socket.id) {
+                delete chatUserSockets[userId];
+            }
+            
+            socket.emit('chatLeft', { chatId });
+            console.log(`User ${userId || 'Guest'} left chat ${chatId}`);
+        });
+
+        // Send message in chat
+        socket.on('sendMessage', async ({ chatId, content }: { chatId: string, content: string }) => {
+            try {
+                if (!content || content.trim().length === 0) {
+                    return socket.emit('chatError', { message: 'Message content cannot be empty' });
+                }
+
+                if (content.length > 1000) {
+                    return socket.emit('chatError', { message: 'Message too long (max 1000 characters)' });
+                }
+
+                const userId = (socket as any).user?._id?.toString();
+                const chat = await Chat.findOne({ id: chatId });
+                
+                if (!chat) {
+                    return socket.emit('chatError', { message: 'Chat not found' });
+                }
+
+                // Determine sender info
+                let senderInfo;
+                if (userId) {
+                    const user = await User.findById(userId);
+                    const isAdmin = user?.role === 'ADMIN';
+                    senderInfo = {
+                        id: userId,
+                        name: user?.username || 'User',
+                        type: isAdmin ? 'admin' as const : 'user' as const
+                    };
+                } else {
+                    // Guest user
+                    senderInfo = {
+                        id: chat.guestId || generateChatId(),
+                        name: 'Guest',
+                        type: 'guest' as const
+                    };
+                }
+
+                const newMessage: IMessage = {
+                    id: generateChatId(),
+                    chatId,
+                    content: content.trim(),
+                    sender: senderInfo,
+                    timestamp: new Date(),
+                    isRead: false
+                };
+
+                // Add message to chat
+                chat.messages.push(newMessage);
+                chat.lastActivity = new Date();
+                
+                // If admin responds, set status to active
+                if (senderInfo.type === 'admin' && chat.status === 'pending') {
+                    chat.status = 'active';
+                    chat.assignedAdmin = userId;
+                }
+
+                await chat.save();
+
+                // Broadcast message to all users in chat room
+                io.to(`chat-${chatId}`).emit('newMessage', {
+                    chatId,
+                    message: newMessage
+                });
+
+                // Notify admins of new message if from user/guest
+                if (senderInfo.type !== 'admin') {
+                    // Send chatNotification to all connected clients
+                    socket.broadcast.emit('chatNotification', {
+                        type: 'new_message',
+                        chatId,
+                        message: 'New message in support chat',
+                        source: chat.source
+                    });
+
+                    // Also send newMessage event directly to all connected admin sockets
+                    // This ensures admins get real-time message updates even if they haven't joined the chat room yet
+                    for (const [socketId, connectedSocket] of io.sockets.sockets) {
+                        const connectedUser = (connectedSocket as any).user;
+                        if (connectedUser && connectedUser.role === 'ADMIN') {
+                            connectedSocket.emit('newMessage', {
+                                chatId,
+                                message: newMessage
+                            });
+                        }
+                    }
+                }
+
+                console.log(`Message sent in chat ${chatId} by ${senderInfo.name} (${senderInfo.type})`);
+            } catch (error) {
+                console.error('Error sending message:', error);
+                socket.emit('chatError', { message: 'Error sending message' });
+            }
+        });
+
+        // Mark messages as read
+        socket.on('markChatRead', async (chatId: string) => {
+            try {
+                const userId = (socket as any).user?._id?.toString();
+                const chat = await Chat.findOne({ id: chatId });
+                
+                if (!chat) {
+                    return socket.emit('chatError', { message: 'Chat not found' });
+                }
+
+                let hasUpdates = false;
+                chat.messages.forEach(message => {
+                    if (message.sender.id !== userId && !message.isRead) {
+                        message.isRead = true;
+                        hasUpdates = true;
+                    }
+                });
+
+                if (hasUpdates) {
+                    await chat.save();
+                    
+                    // Notify other users in chat that messages were read
+                    socket.to(`chat-${chatId}`).emit('messagesRead', {
+                        chatId,
+                        readBy: userId
+                    });
+                }
+
+                socket.emit('chatReadConfirmed', { chatId });
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+                socket.emit('chatError', { message: 'Error marking messages as read' });
+            }
+        });
+
+        // Typing indicator
+        socket.on('chatTyping', ({ chatId, isTyping }: { chatId: string, isTyping: boolean }) => {
+            const userId = (socket as any).user?._id?.toString();
+            const userName = (socket as any).user?.username || 'Guest';
+            
+            socket.to(`chat-${chatId}`).emit('userTyping', {
+                chatId,
+                userId,
+                userName,
+                isTyping
+            });
+        });
+
+        // Close chat (admin or user)
+        socket.on('closeChat', async (chatId: string) => {
+            try {
+                const userId = (socket as any).user?._id?.toString();
+                const user = await User.findById(userId);
+                
+                const chat = await Chat.findOne({ id: chatId });
+                if (!chat) {
+                    return socket.emit('chatError', { message: 'Chat not found' });
+                }
+
+                // Check permissions
+                const isAdmin = user?.role === 'ADMIN';
+                const isOwner = chat.userId?.toString() === userId;
+                const isAssigned = chat.assignedAdmin?.toString() === userId;
+
+                if (!isAdmin && !isOwner && !isAssigned) {
+                    return socket.emit('chatError', { message: 'Access denied' });
+                }
+
+                chat.status = 'closed';
+                await chat.save();
+
+                // Notify all users in chat room
+                io.to(`chat-${chatId}`).emit('chatClosed', {
+                    chatId,
+                    closedBy: user?.username || 'System'
+                });
+
+                console.log(`Chat ${chatId} closed by ${user?.username || 'Unknown'}`);
+            } catch (error) {
+                console.error('Error closing chat:', error);
+                socket.emit('chatError', { message: 'Error closing chat' });
+            }
+        });
+
+        // ============ SUPPORT CHAT EVENT HANDLERS FOR CLIENT APP ============
+        
+        // Join user's support chat room
+        socket.on('joinSupportChat', async ({ userId }: { userId: string }) => {
+            try {
+                const currentUserId = (socket as any).user?._id?.toString();
+                
+                // Verify user permissions
+                if (currentUserId !== userId) {
+                    return socket.emit('supportChatError', { message: 'Access denied' });
+                }
+
+                // Find or create support chat for this user
+                let chat = await Chat.findOne({
+                    userId: userId,
+                    source: 'client',
+                    status: { $ne: 'closed' }
+                }).sort({ createdAt: -1 });
+
+                if (chat) {
+                    socket.join(`chat-${chat.id}`);
+                    chatUserSockets[userId] = socket.id;
+
+                    socket.emit('supportChatJoined', {
+                        chatId: chat.id,
+                        message: 'Successfully joined support chat',
+                        chat: chat
+                    });
+
+                    console.log(`User ${userId} joined support chat ${chat.id}`);
+                } else {
+                    // No active support chat found, will be created when first message is sent
+                    socket.emit('supportChatJoined', {
+                        chatId: null,
+                        message: 'No active support chat. Start a conversation to create one.',
+                        chat: null
+                    });
+                }
+            } catch (error) {
+                console.error('Error joining support chat:', error);
+                socket.emit('supportChatError', { message: 'Error joining support chat' });
+            }
+        });
+
+        // Send message in support chat for authenticated users
+        socket.on('sendSupportMessage', async ({ chatId, content }: { chatId: string, content: string }) => {
+            try {
+                if (!content || content.trim().length === 0) {
+                    return socket.emit('supportChatError', { message: 'Message content cannot be empty' });
+                }
+
+                if (content.length > 1000) {
+                    return socket.emit('supportChatError', { message: 'Message too long (max 1000 characters)' });
+                }
+
+                const userId = (socket as any).user?._id?.toString();
+                const user = await User.findById(userId);
+                
+                if (!user) {
+                    return socket.emit('supportChatError', { message: 'User not found' });
+                }
+
+                const chat = await Chat.findOne({ id: chatId });
+                
+                if (!chat) {
+                    return socket.emit('supportChatError', { message: 'Chat not found' });
+                }
+
+                // Verify user owns this chat
+                if (chat.userId?.toString() !== userId) {
+                    return socket.emit('supportChatError', { message: 'Access denied to this chat' });
+                }
+
+                const senderInfo = {
+                    id: userId,
+                    name: user.username,
+                    type: 'user' as const
+                };
+
+                const newMessage: IMessage = {
+                    id: generateChatId(),
+                    chatId,
+                    content: content.trim(),
+                    sender: senderInfo,
+                    timestamp: new Date(),
+                    isRead: false
+                };
+
+                // Add message to chat
+                chat.messages.push(newMessage);
+                chat.lastActivity = new Date();
+                
+                await chat.save();
+
+                // Broadcast message to all users in chat room
+                io.to(`chat-${chatId}`).emit('supportNewMessage', {
+                    chatId,
+                    message: newMessage
+                });
+
+                // Notify admins of new message
+                socket.broadcast.emit('chatNotification', {
+                    type: 'new_message',
+                    chatId,
+                    message: 'New message in support chat',
+                    source: chat.source,
+                    userName: user.username
+                });
+
+                // Also send newMessage event directly to all connected admin sockets
+                for (const [socketId, connectedSocket] of io.sockets.sockets) {
+                    const connectedUser = (connectedSocket as any).user;
+                    if (connectedUser && connectedUser.role === 'ADMIN') {
+                        connectedSocket.emit('newMessage', {
+                            chatId,
+                            message: newMessage
+                        });
+                    }
+                }
+
+                console.log(`Support message sent in chat ${chatId} by ${senderInfo.name}`);
+            } catch (error) {
+                console.error('Error sending support message:', error);
+                socket.emit('supportChatError', { message: 'Error sending message' });
+            }
+        });
+
+        // Support chat typing indicator for authenticated users
+        socket.on('supportChatTyping', ({ chatId, isTyping }: { chatId: string, isTyping: boolean }) => {
+            const userId = (socket as any).user?._id?.toString();
+            const userName = (socket as any).user?.username || 'User';
+            
+            socket.to(`chat-${chatId}`).emit('supportUserTyping', {
+                chatId,
+                userId,
+                userName,
+                isTyping
+            });
         });
     });
 }

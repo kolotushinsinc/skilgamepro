@@ -28,6 +28,7 @@ import LegalInformation from './pages/LegalInformationPage';
 import GDPRPage from './pages/GDPRPage';
 
 import { CookieBanner } from './components/CookieBanner';
+import SupportChat from './components/SupportChat';
 // import { DemoControls } from './components/DemoControls';
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
         </Routes>
         {/* <DemoControls /> */}
         <CookieBanner />
+        <SupportChat />
       </div>
     </Router>
   );

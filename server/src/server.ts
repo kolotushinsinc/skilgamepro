@@ -13,7 +13,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://platform.skillgame.pro", "https://crm.skillgame.pro"],
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });

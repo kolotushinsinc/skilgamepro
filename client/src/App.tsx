@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import { NotificationHandler } from './components/NotificationHandler/NotificationHandler';
 import TournamentExitManager from './components/tournament/TournamentExitManager';
+import SupportChat from './components/SupportChat/SupportChat';
 
 import MainLayout from './components/layout/MainLayout';
 
@@ -42,6 +43,9 @@ function App() {
                     </>
                 )}
             </Routes>
+            
+            {/* Support Chat - доступен на всех страницах */}
+            <SupportChat />
         </TournamentExitManager>
     </Router>
   );

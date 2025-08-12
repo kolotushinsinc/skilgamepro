@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import LoginPage from './pages/LoginPage/LoginPage';
 import AdminLayout from './components/layout/AdminLayout';
 
@@ -12,6 +13,7 @@ import RoomsPage from './pages/RoomsPage/RoomsPage';
 import CreateRoomPage from './pages/CreateRoomPage/CreateRoomPage';
 import TournamentsPage from './pages/TournamentsPage/TournamentsPage';
 import KYCPage from './pages/KYCPage/KYCPage';
+import SupportChatPage from './pages/SupportChatPage/SupportChatPage';
 
 function App() {
     const { isAuthenticated, loading } = useAuth();
@@ -24,13 +26,18 @@ function App() {
         <Router>
             <Routes>
                 {isAuthenticated ? (
-                    <Route path="/" element={<AdminLayout />}>
+                    <Route path="/" element={
+                        <NotificationProvider>
+                            <AdminLayout />
+                        </NotificationProvider>
+                    }>
                         <Route index element={<DashboardPage />} />
                         <Route path="users" element={<UsersPage />} />
                         <Route path="games" element={<GamesPage />} />
                         <Route path="transactions" element={<TransactionsPage />} />
                         <Route path="rooms" element={<RoomsPage />} />
                         <Route path="tournaments" element={<TournamentsPage />} />
+                        <Route path="support-chat" element={<SupportChatPage />} />
                         <Route path="kyc" element={<KYCPage />} />
                         <Route path="create-room" element={<CreateRoomPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
