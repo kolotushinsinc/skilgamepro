@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook } from 'lucide-react';
+import { XIcon, TelegramIcon } from './icons';
 
 const Footer: React.FC = () => {
   const footerLinks = {
@@ -16,6 +17,7 @@ const Footer: React.FC = () => {
       { name: 'GDPR', href: '/GDPR' }
     ],
     support: [
+      { name: 'FAQ', href: '/faq' },
       { name: 'Game Rules', href: '/game-rules' },
       { name: 'Responsible Gambling Policy', href: '/gambling-policy' },
       { name: 'Disclaimer', href: '/disclaimer' }
@@ -32,10 +34,9 @@ const Footer: React.FC = () => {
   };
 
   const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Youtube, href: '#', label: 'YouTube' }
+    { icon: Facebook, href: 'https://www.facebook.com/profile.php?id=61579037923443', label: 'Facebook' },
+    { icon: XIcon, href: 'https://x.com/skill1game', label: 'X' },
+    { icon: TelegramIcon, href: 'https://t.me/skill1game', label: 'Telegram' }
   ];
 
   return (
@@ -53,15 +54,12 @@ const Footer: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-yellow-500" />
-                <span className="text-gray-400">info@skillgame.pro</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-yellow-500" />
-                <span className="text-gray-400">+8 (888) 888-888</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <MapPin className="w-4 h-4 text-yellow-500" />
-                <span className="text-gray-400">All World</span>
+                <a
+                  href="mailto:support@skillgame.pro"
+                  className="text-gray-400 hover:text-yellow-500 transition-colors underline decoration-dotted underline-offset-2"
+                >
+                  support@skillgame.pro
+                </a>
               </div>
             </div>
           </div>
@@ -134,6 +132,7 @@ const Footer: React.FC = () => {
                 <a
                   key={social.label}
                   href={social.href}
+                  target="_blank"
                   className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-yellow-500 hover:text-black transition-all duration-200"
                   aria-label={social.label}
                 >

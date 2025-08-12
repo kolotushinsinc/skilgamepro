@@ -10,6 +10,7 @@ import DominoPage from './pages/DominoPage';
 import DicePage from './pages/DicePage';
 import DurakPage from './pages/DurakPage';
 import AboutPage from './pages/AboutPage';
+import FAQPage from './pages/FAQPage';
 // import CookieBanner from './components/CookieBanner';
 
 
@@ -44,6 +45,7 @@ function App() {
           <Route path="/dice" element={<DicePage />} />
           <Route path="/durak" element={<DurakPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/faq" element={<FAQPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/aml" element={<AMLPage />} />
           <Route path="/kyc" element={<KYCPolicy />} />

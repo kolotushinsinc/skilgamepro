@@ -80,6 +80,9 @@ const Header: React.FC = () => {
             <Link to="/game-rules" className="text-gray-300 hover:text-yellow-500 transition-colors">
               Game Rules
             </Link>
+            <Link to="/faq" className="text-gray-300 hover:text-yellow-500 transition-colors">
+              FAQ
+            </Link>
             <Link to="/about" className="text-gray-300 hover:text-yellow-500 transition-colors">
               About
             </Link>
@@ -134,6 +137,9 @@ const Header: React.FC = () => {
                 </div>
               </div>
               
+              <Link to="/faq" className="text-gray-300 hover:text-yellow-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
+                FAQ
+              </Link>
               <Link to="/about" className="text-gray-300 hover:text-yellow-500 transition-colors" onClick={() => setIsMenuOpen(false)}>
                 About
               </Link>

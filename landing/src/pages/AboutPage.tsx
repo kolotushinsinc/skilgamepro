@@ -174,39 +174,6 @@ const AboutPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Timeline */}
-        <section className="py-20 bg-gray-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-4xl font-bold mb-12 text-center bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              Our Journey
-            </h2>
-
-            <div className="relative">
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-yellow-500 to-yellow-600"></div>
-
-              <div className="space-y-12">
-                {milestones.map((milestone, index) => (
-                  <div key={index} className={`flex items-center ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}>
-                    <div className={`w-1/2 ${index % 2 === 0 ? 'pr-8 text-right' : 'pl-8 text-left'}`}>
-                      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                        <div className="text-2xl font-bold text-yellow-400 mb-2">{milestone.year}</div>
-                        <h3 className="text-xl font-bold mb-2 text-white">{milestone.event}</h3>
-                        <p className="text-gray-400">{milestone.description}</p>
-                      </div>
-                    </div>
-
-                    <div className="relative z-10">
-                      <div className="w-4 h-4 bg-yellow-500 rounded-full border-4 border-gray-900"></div>
-                    </div>
-
-                    <div className="w-1/2"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Call to Action */}
         <section className="py-20 bg-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

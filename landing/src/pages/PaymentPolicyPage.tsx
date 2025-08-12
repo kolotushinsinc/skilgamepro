@@ -126,15 +126,6 @@ const PaymentPolicy: React.FC = () => {
                                 <li>Cryptocurrency withdrawals to verified wallet addresses</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Fees and Charges</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Deposit Fees</h3>
-                            <ul>
-                                <li>Most deposit methods: No fees</li>
-                                <li>Credit card deposits: 2.9% processing fee</li>
-                                <li>Cryptocurrency deposits: Network transaction fees</li>
-                                <li>Bank transfers: $15 flat fee per transaction</li>
-                            </ul>
-
                             <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Withdrawal Fees</h3>
                             <ul>
                                 <li><strong>Credit/Debit Cards:</strong> $2.50 per transaction</li>
