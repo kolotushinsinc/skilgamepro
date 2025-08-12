@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Zap, Trophy, Users, DollarSign, Star, Lock, CheckCircle } from 'lucide-react';
+import { CountUp, FadeInOnScroll } from './animations';
 
 const Features: React.FC = () => {
   const features = [
@@ -51,69 +52,95 @@ const Features: React.FC = () => {
   return (
     <section className="py-20 bg-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-            Why Choose Skill Game Arena?
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Experience the ultimate competitive gaming platform with cutting-edge features designed for serious players.
-          </p>
-        </div>
+        <FadeInOnScroll>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+              Why Choose Skill Game Arena?
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Experience the ultimate competitive gaming platform with cutting-edge features designed for serious players.
+            </p>
+          </div>
+        </FadeInOnScroll>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {features.map((feature, index) => (
-            <div key={index} className="bg-gray-900 rounded-xl p-6 border border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:transform hover:scale-105">
-              <div className={`w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center mb-4 ${feature.color}`}>
-                <feature.icon className="w-6 h-6" />
+            <FadeInOnScroll key={index} delay={index * 100} direction="up">
+              <div className="bg-gray-900 rounded-xl p-6 border border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/10 group">
+                <div className={`w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center mb-4 ${feature.color} group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
+                <p className="text-gray-400 leading-relaxed">{feature.description}</p>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
-              <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-            </div>
+            </FadeInOnScroll>
           ))}
         </div>
         
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 border border-gray-700">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold mb-2 text-white">Platform Statistics</h3>
-            <p className="text-gray-400">Join thousands of players in the ultimate gaming experience</p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl font-bold text-yellow-400 mb-2">{stat.value}</div>
-                <div className="text-gray-400">{stat.label}</div>
+        <FadeInOnScroll delay={300}>
+          <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 border border-gray-700 hover:border-yellow-500/50 transition-all duration-300">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold mb-2 text-white">Platform Statistics</h3>
+              <p className="text-gray-400">Join thousands of players in the ultimate gaming experience</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="text-center group">
+                <div className="text-3xl font-bold text-yellow-400 mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <CountUp end={50} suffix="K+" />
+                </div>
+                <div className="text-gray-400">Active Players</div>
               </div>
-            ))}
+              <div className="text-center group">
+                <div className="text-3xl font-bold text-green-400 mb-2 group-hover:scale-110 transition-transform duration-300">
+                  $<CountUp end={2} suffix="M+" />
+                </div>
+                <div className="text-gray-400">Prizes Awarded</div>
+              </div>
+              <div className="text-center group">
+                <div className="text-3xl font-bold text-blue-400 mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <CountUp end={99.9} suffix="%" decimals={1} />
+                </div>
+                <div className="text-gray-400">Uptime</div>
+              </div>
+              <div className="text-center group">
+                <div className="text-3xl font-bold text-purple-400 mb-2 group-hover:scale-110 transition-transform duration-300">
+                  24/7
+                </div>
+                <div className="text-gray-400">Support</div>
+              </div>
+            </div>
           </div>
-        </div>
+        </FadeInOnScroll>
         
-        <div className="mt-16 bg-gray-900 rounded-xl p-8 border border-gray-700">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-              <Lock className="w-6 h-6 text-white" />
+        <FadeInOnScroll delay={500}>
+          <div className="mt-16 bg-gray-900 rounded-xl p-8 border border-gray-700 hover:border-green-500/50 transition-all duration-300">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center hover:scale-110 transition-transform duration-300">
+                <Lock className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white">Security & Trust</h3>
+                <p className="text-gray-400">Your safety is our top priority</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">Security & Trust</h3>
-              <p className="text-gray-400">Your safety is our top priority</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+                <CheckCircle className="w-5 h-5 text-green-500 animate-pulse" />
+                <span className="text-gray-300">SSL Encrypted Transactions</span>
+              </div>
+              <div className="flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+                <CheckCircle className="w-5 h-5 text-green-500 animate-pulse" style={{animationDelay: '0.5s'}} />
+                <span className="text-gray-300">Anti-Fraud Protection</span>
+              </div>
+              <div className="flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+                <CheckCircle className="w-5 h-5 text-green-500 animate-pulse" style={{animationDelay: '1s'}} />
+                <span className="text-gray-300">24/7 Monitoring</span>
+              </div>
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <span className="text-gray-300">SSL Encrypted Transactions</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <span className="text-gray-300">Anti-Fraud Protection</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <span className="text-gray-300">24/7 Monitoring</span>
-            </div>
-          </div>
-        </div>
+        </FadeInOnScroll>
       </div>
     </section>
   );

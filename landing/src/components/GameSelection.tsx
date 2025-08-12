@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Crown, Users, DollarSign } from 'lucide-react';
+import { FadeInOnScroll, CountUp } from './animations';
 
 const GameSelection: React.FC = () => {
   const games = [
@@ -91,58 +92,78 @@ const GameSelection: React.FC = () => {
   return (
     <section className="py-20 bg-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-            Choose Your Game
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Master classic board games and compete for real money prizes. Each game offers unique challenges and rewards.
-          </p>
-        </div>
+        <FadeInOnScroll>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+              Choose Your Game
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Master classic board games and compete for real money prizes. Each game offers unique challenges and rewards.
+            </p>
+          </div>
+        </FadeInOnScroll>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {games.map((game) => (
-            <div key={game.id} className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:transform hover:scale-105 h-full flex flex-col">
-              <div className="relative overflow-hidden">
-                <img
-                  src={game.image}
-                  alt={game.title}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-semibold ${getDifficultyColor(game.difficulty)} bg-gray-900/80`}>
-                  {game.difficulty}
+          {games.map((game, index) => (
+            <FadeInOnScroll key={game.id} delay={index * 100} direction="up">
+              <div className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20 h-full flex flex-col">
+                <div className="relative overflow-hidden">
+                  <img
+                    src={game.image}
+                    alt={game.title}
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/40 transition-all duration-300"></div>
+                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-semibold ${getDifficultyColor(game.difficulty)} bg-gray-900/80 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300`}>
+                    {game.difficulty}
+                  </div>
                 </div>
-              </div>
               
-              <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-2xl font-bold mb-2 text-white">{game.title}</h3>
-                <p className="text-gray-400 mb-4 text-sm flex-grow">{game.description}</p>
-                
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm text-gray-400">Players</span>
+                <div className="p-6 flex flex-col flex-grow">
+                  <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-yellow-400 transition-colors duration-300">{game.title}</h3>
+                  <p className="text-gray-400 mb-4 text-sm flex-grow">{game.description}</p>
+                  
+                  <div className="space-y-2 mb-6">
+                    <div className="flex items-center justify-between group/stat hover:scale-105 transition-transform duration-200">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-500 group-hover/stat:animate-bounce" />
+                        <span className="text-sm text-gray-400">Players</span>
+                      </div>
+                      <span className="text-sm font-semibold text-blue-400">
+                        <CountUp
+                          end={parseInt(game.players.replace(/,/g, ''))}
+                          duration={2000 + index * 200}
+                        />
+                      </span>
                     </div>
-                    <span className="text-sm font-semibold text-blue-400">{game.players}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-green-500" />
-                      <span className="text-sm text-gray-400">Prize Pool</span>
+                    <div className="flex items-center justify-between group/stat hover:scale-105 transition-transform duration-200">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-green-500 group-hover/stat:animate-bounce" />
+                        <span className="text-sm text-gray-400">Prize Pool</span>
+                      </div>
+                      <span className="text-sm font-semibold text-green-400">
+                        {game.prize.startsWith('$') ? (
+                          <span>
+                            $<CountUp
+                              end={parseInt(game.prize.replace(/[$,]/g, ''))}
+                              duration={2500 + index * 200}
+                            />
+                          </span>
+                        ) : (
+                          game.prize
+                        )}
+                      </span>
                     </div>
-                    <span className="text-sm font-semibold text-green-400">{game.prize}</span>
                   </div>
+                  
+                  <a href="https://platform.skillgame.pro/register" className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 hover:shadow-xl hover:shadow-yellow-500/25 transition-all duration-300 flex items-center justify-center gap-2 group/btn mt-auto">
+                    <Crown className="w-4 h-4 group-hover/btn:animate-bounce" />
+                      Play Now
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                  </a>
                 </div>
-                
-                <a href="https://platform.skillgame.pro/register" className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center gap-2 group mt-auto">
-                  <Crown className="w-4 h-4" />
-                    Play Now
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </a>
               </div>
-            </div>
+            </FadeInOnScroll>
           ))}
         </div>
       </div>

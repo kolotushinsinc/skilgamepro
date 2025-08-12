@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { FadeInOnScroll, FloatingParticles, TypeWriter } from '../components/animations';
 import { ArrowRight, Crown } from 'lucide-react';
 
 const CheckersPage: React.FC = () => {
@@ -13,18 +14,35 @@ const CheckersPage: React.FC = () => {
       <Header />
       <div className="pt-16 min-h-screen flex flex-col bg-gray-900 text-gray-300">
         {/* Hero Section */}
-        <section className="relative py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-20 left-20 w-64 h-64 bg-blue-400 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500 rounded-full blur-3xl"></div>
+        <section className="relative py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden">
+          <FloatingParticles
+            count={30}
+            colors={['#3b82f6', '#8b5cf6', '#ef4444', '#f59e0b']}
+            className="opacity-30"
+          />
+          
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-20 left-20 w-64 h-64 bg-blue-400 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
           </div>
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-              Checkers
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              A classic strategy game of capturing pieces on an 8x8 board. Simple rules, endless possibilities.
-            </p>
+            <FadeInOnScroll direction="down" duration={800}>
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                <TypeWriter
+                  text="Checkers"
+                  speed={180}
+                  delay={800}
+                  showCursor={true}
+                  cursorChar="●"
+                />
+              </h1>
+            </FadeInOnScroll>
+            
+            <FadeInOnScroll delay={300} duration={800}>
+              <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                A classic strategy game of capturing pieces on an 8x8 board. Simple rules, endless possibilities.
+              </p>
+            </FadeInOnScroll>
           </div>
         </section>
 
@@ -125,11 +143,13 @@ const CheckersPage: React.FC = () => {
                   className="rounded-xl shadow-2xl w-full h-auto border border-gray-700"
                 />
               </div>
-              <a href='https://platform.skillgame.pro/register' className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center gap-2 group">
-                  <Crown className="w-4 h-4" />
-                    Play Now
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </a>
+              <FadeInOnScroll delay={1000} direction="up" className="lg:col-span-2">
+                <a href='https://platform.skillgame.pro/register' className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold py-4 rounded-lg hover:from-yellow-600 hover:to-yellow-700 hover:shadow-xl hover:shadow-yellow-500/25 transition-all duration-300 flex items-center justify-center gap-2 group hover:scale-105">
+                    <Crown className="w-5 h-5 group-hover:animate-bounce" />
+                      Play Checkers Now
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  </a>
+              </FadeInOnScroll>
             </div>
           </div>
         </section>
