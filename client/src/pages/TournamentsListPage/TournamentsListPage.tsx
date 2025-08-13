@@ -300,7 +300,6 @@ const TournamentsListPage: React.FC = () => {
                                                 className={`${styles.player} ${player.isBot ? styles.bot : ''}`}
                                             >
                                                 {player.username}
-                                                {player.isBot && ' 🤖'}
                                             </span>
                                         ))}
                                     </div>

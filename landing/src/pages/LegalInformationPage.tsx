@@ -30,9 +30,6 @@ const LegalInformation: React.FC = () => {
                             <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Contact Information</h3>
                             <ul>
                                 <li><strong>Customer Support:</strong> support@skillgame.pro</li>
-                                <li><strong>Legal Inquiries:</strong> legal@skillgame.pro</li>
-                                <li><strong>Compliance Officer:</strong> compliance@skillgame.pro</li>
-                                <li><strong>Privacy Officer:</strong> privacy@skillgame.pro</li>
                             </ul>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Licensing and Regulatory Compliance</h2>

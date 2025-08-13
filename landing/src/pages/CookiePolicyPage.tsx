@@ -264,14 +264,14 @@ const CookiePolicy: React.FC = () => {
                             <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Cookie-Related Inquiries</h3>
                             <p>For questions about our cookie practices or to exercise your rights:</p>
                             <ul>
-                                <li><strong>Email:</strong> cookies@skillgame.pro</li>
+                                <li><strong>Email:</strong> support@skillgame.pro</li>
                                 <li><strong>Phone:</strong> +1-800-COOKIE-HELP</li>
                                 <li><strong>Mail:</strong> Privacy Department, Skill Game, [Address]</li>
                                 <li><strong>Website:</strong> Cookie preference center available on all pages</li>
                             </ul>
 
                             <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Data Protection Officer</h3>
-                            <p>For data protection inquiries related to cookies: dpo@skillgame.pro</p>
+                            <p>For data protection inquiries related to cookies: support@skillgame.pro</p>
                             {/* ` }} /> */}
                         </div>
                     </div>

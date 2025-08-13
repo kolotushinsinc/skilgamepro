@@ -152,7 +152,6 @@ const TournamentDetailPage: React.FC = () => {
                                         <div className={`${styles.player} ${match.winner?._id === match.player1._id ? styles.winner : ''}`}>
                                             <span className={styles.playerName}>
                                                 {match.player1.username}
-                                                {match.player1.isBot && ' 🤖'}
                                                 {match.winner?._id === match.player1._id && ' 👑'}
                                             </span>
                                         </div>
@@ -160,7 +159,6 @@ const TournamentDetailPage: React.FC = () => {
                                         <div className={`${styles.player} ${match.winner?._id === match.player2._id ? styles.winner : ''}`}>
                                             <span className={styles.playerName}>
                                                 {match.player2.username}
-                                                {match.player2.isBot && ' 🤖'}
                                                 {match.winner?._id === match.player2._id && ' 👑'}
                                             </span>
                                         </div>
@@ -210,7 +208,6 @@ const TournamentDetailPage: React.FC = () => {
                 <div className={styles.matchInfo}>
                     <div className={styles.opponent}>
                         Opponent: {opponent.username}
-                        {opponent.isBot && ' 🤖'}
                     </div>
                     <div className={styles.matchStatusInfo}>
                         Status: {currentMatch.status === 'ACTIVE' ? 'Game in progress' : 'Waiting'}
@@ -334,7 +331,6 @@ const TournamentDetailPage: React.FC = () => {
                 {tournament.status === 'FINISHED' && tournament.winner && (
                     <div className={styles.winner}>
                         🏆 Winner: {tournament.winner.username}
-                        {tournament.winner.isBot && ' 🤖'}
                     </div>
                 )}
 
@@ -420,7 +416,6 @@ const TournamentDetailPage: React.FC = () => {
                             <span className={styles.playerNumber}>#{index + 1}</span>
                             <span className={styles.playerName}>
                                 {player.username}
-                                {player.isBot && ' 🤖'}
                                 {user && player._id === user._id && ' (You)'}
                             </span>
                             <span className={styles.registrationTime}>

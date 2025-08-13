@@ -71,7 +71,7 @@ export const gameLogics: Record<Room['gameType'], IGameLogic> = {
 };
 
 const BOT_WAIT_TIME = 15000;
-export const botUsernames = ["Shadow", "Vortex", "Raptor", "Ghost", "Cipher", "Blaze"];
+export const botUsernames = ["Michael", "Sarah", "David", "Jessica", "Robert", "Emily"];
 
 function isBot(player: Player): boolean {
     if (!player || !player.user || !player.user._id) return false;

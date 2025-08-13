@@ -154,14 +154,6 @@ const ContactPage = () => {
                               <span className="text-gray-300 font-medium">General:</span><br />
                               <a href="mailto:support@skillgame.pro" className="text-blue-400 hover:text-blue-300 transition-colors underline decoration-dotted underline-offset-2">support@skillgame.pro</a>
                             </div>
-                            <div className="text-gray-400 hover:scale-105 transition-transform duration-200">
-                              <span className="text-gray-300 font-medium">Technical:</span><br />
-                              <a href="mailto:tech@skillgame.pro" className="text-blue-400 hover:text-blue-300 transition-colors underline decoration-dotted underline-offset-2">tech@skillgame.pro</a>
-                            </div>
-                            <div className="text-gray-400 hover:scale-105 transition-transform duration-200">
-                              <span className="text-gray-300 font-medium">Business:</span><br />
-                              <a href="mailto:business@skillgame.pro" className="text-blue-400 hover:text-blue-300 transition-colors underline decoration-dotted underline-offset-2">business@skillgame.pro</a>
-                            </div>
                           </div>
                         </div>
                       </div>

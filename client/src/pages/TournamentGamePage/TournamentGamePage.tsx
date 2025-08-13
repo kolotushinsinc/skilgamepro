@@ -665,7 +665,6 @@ const TournamentGamePage: React.FC = () => {
                 <div className={`${styles.player} ${!isMyTurn ? styles.currentTurn : ''}`}>
                     <div className={styles.playerName}>
                         {opponent?.username}
-                        {opponent?.isBot && ' 🤖'}
                     </div>
                     {!isMyTurn && <div className={styles.turnIndicator}>Opponent's Turn</div>}
                 </div>

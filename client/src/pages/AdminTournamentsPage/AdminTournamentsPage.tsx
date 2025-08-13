@@ -274,7 +274,6 @@ const AdminTournamentsPage: React.FC = () => {
                                                         className={`${styles.participant} ${player.isBot ? styles.bot : ''}`}
                                                     >
                                                         {player.username}
-                                                        {player.isBot && ' 🤖'}
                                                     </span>
                                                 ))}
                                             </div>
@@ -284,7 +283,6 @@ const AdminTournamentsPage: React.FC = () => {
                                     {tournament.status === 'FINISHED' && tournament.winner && (
                                         <div className={styles.winner}>
                                             🏆 Winner: {tournament.winner.username}
-                                            {tournament.winner.isBot && ' 🤖'}
                                         </div>
                                     )}
                                 </div>

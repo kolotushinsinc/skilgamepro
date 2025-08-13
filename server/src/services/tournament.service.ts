@@ -11,10 +11,10 @@ export const activeTournaments: Record<string, ITournament> = {};
 const tournamentTimers: Record<string, NodeJS.Timeout> = {};
 
 const BOT_NAMES = [
-    'AlphaBot', 'BetaBot', 'GammaBot', 'DeltaBot', 'EpsilonBot',
-    'ZetaBot', 'EtaBot', 'ThetaBot', 'IotaBot', 'KappaBot',
-    'LambdaBot', 'MuBot', 'NuBot', 'XiBot', 'OmicronBot',
-    'PiBot', 'RhoBot', 'SigmaBot', 'TauBot', 'UpsilonBot'
+    'Alexander', 'Benjamin', 'Catherine', 'Daniel', 'Elizabeth',
+    'Frederick', 'Gabriella', 'Harrison', 'Isabella', 'Jonathan',
+    'Katherine', 'Leonardo', 'Maximilian', 'Nathaniel', 'Olivia',
+    'Sebastian', 'Victoria', 'William', 'Anastasia', 'Christopher'
 ];
 
 export async function createTournament(
