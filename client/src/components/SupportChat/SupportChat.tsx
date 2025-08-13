@@ -74,24 +74,27 @@ const SupportChat: React.FC = () => {
   useEffect(() => {
     if (!socket || !user) return;
 
-    // Restore existing support chat if available
+    // Restore existing chat if available
     const savedChatId = localStorage.getItem('activeChatId');
     if (savedChatId && savedChatId !== 'null' && savedChatId !== 'undefined') {
       console.log('Restoring saved chat:', savedChatId);
       setChatId(savedChatId);
       loadChatHistory(savedChatId);
     } else {
-      // Clear invalid chatId
+      // Clear invalid chatId and try to join user's support chat
       localStorage.removeItem('activeChatId');
       setChatId(null);
+      
+      // Auto-join user's support chat room
+      socket.emit('joinChat', { userId: user._id, autoCreate: false });
     }
 
-    console.log('Setting up SUPPORT chat socket listeners for authenticated user:', user._id);
+    console.log('Setting up unified chat socket listeners for authenticated user:', user._id);
 
-    // Listen for SUPPORT chat events ONLY (for authenticated users in client)
-    socket.on('supportChatJoined', (data: { chatId: string, chat?: Chat | null }) => {
+    // Listen for unified chat events
+    socket.on('chatJoined', (data: { chatId: string | null, chat?: Chat | null }) => {
       try {
-        console.log('Client: supportChatJoined event received:', data);
+        console.log('Client: chatJoined event received:', data);
         const { chatId: joinedChatId, chat } = data;
         if (joinedChatId && joinedChatId !== 'null' && joinedChatId !== 'undefined') {
           setChatId(joinedChatId);
@@ -104,18 +107,18 @@ const SupportChat: React.FC = () => {
           })));
         }
       } catch (error) {
-        console.error('Error handling supportChatJoined:', error);
+        console.error('Error handling chatJoined:', error);
       }
     });
 
-    socket.on('supportNewMessage', (data: { chatId: string, message?: Message | null }) => {
+    socket.on('newMessage', (data: { chatId: string, message?: Message | null }) => {
       try {
-        console.log('Client: supportNewMessage event received:', data);
+        console.log('Client: newMessage event received:', data);
         const { message } = data;
         if (message && message.content) {
           // Remove any optimistic messages with same content
           setMessages(prev => {
-            const filtered = prev.filter(msg => 
+            const filtered = prev.filter(msg =>
               !(msg.id.startsWith('temp-') && msg.content === message.content)
             );
             return [...filtered, {
@@ -136,22 +139,22 @@ const SupportChat: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error('Error handling supportNewMessage:', error);
+        console.error('Error handling newMessage:', error);
       }
     });
 
-    socket.on('supportUserTyping', (data: { userId: string, isTyping: boolean }) => {
+    socket.on('userTyping', (data: { userId: string, isTyping: boolean }) => {
       try {
         const { userId, isTyping: typing } = data;
         if (userId && userId !== user._id) {
           setAdminTyping(typing);
         }
       } catch (error) {
-        console.error('Error handling supportUserTyping:', error);
+        console.error('Error handling userTyping:', error);
       }
     });
 
-    socket.on('supportChatClosed', () => {
+    socket.on('chatClosed', () => {
       setMessages(prev => [...prev, {
         id: `system-${Date.now()}`,
         content: 'Chat has been closed by support. Thank you for contacting us!',
@@ -162,117 +165,73 @@ const SupportChat: React.FC = () => {
     });
 
     return () => {
-      socket.off('supportChatJoined');
-      socket.off('supportNewMessage');
-      socket.off('supportUserTyping');
-      socket.off('supportChatClosed');
+      socket.off('chatJoined');
+      socket.off('newMessage');
+      socket.off('userTyping');
+      socket.off('chatClosed');
     };
   }, [socket, user, isOpen, isMinimized]);
 
-  const createChat = async () => {
-    if (!newMessage.trim() || !user) return;
+  const createChatAndSendMessage = async () => {
+    if (!newMessage.trim() || !user || !socket) return;
+
+    const messageContent = newMessage.trim();
+    setNewMessage('');
 
     try {
-      const response = await fetch(`${API_URL}/api/chat/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          source: 'client',
-          subject: 'Support Request',
-          initialMessage: newMessage.trim(),
-          userInfo: {
-            id: user._id,
-            name: user.username,
-            email: user.email
-          }
-        }),
+      // Send message with auto-create flag - server will create chat automatically
+      socket.emit('sendMessage', {
+        content: messageContent,
+        autoCreate: true
       });
 
-      const data = await response.json();
-      
-      if (data.success && data.chat && data.chat.id && data.chat.id !== 'null') {
-        console.log('Chat created successfully:', data.chat.id);
-        setChatId(data.chat.id);
-        localStorage.setItem('activeChatId', data.chat.id);
-        
-        if (data.chat.messages && Array.isArray(data.chat.messages)) {
-          setMessages(data.chat.messages.map((msg: any) => ({
-            ...msg,
-            timestamp: new Date(msg.timestamp)
-          })));
-        }
-        setNewMessage('');
-        
-        // Join the support chat room via socket
-        if (socket) {
-          socket.emit('joinSupportChat', { userId: user._id });
-        }
-      }
+      console.log('Client: Message sent with auto-create for user:', user._id);
     } catch (error) {
-      console.error('Error creating chat:', error);
+      console.error('Error creating chat and sending message:', error);
+      setNewMessage(messageContent); // Restore message on error
     }
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !chatId || !user) return;
+    if (!newMessage.trim() || !chatId || !user || !socket) return;
 
     const messageContent = newMessage.trim();
     setNewMessage('');
     setIsTyping(false);
 
     try {
-      // Try socket first for authenticated users
-      if (socket) {
-        // Add optimistic UI update for socket messages
-        const optimisticMessage = {
-          id: `temp-${Date.now()}`,
-          content: messageContent,
-          sender: {
-            id: user._id,
-            name: user.username || 'You',
-            type: 'user' as const
-          },
-          timestamp: new Date(),
-          isRead: false
-        };
-        
-        // Add message immediately to UI
-        setMessages(prev => [...prev, optimisticMessage]);
-        
-        console.log('Client: Sending message via socket:', { chatId, content: messageContent });
-        socket.emit('sendSupportMessage', {
-          chatId,
-          content: messageContent
-        });
-        
-        // Ensure we're joined to the support chat
-        console.log('Client: Ensuring joined to support chat:', user._id);
-        socket.emit('joinSupportChat', { userId: user._id });
-        
-        // Wait a bit and if socket message didn't arrive, try API fallback
-        setTimeout(async () => {
-          const currentMessageCount = messages.length;
-          setTimeout(async () => {
-            // Check if optimistic message still exists (means real message didn't arrive)
-            const stillHasOptimistic = messages.some(msg => msg.id === optimisticMessage.id);
-            if (stillHasOptimistic) {
-              console.log('Socket message failed, trying API fallback');
-              // Remove optimistic message and try API
-              setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
-              await sendMessageViaAPI(messageContent, chatId);
-            }
-          }, 3000);
-        }, 100);
-      } else {
-        // No socket available, use API directly
-        await sendMessageViaAPI(messageContent, chatId);
-      }
+      // Add optimistic UI update
+      const optimisticMessage = {
+        id: `temp-${Date.now()}`,
+        content: messageContent,
+        sender: {
+          id: user._id,
+          name: user.username || 'You',
+          type: 'user' as const
+        },
+        timestamp: new Date(),
+        isRead: false
+      };
+      
+      setMessages(prev => [...prev, optimisticMessage]);
+      
+      console.log('Client: Sending message via unified socket:', { chatId, content: messageContent });
+      socket.emit('sendMessage', {
+        chatId,
+        content: messageContent
+      });
+      
+      // Fallback to API if socket fails
+      setTimeout(async () => {
+        const stillHasOptimistic = messages.some(msg => msg.id === optimisticMessage.id);
+        if (stillHasOptimistic) {
+          console.log('Socket message failed, trying API fallback');
+          setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
+          await sendMessageViaAPI(messageContent, chatId);
+        }
+      }, 3000);
     } catch (error) {
       console.error('Error sending message:', error);
-      // Restore message on error
       setNewMessage(messageContent);
     }
   };
@@ -364,7 +323,7 @@ const SupportChat: React.FC = () => {
 
     if (!isTyping) {
       setIsTyping(true);
-      socket.emit('supportChatTyping', { chatId, isTyping: true });
+      socket.emit('chatTyping', { chatId, isTyping: true });
     }
 
     if (typingTimeoutRef.current) {
@@ -374,7 +333,7 @@ const SupportChat: React.FC = () => {
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
       if (socket) {
-        socket.emit('supportChatTyping', { chatId, isTyping: false });
+        socket.emit('chatTyping', { chatId, isTyping: false });
       }
     }, 1000);
   };
@@ -389,10 +348,14 @@ const SupportChat: React.FC = () => {
       loadChatHistory(chatId);
     }
     
-    // Join support chat if socket is available
+    // Join chat if socket is available
     if (socket && user) {
-      console.log('Client: Opening chat and joining support chat for user:', user._id);
-      socket.emit('joinSupportChat', { userId: user._id });
+      console.log('Client: Opening chat and joining for user:', user._id);
+      if (chatId && chatId !== 'null' && chatId !== 'undefined') {
+        socket.emit('joinChat', chatId);
+      } else {
+        socket.emit('joinChat', { userId: user._id, autoCreate: false });
+      }
     }
   };
 
@@ -667,7 +630,7 @@ const SupportChat: React.FC = () => {
                 type="text"
                 value={newMessage}
                 onChange={(e) => handleTyping(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (chatId ? sendMessage() : createChat())}
+                onKeyPress={(e) => e.key === 'Enter' && (chatId ? sendMessage() : createChatAndSendMessage())}
                 placeholder="Type your message..."
                 style={{
                   flex: 1,
@@ -678,8 +641,8 @@ const SupportChat: React.FC = () => {
                 }}
               />
               <button
-                onClick={chatId ? sendMessage : createChat}
-                disabled={!newMessage.trim() || (!socket && !!user)}
+                onClick={chatId ? sendMessage : createChatAndSendMessage}
+                disabled={!newMessage.trim() || !socket}
                 style={{
                   padding: '12px',
                   backgroundColor: '#2563eb',
@@ -690,13 +653,14 @@ const SupportChat: React.FC = () => {
                   minWidth: '48px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  opacity: (!newMessage.trim() || !socket) ? 0.5 : 1
                 }}
               >
                 ➤
               </button>
             </div>
-            {!socket && user && (
+            {!socket && (
               <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '8px', margin: 0 }}>
                 Connecting to support...
               </p>

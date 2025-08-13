@@ -125,9 +125,12 @@ const SupportChat: React.FC = () => {
       console.log('Disconnected from support chat');
     });
 
-    socketRef.current.on('chatJoined', ({ chatId: joinedChatId, chat }: { chatId: string, chat: Chat }) => {
-      setChatId(joinedChatId);
-      if (chat.messages) {
+    socketRef.current.on('chatJoined', ({ chatId: joinedChatId, chat }: { chatId: string | null, chat: Chat | null }) => {
+      if (joinedChatId) {
+        setChatId(joinedChatId);
+        localStorage.setItem('activeChatId', joinedChatId);
+      }
+      if (chat && chat.messages) {
         setMessages(chat.messages.map(msg => ({
           ...msg,
           timestamp: new Date(msg.timestamp)
@@ -164,55 +167,34 @@ const SupportChat: React.FC = () => {
     });
   };
 
-  const createChat = async () => {
-    if (!newMessage.trim()) return;
+  const createChatAndSendMessage = () => {
+    if (!newMessage.trim() || !socketRef.current) return;
 
-    try {
-      const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5001';
-      const response = await fetch(`${serverUrl}/api/chat/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          source: 'landing',
-          subject: 'Support Request',
-          initialMessage: newMessage.trim(),
-          guestInfo: guestInfo
-        }),
-      });
+    const messageContent = newMessage.trim();
+    setNewMessage('');
 
-      const data = await response.json();
-      
-      if (data.success) {
-        setChatId(data.chat.id);
-        localStorage.setItem('activeChatId', data.chat.id); // Save chat ID
-        setMessages(data.chat.messages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        })));
-        setNewMessage('');
-        
-        // Join the chat room via socket
-        if (socketRef.current) {
-          socketRef.current.emit('joinChat', data.chat.id);
-        }
-      }
-    } catch (error) {
-      console.error('Error creating chat:', error);
-    }
+    // Send message with auto-create and guest info
+    socketRef.current.emit('sendMessage', {
+      content: messageContent,
+      guestInfo: guestInfo,
+      autoCreate: true
+    });
+
+    console.log('Guest: Message sent with auto-create:', { guestInfo, content: messageContent });
   };
 
   const sendMessage = () => {
     if (!newMessage.trim() || !chatId || !socketRef.current) return;
 
-    socketRef.current.emit('sendMessage', {
-      chatId,
-      content: newMessage.trim()
-    });
-
+    const messageContent = newMessage.trim();
     setNewMessage('');
     setIsTyping(false);
+
+    socketRef.current.emit('sendMessage', {
+      chatId,
+      content: messageContent,
+      guestInfo: guestInfo
+    });
   };
 
   const handleTyping = (value: string) => {
@@ -396,12 +378,12 @@ const SupportChat: React.FC = () => {
                   type="text"
                   value={newMessage}
                   onChange={(e) => handleTyping(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (chatId ? sendMessage() : createChat())}
+                  onKeyPress={(e) => e.key === 'Enter' && (chatId ? sendMessage() : createChatAndSendMessage())}
                   placeholder="Type your message..."
                   className="flex-1 p-2 border rounded text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
-                  onClick={chatId ? sendMessage : createChat}
+                  onClick={chatId ? sendMessage : createChatAndSendMessage}
                   disabled={!newMessage.trim()}
                   className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >

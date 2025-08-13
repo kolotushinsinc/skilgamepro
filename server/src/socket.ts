@@ -680,55 +680,86 @@ export const initializeSocket = (io: Server) => {
             }
         });
 
-        // ============ CHAT EVENT HANDLERS ============
+        // ============ UNIFIED CHAT EVENT HANDLERS ============
         
-        // Join chat room
-        socket.on('joinChat', async (chatId: string) => {
+        // Join chat room - unified for all user types (guest, user, admin)
+        socket.on('joinChat', async (data: string | { chatId?: string, userId?: string, autoCreate?: boolean }) => {
             try {
                 const userId = (socket as any).user?._id?.toString();
-                const chat = await Chat.findOne({ id: chatId });
-                
-                if (!chat) {
-                    return socket.emit('chatError', { message: 'Chat not found' });
+                let chatId: string | null = null;
+                let autoCreate = false;
+
+                // Handle different parameter formats for backward compatibility
+                if (typeof data === 'string') {
+                    chatId = data; // Direct chatId for existing chats (landing, admin)
+                } else if (data.chatId) {
+                    chatId = data.chatId; // Existing chat
+                } else if (data.userId && data.userId === userId) {
+                    // Auto-find or create user's support chat (client app)
+                    autoCreate = data.autoCreate || false;
                 }
 
-                // Check permissions
-                let isAdmin = false;
-                let isOwner = false;
-                let isAssigned = false;
-                let isGuest = false;
+                let chat = null;
 
-                if (userId) {
-                    const user = await User.findById(userId);
-                    isAdmin = user?.role === 'ADMIN';
-                    isOwner = chat.userId?.toString() === userId;
-                    isAssigned = chat.assignedAdmin?.toString() === userId;
+                if (chatId) {
+                    // Join existing chat
+                    chat = await Chat.findOne({ id: chatId });
+                    if (!chat) {
+                        return socket.emit('chatError', { message: 'Chat not found' });
+                    }
+                } else if (userId && autoCreate) {
+                    // Find existing support chat for authenticated user
+                    chat = await Chat.findOne({
+                        userId: userId,
+                        source: 'client',
+                        status: { $ne: 'closed' }
+                    }).sort({ createdAt: -1 });
+                }
+
+                if (chat) {
+                    // Check permissions for existing chat
+                    let hasAccess = false;
+
+                    if (userId) {
+                        const user = await User.findById(userId);
+                        const isAdmin = user?.role === 'ADMIN';
+                        const isOwner = chat.userId?.toString() === userId;
+                        const isAssigned = chat.assignedAdmin?.toString() === userId;
+                        hasAccess = isAdmin || isOwner || isAssigned;
+                    } else {
+                        // Guest user - check if this is their chat
+                        hasAccess = !!chat.guestId;
+                    }
+
+                    if (!hasAccess) {
+                        return socket.emit('chatError', { message: 'Access denied to this chat' });
+                    }
+
+                    socket.join(`chat-${chat.id}`);
+                    
+                    // Track user socket for chat
+                    if (userId) {
+                        chatUserSockets[userId] = socket.id;
+                    } else {
+                        chatUserSockets[`guest-${chat.id}`] = socket.id;
+                    }
+
+                    socket.emit('chatJoined', {
+                        chatId: chat.id,
+                        message: 'Successfully joined chat',
+                        chat: chat
+                    });
+
+                    console.log(`User ${userId || 'Guest'} joined chat ${chat.id}`);
                 } else {
-                    // Guest user - check if this is their chat
-                    isGuest = !!chat.guestId;
+                    // No chat found - will be created on first message
+                    socket.emit('chatJoined', {
+                        chatId: null,
+                        message: 'No active chat. Send a message to start a conversation.',
+                        chat: null
+                    });
+                    console.log(`User ${userId || 'Guest'} ready to start new chat`);
                 }
-
-                if (!isAdmin && !isOwner && !isAssigned && !isGuest) {
-                    return socket.emit('chatError', { message: 'Access denied to this chat' });
-                }
-
-                socket.join(`chat-${chatId}`);
-                
-                // Track user socket for chat
-                if (userId) {
-                    chatUserSockets[userId] = socket.id;
-                } else {
-                    // Track guest socket
-                    chatUserSockets[`guest-${chatId}`] = socket.id;
-                }
-
-                socket.emit('chatJoined', {
-                    chatId,
-                    message: 'Successfully joined chat',
-                    chat: chat
-                });
-
-                console.log(`User ${userId || 'Guest'} joined chat ${chatId}`);
             } catch (error) {
                 console.error('Error joining chat:', error);
                 socket.emit('chatError', { message: 'Error joining chat' });
@@ -748,8 +779,13 @@ export const initializeSocket = (io: Server) => {
             console.log(`User ${userId || 'Guest'} left chat ${chatId}`);
         });
 
-        // Send message in chat
-        socket.on('sendMessage', async ({ chatId, content }: { chatId: string, content: string }) => {
+        // Send message - unified for all user types with auto-chat creation
+        socket.on('sendMessage', async ({ chatId, content, guestInfo, autoCreate }: {
+            chatId?: string,
+            content: string,
+            guestInfo?: { id: string, name: string },
+            autoCreate?: boolean
+        }) => {
             try {
                 if (!content || content.trim().length === 0) {
                     return socket.emit('chatError', { message: 'Message content cannot be empty' });
@@ -760,10 +796,59 @@ export const initializeSocket = (io: Server) => {
                 }
 
                 const userId = (socket as any).user?._id?.toString();
-                const chat = await Chat.findOne({ id: chatId });
-                
+                let chat = null;
+
+                // Try to find existing chat
+                if (chatId) {
+                    chat = await Chat.findOne({ id: chatId });
+                }
+
+                // Auto-create chat if needed
+                if (!chat && (autoCreate || !chatId)) {
+                    const newChatId = generateChatId();
+                    
+                    let newChatData: any = {
+                        id: newChatId,
+                        subject: 'Support Request',
+                        status: 'pending',
+                        messages: [],
+                        createdAt: new Date(),
+                        lastActivity: new Date()
+                    };
+
+                    if (userId) {
+                        // Authenticated user
+                        const user = await User.findById(userId);
+                        if (!user) {
+                            return socket.emit('chatError', { message: 'User not found' });
+                        }
+                        
+                        newChatData.userId = userId;
+                        newChatData.source = 'client';
+                        newChatData.userInfo = {
+                            id: userId,
+                            name: user.username,
+                            email: user.email
+                        };
+                    } else {
+                        // Guest user
+                        const guestId = guestInfo?.id || generateChatId();
+                        const guestName = guestInfo?.name || 'Guest';
+                        
+                        newChatData.guestId = guestId;
+                        newChatData.source = 'landing';
+                        newChatData.guestInfo = {
+                            id: guestId,
+                            name: guestName
+                        };
+                    }
+
+                    chat = new Chat(newChatData);
+                    chatId = newChatId;
+                }
+
                 if (!chat) {
-                    return socket.emit('chatError', { message: 'Chat not found' });
+                    return socket.emit('chatError', { message: 'Chat not found and cannot be created' });
                 }
 
                 // Determine sender info
@@ -779,15 +864,15 @@ export const initializeSocket = (io: Server) => {
                 } else {
                     // Guest user
                     senderInfo = {
-                        id: chat.guestId || generateChatId(),
-                        name: 'Guest',
+                        id: guestInfo?.id || chat.guestId || generateChatId(),
+                        name: guestInfo?.name || 'Guest',
                         type: 'guest' as const
                     };
                 }
 
                 const newMessage: IMessage = {
                     id: generateChatId(),
-                    chatId,
+                    chatId: chatId!,
                     content: content.trim(),
                     sender: senderInfo,
                     timestamp: new Date(),
@@ -806,24 +891,42 @@ export const initializeSocket = (io: Server) => {
 
                 await chat.save();
 
+                // Auto-join the chat room if not already joined
+                socket.join(`chat-${chatId}`);
+                
+                // Track user socket
+                if (userId) {
+                    chatUserSockets[userId] = socket.id;
+                } else {
+                    chatUserSockets[`guest-${chatId}`] = socket.id;
+                }
+
                 // Broadcast message to all users in chat room
                 io.to(`chat-${chatId}`).emit('newMessage', {
                     chatId,
                     message: newMessage
                 });
 
+                // Send chat creation confirmation if this was a new chat
+                if (!chatId || newMessage.id === chat.messages[0]?.id) {
+                    socket.emit('chatJoined', {
+                        chatId,
+                        message: 'Chat created and joined successfully',
+                        chat: chat
+                    });
+                }
+
                 // Notify admins of new message if from user/guest
                 if (senderInfo.type !== 'admin') {
-                    // Send chatNotification to all connected clients
                     socket.broadcast.emit('chatNotification', {
                         type: 'new_message',
                         chatId,
                         message: 'New message in support chat',
-                        source: chat.source
+                        source: chat.source,
+                        userName: senderInfo.name
                     });
 
-                    // Also send newMessage event directly to all connected admin sockets
-                    // This ensures admins get real-time message updates even if they haven't joined the chat room yet
+                    // Send direct notification to all admin sockets
                     for (const [socketId, connectedSocket] of io.sockets.sockets) {
                         const connectedUser = (connectedSocket as any).user;
                         if (connectedUser && connectedUser.role === 'ADMIN') {
@@ -863,7 +966,6 @@ export const initializeSocket = (io: Server) => {
                 if (hasUpdates) {
                     await chat.save();
                     
-                    // Notify other users in chat that messages were read
                     socket.to(`chat-${chatId}`).emit('messagesRead', {
                         chatId,
                         readBy: userId
@@ -877,7 +979,7 @@ export const initializeSocket = (io: Server) => {
             }
         });
 
-        // Typing indicator
+        // Typing indicator - unified
         socket.on('chatTyping', ({ chatId, isTyping }: { chatId: string, isTyping: boolean }) => {
             const userId = (socket as any).user?._id?.toString();
             const userName = (socket as any).user?.username || 'Guest';
@@ -890,7 +992,7 @@ export const initializeSocket = (io: Server) => {
             });
         });
 
-        // Close chat (admin or user)
+        // Close chat - unified
         socket.on('closeChat', async (chatId: string) => {
             try {
                 const userId = (socket as any).user?._id?.toString();
@@ -913,7 +1015,6 @@ export const initializeSocket = (io: Server) => {
                 chat.status = 'closed';
                 await chat.save();
 
-                // Notify all users in chat room
                 io.to(`chat-${chatId}`).emit('chatClosed', {
                     chatId,
                     closedBy: user?.username || 'System'
@@ -924,146 +1025,6 @@ export const initializeSocket = (io: Server) => {
                 console.error('Error closing chat:', error);
                 socket.emit('chatError', { message: 'Error closing chat' });
             }
-        });
-
-        // ============ SUPPORT CHAT EVENT HANDLERS FOR CLIENT APP ============
-        
-        // Join user's support chat room
-        socket.on('joinSupportChat', async ({ userId }: { userId: string }) => {
-            try {
-                const currentUserId = (socket as any).user?._id?.toString();
-                
-                // Verify user permissions
-                if (currentUserId !== userId) {
-                    return socket.emit('supportChatError', { message: 'Access denied' });
-                }
-
-                // Find or create support chat for this user
-                let chat = await Chat.findOne({
-                    userId: userId,
-                    source: 'client',
-                    status: { $ne: 'closed' }
-                }).sort({ createdAt: -1 });
-
-                if (chat) {
-                    socket.join(`chat-${chat.id}`);
-                    chatUserSockets[userId] = socket.id;
-
-                    socket.emit('supportChatJoined', {
-                        chatId: chat.id,
-                        message: 'Successfully joined support chat',
-                        chat: chat
-                    });
-
-                    console.log(`User ${userId} joined support chat ${chat.id}`);
-                } else {
-                    // No active support chat found, will be created when first message is sent
-                    socket.emit('supportChatJoined', {
-                        chatId: null,
-                        message: 'No active support chat. Start a conversation to create one.',
-                        chat: null
-                    });
-                }
-            } catch (error) {
-                console.error('Error joining support chat:', error);
-                socket.emit('supportChatError', { message: 'Error joining support chat' });
-            }
-        });
-
-        // Send message in support chat for authenticated users
-        socket.on('sendSupportMessage', async ({ chatId, content }: { chatId: string, content: string }) => {
-            try {
-                if (!content || content.trim().length === 0) {
-                    return socket.emit('supportChatError', { message: 'Message content cannot be empty' });
-                }
-
-                if (content.length > 1000) {
-                    return socket.emit('supportChatError', { message: 'Message too long (max 1000 characters)' });
-                }
-
-                const userId = (socket as any).user?._id?.toString();
-                const user = await User.findById(userId);
-                
-                if (!user) {
-                    return socket.emit('supportChatError', { message: 'User not found' });
-                }
-
-                const chat = await Chat.findOne({ id: chatId });
-                
-                if (!chat) {
-                    return socket.emit('supportChatError', { message: 'Chat not found' });
-                }
-
-                // Verify user owns this chat
-                if (chat.userId?.toString() !== userId) {
-                    return socket.emit('supportChatError', { message: 'Access denied to this chat' });
-                }
-
-                const senderInfo = {
-                    id: userId,
-                    name: user.username,
-                    type: 'user' as const
-                };
-
-                const newMessage: IMessage = {
-                    id: generateChatId(),
-                    chatId,
-                    content: content.trim(),
-                    sender: senderInfo,
-                    timestamp: new Date(),
-                    isRead: false
-                };
-
-                // Add message to chat
-                chat.messages.push(newMessage);
-                chat.lastActivity = new Date();
-                
-                await chat.save();
-
-                // Broadcast message to all users in chat room
-                io.to(`chat-${chatId}`).emit('supportNewMessage', {
-                    chatId,
-                    message: newMessage
-                });
-
-                // Notify admins of new message
-                socket.broadcast.emit('chatNotification', {
-                    type: 'new_message',
-                    chatId,
-                    message: 'New message in support chat',
-                    source: chat.source,
-                    userName: user.username
-                });
-
-                // Also send newMessage event directly to all connected admin sockets
-                for (const [socketId, connectedSocket] of io.sockets.sockets) {
-                    const connectedUser = (connectedSocket as any).user;
-                    if (connectedUser && connectedUser.role === 'ADMIN') {
-                        connectedSocket.emit('newMessage', {
-                            chatId,
-                            message: newMessage
-                        });
-                    }
-                }
-
-                console.log(`Support message sent in chat ${chatId} by ${senderInfo.name}`);
-            } catch (error) {
-                console.error('Error sending support message:', error);
-                socket.emit('supportChatError', { message: 'Error sending message' });
-            }
-        });
-
-        // Support chat typing indicator for authenticated users
-        socket.on('supportChatTyping', ({ chatId, isTyping }: { chatId: string, isTyping: boolean }) => {
-            const userId = (socket as any).user?._id?.toString();
-            const userName = (socket as any).user?.username || 'User';
-            
-            socket.to(`chat-${chatId}`).emit('supportUserTyping', {
-                chatId,
-                userId,
-                userName,
-                isTyping
-            });
         });
     });
 }

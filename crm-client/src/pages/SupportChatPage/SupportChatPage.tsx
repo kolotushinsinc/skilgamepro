@@ -129,7 +129,7 @@ const SupportChatPage: React.FC = () => {
   const setupSocketListeners = () => {
     if (!socketRef.current) return;
 
-    // Use a unique event namespace for this page to avoid conflicts
+    // Unified event handlers
     const handleChatNotification = ({ chatId, type, message }: any) => {
       console.log('New chat notification in SupportChatPage:', { chatId, type, message });
       fetchChats(); // Refresh chat list
@@ -194,13 +194,7 @@ const SupportChatPage: React.FC = () => {
       fetchChats();
     };
 
-    // Add listeners with unique namespace (don't remove global ones!)
-    socketRef.current.on('supportChatNotification', handleChatNotification);
-    socketRef.current.on('supportNewMessage', handleNewMessage);
-    socketRef.current.on('supportUserTyping', handleUserTyping);
-    socketRef.current.on('supportChatClosed', handleChatClosed);
-
-    // Also listen to the regular events but don't remove global handlers
+    // Listen to unified events only
     socketRef.current.on('chatNotification', handleChatNotification);
     socketRef.current.on('newMessage', handleNewMessage);
     socketRef.current.on('userTyping', handleUserTyping);
@@ -286,7 +280,7 @@ const SupportChatPage: React.FC = () => {
     // Mark chat as read in global context
     markChatAsRead(chat.id);
     
-    // Join chat room
+    // Join chat room using unified event
     if (socketRef.current) {
       socketRef.current.emit('joinChat', chat.id);
     }
@@ -308,7 +302,7 @@ const SupportChatPage: React.FC = () => {
     setNewMessage(''); // Clear input immediately
 
     try {
-      // Send via socket first
+      // Send via unified socket event
       socketRef.current.emit('sendMessage', {
         chatId: selectedChat.id,
         content: messageContent
