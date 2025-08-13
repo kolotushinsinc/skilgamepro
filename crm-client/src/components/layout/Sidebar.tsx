@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import styles from './AdminLayout.module.css';
-import { LayoutDashboard, Users, Gamepad2, List, Home, Trophy, PlusSquare, Settings, ShieldCheck, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Users, Gamepad2, List, Home, Trophy, PlusSquare, Settings, ShieldCheck, MessageCircle, Zap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 
@@ -16,6 +16,7 @@ const Sidebar: React.FC = () => {
         { path: '/transactions', icon: List, label: 'Transactions' },
         { path: '/rooms', icon: Home, label: 'Rooms' },
         { path: '/tournaments', icon: Trophy, label: 'Tournaments' },
+        { path: '/auto-tournaments', icon: Zap, label: 'Auto Tournaments' },
         { path: '/support-chat', icon: MessageCircle, label: 'Support Chat', badge: unreadChatsCount },
         { path: '/kyc', icon: ShieldCheck, label: 'KYC Verification' },
         { path: '/create-room', icon: PlusSquare, label: 'Create Room' },

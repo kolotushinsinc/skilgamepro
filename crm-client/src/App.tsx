@@ -12,6 +12,7 @@ import GamesPage from './pages/GamesPage/GamesPage';
 import RoomsPage from './pages/RoomsPage/RoomsPage';
 import CreateRoomPage from './pages/CreateRoomPage/CreateRoomPage';
 import TournamentsPage from './pages/TournamentsPage/TournamentsPage';
+import AutoTournamentsPage from './pages/AutoTournamentsPage/AutoTournamentsPage.tsx';
 import KYCPage from './pages/KYCPage/KYCPage';
 import SupportChatPage from './pages/SupportChatPage/SupportChatPage';
 
@@ -37,6 +38,7 @@ function App() {
                         <Route path="transactions" element={<TransactionsPage />} />
                         <Route path="rooms" element={<RoomsPage />} />
                         <Route path="tournaments" element={<TournamentsPage />} />
+                        <Route path="auto-tournaments" element={<AutoTournamentsPage />} />
                         <Route path="support-chat" element={<SupportChatPage />} />
                         <Route path="kyc" element={<KYCPage />} />
                         <Route path="create-room" element={<CreateRoomPage />} />
