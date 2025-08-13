@@ -17,213 +17,167 @@ const PrivacyPolicy: React.FC = () => {
                             Privacy Policy
                         </h1>
                         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-gray-700 shadow-xl">
-                            {/* <div dangerouslySetInnerHTML={{ __html: ` */}
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Introduction and Overview</h2>
-                            <p>Skill Game is committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and protect information about you when you use our website, mobile applications, and related services (collectively, the "Service").</p>
+                            <div className="text-center mb-8">
+                                <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
+                                <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
+                            </div>
 
-                            <p>By using the Service, you acknowledge that you have read, understood, and agree to the practices described in this Privacy Policy. If you do not agree with this Privacy Policy, please do not use the Service.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Information We Collect</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Personal Information</h3>
-                            <p>We collect various types of personal information to provide and improve our Service:</p>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
+                            <p>This Privacy Policy explains how UNITRYSE HOLDING LTD ("the Company", "we", "us") collects, processes, stores, shares, and protects personal data in connection with the Skillgame.pro platform ("the Platform").</p>
+                            <p>The objectives of this Policy are to:</p>
                             <ul>
-                                <li><strong>Registration Information:</strong> Name, email address, username, password, date of birth, gender, phone number</li>
-                                <li><strong>Contact Information:</strong> Physical address, billing address, email address, phone number</li>
-                                <li><strong>Identity Verification:</strong> Government-issued ID, passport, driver's license, proof of address</li>
-                                <li><strong>Financial Information:</strong> Payment card details, bank account information, cryptocurrency wallet addresses</li>
-                                <li><strong>Communication Data:</strong> Customer service inquiries, feedback, survey responses</li>
+                                <li>Ensure compliance with Regulation (EU) 2016/679 (GDPR) and Cyprus Law 125(I)/2018.</li>
+                                <li>Inform Users of their rights and the ways to exercise them.</li>
+                                <li>Provide transparency on how and why personal data is processed.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Technical Information</h3>
-                            <p>We automatically collect technical information about your device and usage:</p>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">2. Scope</h2>
+                            <p>This Policy applies to:</p>
                             <ul>
-                                <li><strong>Device Information:</strong> IP address, device type, operating system, browser type, unique device identifiers</li>
-                                <li><strong>Usage Data:</strong> Pages visited, time spent on pages, features used, game activity, preferences</li>
-                                <li><strong>Connection Information:</strong> Internet service provider, connection speed, mobile carrier</li>
-                                <li><strong>Location Data:</strong> General geographic location based on IP address</li>
+                                <li>All Users of the Platform (registered and unregistered).</li>
+                                <li>All data collected through the Platform, customer support, payment systems, and marketing activities.</li>
+                                <li>Processing activities carried out by the Company, acting as Data Controller.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Game and Transaction Data</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">2. Age Restrictions and Special Protection for Minors</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">2.1 Age Restriction</h3>
+                            <p>The Platform is not directed at, and does not knowingly collect personal data from, individuals under the age of eighteen (18). This restriction is implemented in line with GDPR Recital 38, Cyprus Betting Law 106(I)/2012, and applicable EU consumer protection legislation.</p>
+
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">2.2 Self-Declaration and Verification</h3>
+                            <p>During account creation, Users are required to confirm that they are at least 18 years old. The Company may request additional verification (e.g., ID scan) to confirm compliance.</p>
+
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">2.3 Immediate Action on Breach</h3>
+                            <p>If it is discovered that a registered User is under 18 years of age, the Company will:</p>
                             <ul>
-                                <li>Game participation and performance records</li>
-                                <li>Transaction history and payment details</li>
-                                <li>Bonus and promotional activity</li>
-                                <li>Communication with other players (where applicable)</li>
-                                <li>Support ticket history and resolution details</li>
+                                <li>Immediately suspend the account;</li>
+                                <li>Delete all personal data in accordance with GDPR Article 17 ("Right to Erasure"), except where retention is required for legal purposes;</li>
+                                <li>Refund any unused credits purchased, where applicable, to the original payment method, provided no fraud is detected.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Information from Third Parties</h3>
-                            <p>We may receive information about you from:</p>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">2.4 Parental Contact</h3>
+                            <p>If personal data of a minor is inadvertently collected, the Company will take immediate steps to contact the parent/guardian and arrange for deletion of such data.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">3. Definitions</h2>
                             <ul>
-                                <li>Identity verification services</li>
-                                <li>Payment processors and financial institutions</li>
-                                <li>Social media platforms (if you connect your accounts)</li>
-                                <li>Marketing partners and affiliates</li>
-                                <li>Credit reference agencies and fraud prevention services</li>
+                                <li><strong>"Personal Data"</strong> – Any information that relates to an identified or identifiable natural person.</li>
+                                <li><strong>"Processing"</strong> – Any operation performed on Personal Data (collection, storage, use, disclosure, deletion).</li>
+                                <li><strong>"Controller"</strong> – The Company, which determines the purposes and means of Processing.</li>
+                                <li><strong>"Processor"</strong> – A third party that processes Personal Data on behalf of the Controller.</li>
+                                <li><strong>"Special Categories of Data"</strong> – Sensitive data as defined in GDPR Art. 9 (the Platform does not intentionally collect these).</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">How We Use Your Information</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Core Service Provision</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">4. Data Collected</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">4.1 Data Provided by the User</h3>
                             <ul>
-                                <li>Create and maintain your account</li>
-                                <li>Process deposits and withdrawals</li>
-                                <li>Facilitate game participation and prize distribution</li>
-                                <li>Provide customer support and respond to inquiries</li>
-                                <li>Personalize your experience and content</li>
+                                <li><strong>Identification Data:</strong> Full name, date of birth, government-issued ID (for KYC).</li>
+                                <li><strong>Contact Data:</strong> Email address, phone number, postal address.</li>
+                                <li><strong>Payment Data:</strong> Payment card details (processed securely by PCI DSS-compliant providers), transaction history.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Security and Compliance</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">4.2 Data Collected Automatically</h3>
                             <ul>
-                                <li>Verify your identity and prevent fraud</li>
-                                <li>Monitor for suspicious activities and security threats</li>
-                                <li>Comply with legal and regulatory requirements</li>
-                                <li>Enforce our Terms of Service and policies</li>
-                                <li>Conduct internal audits and investigations</li>
+                                <li><strong>Technical Data:</strong> IP address, device type, browser version, operating system.</li>
+                                <li><strong>Usage Data:</strong> Pages visited, time spent, game participation history.</li>
+                                <li>Cookies and tracking technologies (see Cookie Policy).</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Communication and Marketing</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">5. Purposes of Processing & Legal Basis</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse border border-gray-600 mt-4">
+                                    <thead>
+                                        <tr className="bg-gray-700">
+                                            <th className="border border-gray-600 px-4 py-2 text-left">Purpose</th>
+                                            <th className="border border-gray-600 px-4 py-2 text-left">Legal Basis (GDPR)</th>
+                                            <th className="border border-gray-600 px-4 py-2 text-left">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td className="border border-gray-600 px-4 py-2">Account creation & management</td>
+                                            <td className="border border-gray-600 px-4 py-2">Art. 6(1)(b) – Contract</td>
+                                            <td className="border border-gray-600 px-4 py-2">To provide services and manage your account</td>
+                                        </tr>
+                                        <tr className="bg-gray-800">
+                                            <td className="border border-gray-600 px-4 py-2">Payment processing</td>
+                                            <td className="border border-gray-600 px-4 py-2">Art. 6(1)(b) – Contract</td>
+                                            <td className="border border-gray-600 px-4 py-2">To process Entry Fee payments</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="border border-gray-600 px-4 py-2">AML/KYC compliance</td>
+                                            <td className="border border-gray-600 px-4 py-2">Art. 6(1)(c) – Legal Obligation</td>
+                                            <td className="border border-gray-600 px-4 py-2">To comply with Cyprus AML Law 188(I)/2007</td>
+                                        </tr>
+                                        <tr className="bg-gray-800">
+                                            <td className="border border-gray-600 px-4 py-2">Marketing communications</td>
+                                            <td className="border border-gray-600 px-4 py-2">Art. 6(1)(a) – Consent</td>
+                                            <td className="border border-gray-600 px-4 py-2">To send promotional offers if you opt-in</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="border border-gray-600 px-4 py-2">Fraud prevention</td>
+                                            <td className="border border-gray-600 px-4 py-2">Art. 6(1)(f) – Legitimate Interests</td>
+                                            <td className="border border-gray-600 px-4 py-2">To protect the Platform and its Users</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">6. Special Categories of Data</h2>
+                            <p>The Company does not collect or process sensitive personal data (GDPR Art. 9), such as racial/ethnic origin, political opinions, health data, etc.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7. Data Retention</h2>
                             <ul>
-                                <li>Send important account notifications and updates</li>
-                                <li>Provide promotional offers and marketing communications (with your consent)</li>
-                                <li>Conduct customer satisfaction surveys</li>
-                                <li>Inform you about new features and services</li>
+                                <li><strong>KYC and transactional data:</strong> Retained for 5 years after account closure (AML Law Art. 58).</li>
+                                <li><strong>General account data:</strong> Retained for 2 years after closure.</li>
+                                <li><strong>Marketing data:</strong> Retained until consent is withdrawn.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Improvement and Analytics</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8. Data Sharing & International Transfers</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8.1 Sharing with Third Parties</h3>
                             <ul>
-                                <li>Analyze usage patterns to improve our Service</li>
-                                <li>Develop new features and functionality</li>
-                                <li>Measure and improve marketing effectiveness</li>
-                                <li>Conduct market research and competitive analysis</li>
+                                <li>Payment processors (under Data Processing Agreements).</li>
+                                <li>Cloud service providers (ISO 27001 certified).</li>
+                                <li>Regulatory authorities and law enforcement upon legal request.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">How We Share Your Information</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">With Your Consent</h3>
-                            <p>We may share your information with third parties when you have given us explicit consent to do so.</p>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8.2 International Transfers</h3>
+                            <p>If data is transferred outside the EEA, the Company ensures adequate safeguards (GDPR Chapter V), such as Standard Contractual Clauses (SCCs).</p>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Service Providers</h3>
-                            <p>We share information with trusted third-party service providers who assist us in operating our Service:</p>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">9. User Rights (GDPR Art. 15–22)</h2>
                             <ul>
-                                <li>Payment processing companies</li>
-                                <li>Identity verification services</li>
-                                <li>Cloud hosting and data storage providers</li>
-                                <li>Analytics and marketing platforms</li>
-                                <li>Customer support and communication tools</li>
+                                <li><strong>Right of Access</strong> – Obtain a copy of your Personal Data.</li>
+                                <li><strong>Right to Rectification</strong> – Correct inaccurate data.</li>
+                                <li><strong>Right to Erasure</strong> – Request deletion of your data ("right to be forgotten").</li>
+                                <li><strong>Right to Restrict Processing</strong> – Limit how your data is used.</li>
+                                <li><strong>Right to Data Portability</strong> – Receive data in a structured, machine-readable format.</li>
+                                <li><strong>Right to Object</strong> – Opt-out of certain processing, including marketing.</li>
+                                <li><strong>Right to Withdraw Consent</strong> – At any time for processing based on consent.</li>
+                            </ul>
+                            <p>Requests can be sent to: <strong>privacy@skillgame.pro</strong>. The Company will respond within 30 days.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">10. Security Measures</h2>
+                            <ul>
+                                <li><strong>Encryption:</strong> AES-256 for data at rest, TLS 1.3 for data in transit.</li>
+                                <li><strong>Access Controls:</strong> Role-based access, MFA for staff accounts.</li>
+                                <li><strong>Monitoring:</strong> Continuous logging and security audits.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Legal and Regulatory Requirements</h3>
-                            <p>We may disclose your information to comply with legal obligations:</p>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">11. Data Breach Notification</h2>
+                            <p>In the event of a personal data breach, the Company will notify the Office of the Commissioner for Personal Data Protection (Cyprus) within 72 hours, as per GDPR Art. 33, and affected Users without undue delay if the breach poses a high risk.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">12. Children's Privacy</h2>
+                            <p>The Platform is not intended for individuals under 18 years of age. Accounts of minors will be closed and their data deleted upon discovery.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">13. Changes to this Policy</h2>
+                            <p>The Company reserves the right to amend this Policy. Updates will be posted on the Platform with the "Last Updated" date.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">14. References</h2>
                             <ul>
-                                <li>Response to subpoenas, court orders, or legal process</li>
-                                <li>Cooperation with law enforcement agencies</li>
-                                <li>Compliance with anti-money laundering regulations</li>
-                                <li>Fulfillment of tax reporting requirements</li>
-                                <li>Protection of our rights and property</li>
+                                <li>GDPR (EU) 2016/679</li>
+                                <li>Cyprus Law 125(I)/2018 on the Protection of Natural Persons with regard to the Processing of Personal Data</li>
+                                <li>Cyprus AML Law 188(I)/2007</li>
                             </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Business Transfers</h3>
-                            <p>In the event of a merger, acquisition, or sale of assets, your information may be transferred to the acquiring entity.</p>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Protection of Rights</h3>
-                            <p>We may share information to protect the rights, property, or safety of Skill Game, our users, or others.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Data Security Measures</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Technical Security</h3>
-                            <ul>
-                                <li>Encryption of data in transit and at rest using industry-standard protocols</li>
-                                <li>Regular security audits and penetration testing</li>
-                                <li>Multi-factor authentication for sensitive operations</li>
-                                <li>Secure access controls and monitoring systems</li>
-                                <li>Regular security updates and patch management</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Organizational Security</h3>
-                            <ul>
-                                <li>Employee training on data protection and privacy</li>
-                                <li>Strict access controls limiting data access to authorized personnel</li>
-                                <li>Regular review of access permissions and privileges</li>
-                                <li>Incident response procedures and breach notification protocols</li>
-                                <li>Third-party vendor security assessments</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Data Retention</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Retention Periods</h3>
-                            <p>We retain your information for different periods based on the purpose:</p>
-                            <ul>
-                                <li><strong>Active Account Data:</strong> While your account is active</li>
-                                <li><strong>Inactive Account Data:</strong> 3 years after last activity</li>
-                                <li><strong>Financial Records:</strong> 7 years for compliance purposes</li>
-                                <li><strong>Legal and Regulatory Data:</strong> As required by applicable laws</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Data Deletion</h3>
-                            <p>Upon account deletion or expiration of retention periods, we securely delete your personal information in accordance with our data deletion policy.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Your Rights and Choices</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Access and Correction</h3>
-                            <ul>
-                                <li>Right to access your personal information</li>
-                                <li>Right to correct inaccurate or incomplete information</li>
-                                <li>Right to obtain a copy of your data in portable format</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Deletion and Restriction</h3>
-                            <ul>
-                                <li>Right to request deletion of your personal information</li>
-                                <li>Right to restrict processing in certain circumstances</li>
-                                <li>Right to object to processing for marketing purposes</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Marketing Preferences</h3>
-                            <ul>
-                                <li>Opt-out of marketing communications at any time</li>
-                                <li>Manage communication preferences in account settings</li>
-                                <li>Unsubscribe from email newsletters using unsubscribe links</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Withdrawal of Consent</h3>
-                            <p>You may withdraw your consent to our processing of your information at any time, though this may affect your ability to use certain features of the Service.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">International Data Transfers</h2>
-                            <p>Your information may be transferred to and processed in countries other than your own. We ensure that appropriate safeguards are in place to protect your information, including:</p>
-                            <ul>
-                                <li>Standard contractual clauses for international transfers</li>
-                                <li>Compliance with EU-U.S. Privacy Shield Framework (where applicable)</li>
-                                <li>Adherence to local data protection laws and regulations</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Children's Privacy</h2>
-                            <p>The Service is not intended for use by individuals under the age of 18. We do not knowingly collect personal information from children. If we become aware that we have collected personal information from a child, we will take steps to delete such information.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Cookies and Tracking Technologies</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Types of Cookies We Use</h3>
-                            <ul>
-                                <li><strong>Essential Cookies:</strong> Necessary for basic site functionality and security</li>
-                                <li><strong>Performance Cookies:</strong> Analyze site usage and performance metrics</li>
-                                <li><strong>Functionality Cookies:</strong> Remember user preferences and settings</li>
-                                <li><strong>Targeting Cookies:</strong> Deliver personalized advertising content</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Managing Cookies</h3>
-                            <p>You can control cookies through your browser settings. However, disabling certain cookies may affect your ability to use some features of the Service.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Third-Party Links and Services</h2>
-                            <p>The Service may contain links to third-party websites and services. We are not responsible for the privacy practices or content of these third parties. We encourage you to review their privacy policies before providing any personal information.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Changes to This Privacy Policy</h2>
-                            <p>We may update this Privacy Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any material changes by posting the updated policy on our website and, where appropriate, through email or in-platform notifications.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Contact Us</h2>
-                            <p>If you have questions about this Privacy Policy or wish to exercise your privacy rights, please contact us at:</p>
-                            <ul>
-                                <li>Email: support@skillgame.pro</li>
-                                <li>Mail: [Company Address]</li>
-                                <li>Phone: [Contact Number]</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Data Protection Officer</h2>
-                            <p>For data protection inquiries, you may contact our Data Protection Officer at support@skillgame.pro</p>
-                            {/* ` }} /> */}
                         </div>
                     </div>
                 </div>

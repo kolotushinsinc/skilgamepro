@@ -25,6 +25,10 @@ import ResponsibleGambling from './pages/ResponsibleGamblingPage';
 import Disclaimer from './pages/DisclaimerPage';
 import CookiePolicy from './pages/CookiePolicyPage';
 import LegalInformation from './pages/LegalInformationPage';
+import AccessibilityStatement from './pages/AccessibilityStatementPage';
+import ComplaintHandlingPolicy from './pages/ComplaintHandlingPolicyPage';
+import TakedownIPInfringementProcedure from './pages/TakedownIPInfringementProcedurePage';
+import AppendicesLegislativeReferences from './pages/AppendicesLegislativeReferencesPage';
 import GDPRPage from './pages/GDPRPage';
 
 import { CookieBanner } from './components/CookieBanner';
@@ -58,6 +62,10 @@ function App() {
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/legal" element={<LegalInformation />} />
+          <Route path="/accessibility" element={<AccessibilityStatement />} />
+          <Route path="/complaints" element={<ComplaintHandlingPolicy />} />
+          <Route path="/takedown" element={<TakedownIPInfringementProcedure />} />
+          <Route path="/appendices" element={<AppendicesLegislativeReferences />} />
           <Route path="/GDPR" element={<GDPRPage />} />
         </Routes>
         {/* <DemoControls /> */}

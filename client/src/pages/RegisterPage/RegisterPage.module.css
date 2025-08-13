@@ -148,3 +148,44 @@
     text-decoration: underline;
     color: #93c5fd;
 }
+
+.checkboxGroup {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.checkbox {
+    margin: 0;
+    margin-top: 0.125rem;
+    width: 1rem;
+    height: 1rem;
+    accent-color: #3b82f6;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkboxText {
+    color: #94a3b8;
+    flex: 1;
+}
+
+.legalLink {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.legalLink:hover {
+    text-decoration: underline;
+    color: #93c5fd;
+}

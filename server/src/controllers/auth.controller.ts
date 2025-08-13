@@ -3,10 +3,22 @@ import User from '../models/User.model';
 import generateToken from '../utils/generateToken';
 
 export const registerUser = async (req: Request, res: Response) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, ageConfirmed, termsAccepted, privacyPolicyAccepted } = req.body;
 
     if (!username || !email || !password) {
         return res.status(400).json({ message: 'Please enter all fields' });
+    }
+
+    if (!ageConfirmed) {
+        return res.status(400).json({ message: 'You must confirm that you are 18 years or older' });
+    }
+
+    if (!termsAccepted) {
+        return res.status(400).json({ message: 'You must accept the Terms & Conditions' });
+    }
+
+    if (!privacyPolicyAccepted) {
+        return res.status(400).json({ message: 'You must accept the Privacy Policy' });
     }
 
     try {
@@ -20,6 +32,9 @@ export const registerUser = async (req: Request, res: Response) => {
             username,
             email,
             password,
+            ageConfirmed,
+            termsAccepted,
+            privacyPolicyAccepted,
         });
 
         res.status(201).json({

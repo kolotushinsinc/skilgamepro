@@ -21,9 +21,9 @@ export default defineConfig({
   server: {
     host: true,
     port: 5177,
-    // allowedHosts: [
-    //   'platform.skillgame.pro' // Добавь сюда свой домен
-    // ]
+    allowedHosts: [
+      'platform.skillgame.pro' // Добавь сюда свой домен
+    ]
   },
 
   // optimizeDeps: {

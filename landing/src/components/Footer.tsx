@@ -22,14 +22,17 @@ const Footer: React.FC = () => {
       { name: 'Responsible Gambling Policy', href: '/gambling-policy' },
       { name: 'Disclaimer', href: '/disclaimer' }
     ],
-    legal: [              
-      { name: 'AML Policy', href: '/aml' },
-      { name: 'KYC Policy', href: '/kyc' },
-      { name: 'Terms of Service', href: '/terms' },
+    legal: [
+      { name: 'AML & KYC Policy', href: '/aml' },
+      { name: 'Terms & Conditions', href: '/terms' },
       { name: 'Privacy Policy', href: '/privacy' },
       { name: 'Cookie Policy', href: '/cookies' },
-      { name: 'Payment and Refund Policy', href: '/payment-policy' },
-      { name: 'Legal Information', href: '/legal' }
+      { name: 'Refund & Billing Policy', href: '/payment-policy' },
+      { name: 'Security & Fraud Prevention Policy', href: '/legal' },
+      { name: 'Accessibility Statement', href: '/accessibility' },
+      { name: 'Complaint Handling Policy', href: '/complaints' },
+      { name: 'Takedown & IP Infringement Procedure', href: '/takedown' },
+      { name: 'Appendices – Legislative References', href: '/appendices' }
     ]
   };
 

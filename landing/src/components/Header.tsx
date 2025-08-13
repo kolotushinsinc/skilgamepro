@@ -89,9 +89,6 @@ const Header: React.FC = () => {
             <Link to="/contact" className="text-gray-300 hover:text-yellow-500 transition-colors">
               Contact
             </Link>
-            <Link to="/legal" className="text-gray-300 hover:text-yellow-500 transition-colors">
-              Legal Information
-            </Link>
           </nav>
 
           <div className="hidden md:flex items-center gap-4">

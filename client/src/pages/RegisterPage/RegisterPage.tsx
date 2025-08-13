@@ -11,18 +11,30 @@ const RegisterPage: React.FC = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [ageConfirmed, setAgeConfirmed] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [privacyPolicyAccepted, setPrivacyPolicyAccepted] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth(); 
 
     const navigate = useNavigate();
 
+    const isFormValid = ageConfirmed && termsAccepted && privacyPolicyAccepted;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
         try {
-            const { data } = await axios.post(`${API_URL}/api/auth/register`, { username, email, password });
+            const { data } = await axios.post(`${API_URL}/api/auth/register`, {
+                username,
+                email,
+                password,
+                ageConfirmed,
+                termsAccepted,
+                privacyPolicyAccepted
+            });
             
             const { token, ...user } = data;
             login({ token, user });
@@ -86,9 +98,76 @@ const RegisterPage: React.FC = () => {
                         />
                     </div>
 
+                    <div className={styles.formGroup}>
+                        <div className={styles.checkboxGroup}>
+                            <label className={styles.checkboxLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={ageConfirmed}
+                                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                                    required
+                                    className={styles.checkbox}
+                                />
+                                <span className={styles.checkboxText}>
+                                    I confirm that I am 18 years of age or older
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <div className={styles.checkboxGroup}>
+                            <label className={styles.checkboxLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={termsAccepted}
+                                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                                    required
+                                    className={styles.checkbox}
+                                />
+                                <span className={styles.checkboxText}>
+                                    I accept the{' '}
+                                    <a
+                                        href="https://skillgame.pro/terms"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.legalLink}
+                                    >
+                                        Terms & Conditions
+                                    </a>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <div className={styles.checkboxGroup}>
+                            <label className={styles.checkboxLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={privacyPolicyAccepted}
+                                    onChange={(e) => setPrivacyPolicyAccepted(e.target.checked)}
+                                    required
+                                    className={styles.checkbox}
+                                />
+                                <span className={styles.checkboxText}>
+                                    I accept the{' '}
+                                    <a
+                                        href="https://skillgame.pro/privacy"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.legalLink}
+                                    >
+                                        Privacy Policy
+                                    </a>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
                     {error && <div className={styles.alertError}><p>{error}</p></div>}
 
-                    <button type="submit" disabled={isLoading} className={`${styles.btn} ${styles.btnPrimary}`}>
+                    <button type="submit" disabled={isLoading || !isFormValid} className={`${styles.btn} ${styles.btnPrimary}`}>
                         {isLoading ? (
                             <><div className={styles.spinner}></div><span>Creation...</span></>
                         ) : (

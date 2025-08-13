@@ -20,6 +20,9 @@ export interface IUser extends Document {
   kycStatus: 'NOT_SUBMITTED' | 'PENDING' | 'APPROVED' | 'REJECTED';
   kycDocuments: IKycDocument[];
   kycRejectionReason?: string;
+  ageConfirmed: boolean;
+  termsAccepted: boolean;
+  privacyPolicyAccepted: boolean;
 }
 
 const kycDocumentSchema = new Schema<IKycDocument>({
@@ -55,6 +58,9 @@ const userSchema = new Schema<IUser>({
   },
   kycDocuments: [kycDocumentSchema],
   kycRejectionReason: { type: String },
+  ageConfirmed: { type: Boolean, required: true, default: false },
+  termsAccepted: { type: Boolean, required: true, default: false },
+  privacyPolicyAccepted: { type: Boolean, required: true, default: false },
 }, {
   timestamps: true,
 });

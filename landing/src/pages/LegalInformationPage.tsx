@@ -14,209 +14,148 @@ const LegalInformation: React.FC = () => {
                 <div className="py-12 px-4 sm:px-6 lg:px-8 flex-grow">
                     <div className="max-w-4xl mx-auto prose prose-invert prose-headings:text-white prose-a:text-blue-400 prose-a:hover:text-blue-300">
                         <h1 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                            Legal Information
+                            Security & Fraud Prevention Policy
                         </h1>
                         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-gray-700 shadow-xl">
-                            {/* <div dangerouslySetInnerHTML={{ __html: ` */}
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Company Details</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Corporate Information</h3>
+                            <div className="text-center mb-8">
+                                <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
+                                <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
+                            </div>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
+                            <p>The Security & Fraud Prevention Policy ("Policy") sets out the measures, procedures, and responsibilities implemented by UNITRYSE HOLDING LTD ("the Company") to:</p>
                             <ul>
-                                <li><strong>Company Name:</strong> UNITRYSE HOLDING LTD</li>
-                                <li><strong>Registration Number:</strong> 474712</li>
-                                <li><strong>Incorporation Date:</strong> May 4, 2025</li>
-                                <li><strong>Registered Office:</strong> Archiepiskopou Makariou III, 84 Office 1 6017, Larnaca, Cyprus</li>
+                                <li>Protect the Skillgame.pro platform ("the Platform") from security breaches, fraud, and misuse.</li>
+                                <li>Safeguard User data in compliance with GDPR, PCI DSS v4.0, and ISO/IEC 27001 standards.</li>
+                                <li>Detect, investigate, and prevent fraudulent activities, including payment fraud and account compromise.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Contact Information</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">2. Scope</h2>
+                            <p>This Policy applies to:</p>
                             <ul>
-                                <li><strong>Customer Support:</strong> support@skillgame.pro</li>
+                                <li>All Platform Users.</li>
+                                <li>All Company employees, contractors, and third-party service providers.</li>
+                                <li>All digital systems, databases, and payment processing workflows of the Company.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Licensing and Regulatory Compliance</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Operating Licenses</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">3. Security Objectives</h2>
                             <ul>
-                                <li><strong>Anti-Money Laundering Compliance:</strong> Fully compliant with FATF standards</li>
+                                <li>Maintain confidentiality, integrity, and availability of data (CIA principle).</li>
+                                <li>Prevent unauthorized access to accounts, payment systems, and backend infrastructure.</li>
+                                <li>Detect and mitigate fraudulent activities in real-time.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Regulatory Bodies</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">4. Security Standards & Compliance Frameworks</h2>
+                            <p>The Company adheres to:</p>
                             <ul>
-                                <li><strong>Compliance Audits:</strong> Annual independent compliance reviews</li>
-                                <li><strong>Reporting Requirements:</strong> Monthly regulatory reporting</li>
+                                <li><strong>PCI DSS v4.0</strong> – Payment Card Industry Data Security Standard.</li>
+                                <li><strong>ISO/IEC 27001</strong> – Information Security Management System (ISMS).</li>
+                                <li><strong>NIST Cybersecurity Framework</strong> – Identify, Protect, Detect, Respond, Recover.</li>
+                                <li><strong>OWASP Top 10</strong> – Secure coding practices for web applications.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Governing Law and Jurisdiction</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Applicable Law</h3>
-                            <p>These services and all related agreements are governed by the laws of Cyprus, without regard to its conflict of law provisions. The application of the United Nations Convention on Contracts for the International Sale of Goods is expressly excluded.</p>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Jurisdiction</h3>
-                            <p>Any disputes arising out of or in connection with these services shall be subject to the exclusive jurisdiction of the courts located in Larnaca, Cyprus. Users agree to submit to the personal jurisdiction of these courts.</p>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Dispute Resolution</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Alternative Dispute Resolution</h3>
-                            <p>Skill Game is committed to resolving disputes amicably and efficiently:</p>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">5. User Account Security</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">5.1 Registration & Login</h3>
                             <ul>
-                                <li><strong>Internal Resolution:</strong> 30-day period for internal dispute resolution</li>
-                                <li><strong>Mediation:</strong> Voluntary mediation through certified mediators</li>
-                                <li><strong>Arbitration:</strong> Binding arbitration under Cyprus</li>
-                                <li><strong>Court Proceedings:</strong> Final resort for unresolved disputes</li>
+                                <li>Mandatory strong password policy (minimum 12 characters, mixed case, digits, symbols).</li>
+                                <li>Optional two-factor authentication (2FA) via email/SMS/Authenticator app.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Dispute Process</h3>
-                            <ol>
-                                <li>Initial complaint submission through customer support</li>
-                                <li>Investigation and response within 10 business days</li>
-                                <li>Escalation to senior management for complex issues</li>
-                                <li>Alternative dispute resolution if internal resolution fails</li>
-                                <li>Legal proceedings as final option</li>
-                            </ol>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Intellectual Property Rights</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Trademarks</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">5.2 Session Management</h3>
                             <ul>
-                                <li><strong>Skill Game:</strong> Registered trademark in multiple jurisdictions</li>
-                                <li><strong>Logo and Branding:</strong> Protected intellectual property</li>
-                                <li><strong>Service Marks:</strong> Various service marks for platform features</li>
-                                <li><strong>Domain Names:</strong> Registered domain names worldwide</li>
+                                <li>Automatic logout after 30 minutes of inactivity.</li>
+                                <li>Device fingerprinting to identify unusual access patterns.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Copyrights</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">5.3 Account Recovery</h3>
+                            <p>Secure password reset via email verification and additional security questions.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">6. Payment Security</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">6.1 Payment Processing</h3>
                             <ul>
-                                <li><strong>Website Content:</strong> Copyright © 2024 Skill Game Limited</li>
-                                <li><strong>Software Code:</strong> Proprietary software protected by copyright</li>
-                                <li><strong>Game Content:</strong> Original game designs and mechanics</li>
-                                <li><strong>Documentation:</strong> All policy and procedural documents</li>
+                                <li>All transactions processed through PCI DSS Level 1 certified providers.</li>
+                                <li>Card data is never stored on Company servers.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Financial Information</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Banking Partners</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">6.2 Anti-Fraud Controls</h3>
                             <ul>
-                                <li><strong>Payment Processing:</strong> Licensed payment service providers</li>
-                                <li><strong>Segregated Accounts:</strong> Player funds held in separate accounts</li>
-                                <li><strong>Audit Requirements:</strong> Annual financial audits by certified auditors</li>
+                                <li>3D Secure 2.0 authentication for card transactions.</li>
+                                <li>Real-time risk scoring based on IP, geolocation, and device fingerprints.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Insurance Coverage</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7. Fraud Detection & Prevention</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7.1 Transaction Monitoring</h3>
+                            <p>Automated systems flag suspicious transactions, including:</p>
                             <ul>
-                                <li><strong>Professional Liability:</strong> Comprehensive professional indemnity insurance</li>
-                                <li><strong>Cyber Security:</strong> Cyber liability and data breach insurance</li>
-                                <li><strong>Business Interruption:</strong> Coverage for service disruptions</li>
-                                <li><strong>Directors and Officers:</strong> D&O liability insurance</li>
+                                <li>Multiple payments from different cards in a short period.</li>
+                                <li>Payments from high-risk jurisdictions.</li>
+                                <li>Unusual purchase patterns inconsistent with User history.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Corporate Governance</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7.2 Behavioral Analytics</h3>
+                            <p>Analysis of gameplay behavior to detect bot usage, collusion, or manipulation of results.</p>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Committees</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7.3 Account Linking Detection</h3>
+                            <p>Identification of multiple accounts from the same device, IP, or payment method.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8. Incident Response</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8.1 Detection</h3>
+                            <p>Continuous security monitoring through SIEM (Security Information & Event Management) systems.</p>
+
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8.2 Containment</h3>
                             <ul>
-                                <li><strong>Audit Committee:</strong> Oversees financial reporting and compliance</li>
-                                <li><strong>Risk Committee:</strong> Manages operational and financial risks</li>
-                                <li><strong>Compliance Committee:</strong> Ensures regulatory adherence</li>
-                                <li><strong>Technology Committee:</strong> Oversees technological development</li>
+                                <li>Immediate account suspension for suspected fraud.</li>
+                                <li>Temporary freezing of in-platform assets.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Data Protection and Privacy Compliance</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">GDPR Compliance</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8.3 Investigation</h3>
+                            <p>Internal fraud investigation team reviews all relevant logs, payment records, and KYC data.</p>
+
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8.4 Notification</h3>
                             <ul>
-                                <li><strong>Data Controller:</strong> Skill Game Limited</li>
-                                <li><strong>Privacy Impact Assessments:</strong> Regular DPIA conducted</li>
-                                <li><strong>Data Processing Agreements:</strong> Signed with all processors</li>
+                                <li>Users are notified of security incidents affecting their accounts.</li>
+                                <li>Data breaches are reported to the Cyprus Commissioner for Personal Data Protection within 72 hours, as per GDPR Art. 33.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">International Compliance</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">9. Employee Access & Internal Controls</h2>
                             <ul>
-                                <li><strong>CCPA Compliance:</strong> California Consumer Privacy Act adherence</li>
-                                <li><strong>PIPEDA Compliance:</strong> Canadian privacy law compliance</li>
-                                <li><strong>APPI Compliance:</strong> Japanese Act on Protection of Personal Information</li>
-                                <li><strong>Other Jurisdictions:</strong> Compliance with local privacy laws</li>
+                                <li>Principle of least privilege: staff only access data necessary for their role.</li>
+                                <li>Multi-factor authentication for internal systems.</li>
+                                <li>Quarterly access reviews and audit logs of all administrative actions.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Security and Risk Management</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Security Certifications</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">10. Cooperation with Authorities</h2>
+                            <p>The Company cooperates with:</p>
                             <ul>
-                                <li><strong>ISO 27001:</strong> Information Security Management certification</li>
-                                <li><strong>PCI DSS:</strong> Payment Card Industry Data Security Standard</li>
-                                <li><strong>SOC 2:</strong> Service Organization Control Type 2 compliance</li>
-                                <li><strong>Regular Audits:</strong> Quarterly security assessments</li>
+                                <li>Cyprus Police Cybercrime Unit.</li>
+                                <li>International law enforcement agencies (Europol, Interpol) when legally required.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Risk Management Framework</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">11. User Responsibilities</h2>
                             <ul>
-                                <li><strong>Operational Risk:</strong> Comprehensive risk assessment procedures</li>
-                                <li><strong>Financial Risk:</strong> Regular financial risk monitoring</li>
-                                <li><strong>Technology Risk:</strong> Continuous technology risk evaluation</li>
-                                <li><strong>Compliance Risk:</strong> Ongoing regulatory compliance monitoring</li>
+                                <li>Maintain the confidentiality of login credentials.</li>
+                                <li>Report any suspicious activity to <strong>security@skillgame.pro</strong> immediately.</li>
+                                <li>Use secure, updated devices and browsers when accessing the Platform.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Business Continuity</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Disaster Recovery</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">12. Enforcement</h2>
+                            <p>Violations of this Policy by Users may result in:</p>
                             <ul>
-                                <li><strong>Data Backup:</strong> Daily encrypted backups with 90-day retention</li>
-                                <li><strong>Redundancy:</strong> Multiple data centers for service continuity</li>
-                                <li><strong>Recovery Time:</strong> Maximum 4-hour recovery time objective</li>
-                                <li><strong>Testing:</strong> Quarterly disaster recovery testing</li>
+                                <li>Account suspension or permanent closure.</li>
+                                <li>Reporting to payment processors and regulatory bodies.</li>
+                                <li>Legal action under Cyprus and EU law.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Business Continuity Plan</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">13. References</h2>
                             <ul>
-                                <li><strong>Critical Functions:</strong> Identification and protection of critical services</li>
-                                <li><strong>Alternate Facilities:</strong> Backup operational facilities</li>
-                                <li><strong>Communication Plan:</strong> Emergency communication protocols</li>
-                                <li><strong>Regular Updates:</strong> Annual business continuity plan review</li>
+                                <li>PCI DSS v4.0</li>
+                                <li>ISO/IEC 27001:2022</li>
+                                <li>GDPR (EU) 2016/679 – Articles 32–34</li>
+                                <li>NIST Cybersecurity Framework</li>
+                                <li>Cyprus Computer Misuse Law 22(I)/2012</li>
                             </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Corporate Social Responsibility</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Environmental Initiatives</h3>
-                            <ul>
-                                <li><strong>Carbon Neutral:</strong> Commitment to carbon-neutral operations</li>
-                                <li><strong>Energy Efficiency:</strong> Green data center partnerships</li>
-                                <li><strong>Paperless Operations:</strong> Digital-first approach to reduce paper usage</li>
-                                <li><strong>Sustainable Practices:</strong> Environmentally responsible business practices</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Community Engagement</h3>
-                            <ul>
-                                <li><strong>Education Programs:</strong> Support for educational gaming initiatives</li>
-                                <li><strong>Charitable Giving:</strong> Regular charitable contributions</li>
-                                <li><strong>Employee Volunteering:</strong> Paid volunteer time for employees</li>
-                                <li><strong>Industry Leadership:</strong> Active participation in gaming industry associations</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Financial Reporting</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Annual Reports</h3>
-                            <ul>
-                                <li><strong>Publication:</strong> Annual financial reports available to stakeholders</li>
-                                <li><strong>Audit:</strong> Independent audit of financial statements</li>
-                                <li><strong>Transparency:</strong> Detailed financial performance disclosure</li>
-                                <li><strong>Regulatory Filing:</strong> Compliance with all financial reporting requirements</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Key Performance Indicators</h3>
-                            <ul>
-                                <li><strong>User Growth:</strong> Monthly active user statistics</li>
-                                <li><strong>Revenue Metrics:</strong> Financial performance indicators</li>
-                                <li><strong>Compliance Metrics:</strong> Regulatory compliance measurements</li>
-                                <li><strong>Security Metrics:</strong> Cybersecurity and data protection statistics</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Updates and Changes</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Policy Review</h3>
-                            <ul>
-                                <li><strong>Annual Review:</strong> Comprehensive annual review of all legal information</li>
-                                <li><strong>Regulatory Updates:</strong> Immediate updates for regulatory changes</li>
-                                <li><strong>Corporate Changes:</strong> Prompt disclosure of corporate structure changes</li>
-                                <li><strong>Stakeholder Communication:</strong> Regular communication of material changes</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Communication Channels</h3>
-                            <ul>
-                                <li><strong>Website Updates:</strong> Current legal information on company website</li>
-                                <li><strong>Regulatory Filings:</strong> Official filings with regulatory authorities</li>
-                                <li><strong>Investor Relations:</strong> Direct communication with investors and stakeholders</li>
-                                <li><strong>Public Announcements:</strong> Press releases for significant corporate events</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Last Updated</h2>
-                            <p>This legal information was last updated on 1 Aug, 2025 and is subject to regular review and updates as required by law, regulation, or corporate changes.</p>
-                            {/* ` }} /> */}
                         </div>
                     </div>
                 </div>

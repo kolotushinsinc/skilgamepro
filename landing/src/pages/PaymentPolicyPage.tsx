@@ -14,259 +14,133 @@ const PaymentPolicy: React.FC = () => {
                 <div className="py-12 px-4 sm:px-6 lg:px-8 flex-grow">
                     <div className="max-w-4xl mx-auto prose prose-invert prose-headings:text-white prose-a:text-blue-400 prose-a:hover:text-blue-300">
                         <h1 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                            Payment and Refund Policy
+                            Refund & Billing Policy
                         </h1>
                         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-gray-700 shadow-xl">
-                            {/* <div dangerouslySetInnerHTML={{ __html: ` */}
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Introduction</h2>
-                            <p>This Payment and Refund Policy outlines the terms and conditions governing financial transactions on the Skill Game platform. By using our payment services, you agree to be bound by this policy in addition to our Terms of Service and Privacy Policy.</p>
+                            <div className="text-center mb-8">
+                                <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
+                                <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
+                            </div>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Accepted Payment Methods</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Credit and Debit Cards</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
+                            <p>This Refund & Billing Policy ("Policy") defines the rules, processes, and limitations regarding all payments made on the Skillgame.pro platform ("the Platform"), operated by UNITRYSE HOLDING LTD ("the Company").</p>
+                            <p>Its objectives are to:</p>
                             <ul>
-                                <li>Visa (credit and debit)</li>
-                                <li>MasterCard (credit and debit)</li>
-                                <li>American Express</li>
-                                <li>Discover</li>
-                                <li>Processing time: Instant to 24 hours</li>
-                                <li>3D Secure authentication required for enhanced security</li>
+                                <li>Provide transparency about payment terms.</li>
+                                <li>Clarify the Company's no withdrawal and no refund position, except where legally required.</li>
+                                <li>Prevent disputes by clearly communicating billing practices to Users.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Digital Wallets</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">2. Scope</h2>
+                            <p>This Policy applies to:</p>
                             <ul>
-                                <li>PayPal</li>
-                                <li>Skrill</li>
-                                <li>Neteller</li>
-                                <li>Processing time: Instant to 4 hours</li>
-                                <li>Subject to wallet provider's terms and conditions</li>
+                                <li>All Entry Fees for participation in skill-based games and tournaments.</li>
+                                <li>All purchases of Virtual Credits.</li>
+                                <li>Any other paid services offered on the Platform.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Cryptocurrency</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">3. Definitions</h2>
                             <ul>
-                                <li>Bitcoin (BTC)</li>
-                                <li>Ethereum (ETH)</li>
-                                <li>Litecoin (LTC)</li>
-                                <li>Processing time: 10 minutes to 2 hours (depending on network congestion)</li>
-                                <li>Exchange rates calculated at time of transaction</li>
+                                <li><strong>"Entry Fee"</strong> – A non-refundable payment required to participate in a Game or tournament.</li>
+                                <li><strong>"Virtual Credits"</strong> – Non-withdrawable in-platform units used solely for gameplay.</li>
+                                <li><strong>"Chargeback"</strong> – A reversal of a payment initiated by the cardholder through their bank.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Bank Transfers</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">4. Payment Processing</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">4.1 Accepted Methods</h3>
+                            <p>Payments can be made via PCI DSS-compliant payment processors, including:</p>
                             <ul>
-                                <li>Wire transfers</li>
-                                <li>SEPA transfers (European Union)</li>
-                                <li>ACH transfers (United States)</li>
-                                <li>Processing time: 1-5 business days</li>
-                                <li>Bank fees may apply</li>
+                                <li>Credit/debit cards (Visa, Mastercard, etc.).</li>
+                                <li>Other methods as may be listed on the Platform.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Prepaid Cards</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">4.2 Currency</h3>
+                            <p>All payments are processed in EUR unless otherwise stated.</p>
+
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">4.3 Authorization</h3>
+                            <p>By initiating a payment, the User authorizes the Company to charge the specified amount to the provided payment method.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">5. No Withdrawals</h2>
                             <ul>
-                                <li>Supported prepaid cards from major issuers</li>
-                                <li>Subject to card issuer's terms and limitations</li>
-                                <li>Processing time: Instant to 24 hours</li>
+                                <li>The Platform does not provide any withdrawal or cash-out functionality.</li>
+                                <li>All funds deposited or spent on Entry Fees or Virtual Credits remain within the Platform.</li>
+                                <li>Virtual Credits cannot be converted back to real currency.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Deposit Processing</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Minimum and Maximum Limits</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">6. Refund Policy</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">6.1 General Rule</h3>
+                            <p>All payments are final and non-refundable, except as required under Cyprus consumer protection law.</p>
+
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">6.2 Exceptions</h3>
+                            <p>Refunds may be issued only if:</p>
                             <ul>
-                                <li><strong>Minimum Deposit:</strong> $10 or equivalent in other currencies</li>
-                                <li><strong>Daily Limit:</strong> $10,000 or equivalent</li>
-                                <li><strong>Weekly Limit:</strong> $50,000 or equivalent</li>
-                                <li><strong>Monthly Limit:</strong> $200,000 or equivalent</li>
-                                <li>Limits may vary based on verification level and jurisdiction</li>
+                                <li>A payment was charged multiple times due to a technical error.</li>
+                                <li>The payment was unauthorized (confirmed after investigation).</li>
+                                <li>A legal requirement obliges the Company to refund.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Processing Times</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">6.3 Non-Refundable Cases</h3>
+                            <p>No refunds are provided for:</p>
                             <ul>
-                                <li><strong>Instant Methods:</strong> Credit cards, digital wallets (0-4 hours)</li>
-                                <li><strong>Fast Methods:</strong> Cryptocurrency (10 minutes - 2 hours)</li>
-                                <li><strong>Standard Methods:</strong> Bank transfers (1-5 business days)</li>
-                                <li>Weekend and holiday processing may be delayed</li>
+                                <li>Completed Games or tournaments.</li>
+                                <li>Unused Virtual Credits.</li>
+                                <li>Account termination due to Terms & Conditions violations.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Deposit Bonuses</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7. Refund Procedure</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7.1 Request Submission</h3>
+                            <p>Users must submit a request to <strong>billing@skillgame.pro</strong> within 14 calendar days of the disputed payment.</p>
+                            <p>The request must include:</p>
                             <ul>
-                                <li>Subject to specific bonus terms and conditions</li>
-                                <li>May include wagering requirements</li>
-                                <li>Bonuses may be time-limited</li>
-                                <li>Bonus funds may have separate withdrawal conditions</li>
+                                <li>Full name and registered email.</li>
+                                <li>Transaction ID and date.</li>
+                                <li>Reason for requesting a refund.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Withdrawal Processing</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Eligibility Requirements</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7.2 Processing Time</h3>
                             <ul>
-                                <li>Completed KYC verification</li>
-                                <li>Verified payment method used for deposit</li>
-                                <li>Compliance with anti-money laundering procedures</li>
-                                <li>No active disputes or chargebacks</li>
+                                <li>Requests are acknowledged within 48 hours.</li>
+                                <li>Investigations are completed within 14 business days.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Processing Times</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">7.3 Refund Method</h3>
+                            <p>Approved refunds are issued back to the original payment method only.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8. Chargeback Policy</h2>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8.1 Consequences of Chargebacks</h3>
                             <ul>
-                                <li><strong>Credit/Debit Cards:</strong> 3-5 business days</li>
-                                <li><strong>Digital Wallets:</strong> 24-48 hours</li>
-                                <li><strong>Cryptocurrency:</strong> 1-2 hours</li>
-                                <li><strong>Bank Transfers:</strong> 3-7 business days</li>
-                                <li>Processing times may vary during peak periods</li>
+                                <li>Immediate suspension of the User's account.</li>
+                                <li>Forfeiture of all Virtual Credits and Entry Fees.</li>
+                                <li>Possible legal action and reporting to acquiring banks.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Withdrawal Limits</h3>
+                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">8.2 Fraudulent Chargebacks</h3>
+                            <p>Will be treated as intentional misuse and may be reported to law enforcement authorities.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">9. Dispute Resolution</h2>
+                            <p>If the User disagrees with a payment outcome, disputes should first be addressed via the Platform's support team before initiating any external claim.</p>
+
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">10. Legal Compliance</h2>
+                            <p>This Policy complies with:</p>
                             <ul>
-                                <li><strong>Daily Limit:</strong> $5,000 or equivalent</li>
-                                <li><strong>Weekly Limit:</strong> $25,000 or equivalent</li>
-                                <li><strong>Monthly Limit:</strong> $100,000 or equivalent</li>
-                                <li>Higher limits available for verified premium accounts</li>
+                                <li>Cyprus Consumer Protection Law 112(I)/2021.</li>
+                                <li>EU Consumer Rights Directive 2011/83/EU (as applicable to digital content).</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Withdrawal Methods</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">11. Monitoring & Enforcement</h2>
                             <ul>
-                                <li>Same method as original deposit (where possible)</li>
-                                <li>Alternative methods subject to additional verification</li>
-                                <li>Bank transfers available for all verified users</li>
-                                <li>Cryptocurrency withdrawals to verified wallet addresses</li>
+                                <li>The Company's billing team monitors all transactions for anomalies.</li>
+                                <li>Violations of this Policy may lead to account suspension or closure.</li>
                             </ul>
 
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Withdrawal Fees</h3>
+                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">12. References</h2>
                             <ul>
-                                <li><strong>Credit/Debit Cards:</strong> $2.50 per transaction</li>
-                                <li><strong>Digital Wallets:</strong> $1.00 per transaction</li>
-                                <li><strong>Cryptocurrency:</strong> Network transaction fees</li>
-                                <li><strong>Bank Transfers:</strong> $25 flat fee per transaction</li>
-                                <li>Premium account holders: Reduced or waived fees</li>
+                                <li>Cyprus Consumer Protection Law 112(I)/2021</li>
+                                <li>EU Consumer Rights Directive 2011/83/EU</li>
+                                <li>PCI DSS v4.0</li>
                             </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Currency Conversion</h3>
-                            <ul>
-                                <li>Real-time exchange rates from major financial institutions</li>
-                                <li>1.5% currency conversion fee for non-native currencies</li>
-                                <li>Rates locked at time of transaction processing</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Refund Policy</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">General Refund Principles</h3>
-                            <p>Due to the nature of online gaming services, refunds are generally not provided for:</p>
-                            <ul>
-                                <li>Funds used for gameplay or wagering</li>
-                                <li>Completed game participation</li>
-                                <li>Voluntary account closures</li>
-                                <li>Normal business operations and service usage</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Eligible Refund Circumstances</h3>
-                            <ul>
-                                <li><strong>Technical Errors:</strong> System malfunctions affecting gameplay or transactions</li>
-                                <li><strong>Unauthorized Transactions:</strong> Fraudulent charges or account compromises</li>
-                                <li><strong>Service Unavailability:</strong> Extended platform outages beyond our control</li>
-                                <li><strong>Billing Errors:</strong> Incorrect charges or duplicate transactions</li>
-                                <li><strong>Regulatory Compliance:</strong> Jurisdictional restrictions preventing service use</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Refund Process</h3>
-                            <ol>
-                                <li>Submit refund request through customer support within 30 days</li>
-                                <li>Provide detailed explanation and supporting documentation</li>
-                                <li>Investigation and verification by our support team</li>
-                                <li>Decision communicated within 5-10 business days</li>
-                                <li>Approved refunds processed to original payment method</li>
-                            </ol>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Refund Timeline</h3>
-                            <ul>
-                                <li>Initial response: Within 24 hours</li>
-                                <li>Investigation completion: 5-10 business days</li>
-                                <li>Refund processing: 3-15 business days (depending on method)</li>
-                                <li>Bank processing times may vary</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Chargeback Policy</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Chargeback Consequences</h3>
-                            <p>Unauthorized chargebacks may result in:</p>
-                            <ul>
-                                <li>Immediate account suspension</li>
-                                <li>Permanent account termination</li>
-                                <li>Reporting to chargeback monitoring services</li>
-                                <li>Legal action for recovery of funds</li>
-                                <li>Blacklisting from future services</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Dispute Resolution</h3>
-                            <ul>
-                                <li>Contact customer support before initiating chargebacks</li>
-                                <li>Provide 30 days for internal resolution</li>
-                                <li>Documentation of all communications</li>
-                                <li>Cooperation with investigation processes</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Security Measures</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Payment Security</h3>
-                            <ul>
-                                <li>PCI DSS Level 1 compliance for card processing</li>
-                                <li>End-to-end encryption of payment information</li>
-                                <li>3D Secure authentication for card transactions</li>
-                                <li>Regular security audits and penetration testing</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Fraud Prevention</h3>
-                            <ul>
-                                <li>Real-time transaction monitoring</li>
-                                <li>Machine learning fraud detection systems</li>
-                                <li>Manual review of suspicious activities</li>
-                                <li>Collaboration with payment processors and banks</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Account Verification</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Verification Requirements</h3>
-                            <ul>
-                                <li>Identity verification for all payment methods</li>
-                                <li>Address verification for withdrawals</li>
-                                <li>Source of funds documentation for large deposits</li>
-                                <li>Ongoing monitoring for unusual activities</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Verification Impact</h3>
-                            <ul>
-                                <li>Delays in processing without complete verification</li>
-                                <li>Temporary suspension of payment functions</li>
-                                <li>Enhanced due diligence for high-risk cases</li>
-                                <li>Requirement for additional documentation</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">International Considerations</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Currency Support</h3>
-                            <ul>
-                                <li>USD, EUR, GBP, CAD, AUD, and major cryptocurrencies</li>
-                                <li>Automatic currency conversion at competitive rates</li>
-                                <li>Local payment methods in supported regions</li>
-                                <li>Regional fee structures and processing times</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Regulatory Compliance</h3>
-                            <ul>
-                                <li>Adherence to local payment regulations</li>
-                                <li>Licensing requirements in operating jurisdictions</li>
-                                <li>Tax reporting and compliance obligations</li>
-                                <li>Anti-money laundering and counter-terrorism financing</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Customer Support</h2>
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Payment Support</h3>
-                            <ul>
-                                <li>24/7 customer support for payment issues</li>
-                                <li>Dedicated payment specialists for complex issues</li>
-                                <li>Multi-language support for international users</li>
-                            </ul>
-
-                            <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Emergency Support</h3>
-                            <ul>
-                                <li>Priority handling for account security issues</li>
-                                <li>Immediate response for fraud and unauthorized access</li>
-                                <li>Escalation procedures for urgent matters</li>
-                                <li>Coordination with payment processors and banks</li>
-                            </ul>
-
-                            <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">Policy Updates</h2>
-                            <p>This Payment and Refund Policy may be updated to reflect changes in payment technologies, regulatory requirements, or business practices. Users will be notified of significant changes through email or in-platform notifications.</p>
-                            {/* ` }} /> */}
                         </div>
                     </div>
                 </div>
