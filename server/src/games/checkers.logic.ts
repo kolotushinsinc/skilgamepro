@@ -104,6 +104,178 @@ function getAllLegalMoves(board: (Piece | null)[], playerIndex: 0 | 1): Checkers
     return mandatoryCaptures.length > 0 ? mandatoryCaptures : allMoves;
 }
 
+// Enhanced AI functions for checkers
+function evaluatePosition(board: (Piece | null)[], playerIndex: 0 | 1): number {
+    let score = 0;
+    const opponent = playerIndex === 0 ? 1 : 0;
+
+    for (let i = 0; i < 64; i++) {
+        const piece = board[i];
+        if (!piece) continue;
+
+        const row = Math.floor(i / 8);
+        const col = i % 8;
+
+        if (piece.playerIndex === playerIndex) {
+            // Own pieces - positive score
+            score += piece.isKing ? 10 : 5;
+            
+            // Bonus for advancement (closer to promotion)
+            if (!piece.isKing) {
+                const advancementBonus = playerIndex === 0 ? (7 - row) : row;
+                score += advancementBonus * 0.5;
+            }
+            
+            // Center control bonus
+            if (col >= 2 && col <= 5 && row >= 2 && row <= 5) {
+                score += 2;
+            }
+            
+            // Edge penalty (avoid edges when possible)
+            if (col === 0 || col === 7) {
+                score -= 0.5;
+            }
+            
+        } else if (piece.playerIndex === opponent) {
+            // Opponent pieces - negative score
+            score -= piece.isKing ? 10 : 5;
+            
+            if (!piece.isKing) {
+                const advancementPenalty = opponent === 0 ? (7 - row) : row;
+                score -= advancementPenalty * 0.5;
+            }
+        }
+    }
+
+    return score;
+}
+
+function simulateMove(board: (Piece | null)[], move: CheckersMove): (Piece | null)[] {
+    const newBoard = [...board];
+    const piece = newBoard[move.from];
+    if (!piece) return newBoard;
+
+    newBoard[move.to] = piece;
+    newBoard[move.from] = null;
+
+    // Handle captures
+    if (move.isCapture) {
+        const fromRow = Math.floor(move.from / 8);
+        const fromCol = move.from % 8;
+        const toRow = Math.floor(move.to / 8);
+        const toCol = move.to % 8;
+        
+        // Find captured piece
+        const rowDir = Math.sign(toRow - fromRow);
+        const colDir = Math.sign(toCol - fromCol);
+        
+        let capturedIndex = -1;
+        for (let i = 1; i < Math.abs(toRow - fromRow); i++) {
+            const checkRow = fromRow + (rowDir * i);
+            const checkCol = fromCol + (colDir * i);
+            const checkIndex = checkRow * 8 + checkCol;
+            
+            if (newBoard[checkIndex] && newBoard[checkIndex]?.playerIndex !== piece.playerIndex) {
+                capturedIndex = checkIndex;
+                break;
+            }
+        }
+        
+        if (capturedIndex !== -1) {
+            newBoard[capturedIndex] = null;
+        }
+    }
+
+    // Handle king promotion
+    const toRow = Math.floor(move.to / 8);
+    if (!piece.isKing && ((piece.playerIndex === 0 && toRow === 0) || (piece.playerIndex === 1 && toRow === 7))) {
+        newBoard[move.to]!.isKing = true;
+    }
+
+    return newBoard;
+}
+
+function findBestCheckerMove(board: (Piece | null)[], legalMoves: CheckersMove[], playerIndex: 0 | 1): CheckersMove | null {
+    if (legalMoves.length === 0) return null;
+
+    // Prioritize captures
+    const captures = legalMoves.filter(move => move.isCapture);
+    if (captures.length > 0) {
+        // Among captures, choose the one that leads to best position
+        let bestMove = captures[0];
+        let bestScore = -Infinity;
+
+        for (const move of captures) {
+            const newBoard = simulateMove(board, move);
+            let score = evaluatePosition(newBoard, playerIndex);
+            
+            // Bonus for capturing kings
+            const capturedPiece = getCapturedPiece(board, move);
+            if (capturedPiece?.isKing) {
+                score += 15;
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+        }
+        return bestMove;
+    }
+
+    // No captures available, evaluate regular moves
+    let bestMove = legalMoves[0];
+    let bestScore = -Infinity;
+
+    for (const move of legalMoves) {
+        const newBoard = simulateMove(board, move);
+        let score = evaluatePosition(newBoard, playerIndex);
+
+        // Bonus for moves that promote to king
+        const piece = board[move.from];
+        const toRow = Math.floor(move.to / 8);
+        if (piece && !piece.isKing &&
+            ((piece.playerIndex === 0 && toRow === 0) || (piece.playerIndex === 1 && toRow === 7))) {
+            score += 8;
+        }
+
+        // Small randomness to avoid completely predictable play
+        score += Math.random() * 0.1;
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestMove = move;
+        }
+    }
+
+    return bestMove;
+}
+
+function getCapturedPiece(board: (Piece | null)[], move: CheckersMove): Piece | null {
+    if (!move.isCapture) return null;
+
+    const fromRow = Math.floor(move.from / 8);
+    const fromCol = move.from % 8;
+    const toRow = Math.floor(move.to / 8);
+    const toCol = move.to % 8;
+    
+    const rowDir = Math.sign(toRow - fromRow);
+    const colDir = Math.sign(toCol - fromCol);
+    
+    for (let i = 1; i < Math.abs(toRow - fromRow); i++) {
+        const checkRow = fromRow + (rowDir * i);
+        const checkCol = fromCol + (colDir * i);
+        const checkIndex = checkRow * 8 + checkCol;
+        
+        const piece = board[checkIndex];
+        if (piece) {
+            return piece;
+        }
+    }
+    
+    return null;
+}
+
 export const checkersLogic: IGameLogic = {
     createInitialState(players: Room['players']): CheckersState {
         const board: (Piece | null)[] = Array(64).fill(null);
@@ -237,9 +409,12 @@ export const checkersLogic: IGameLogic = {
     
     makeBotMove(gameState: CheckersState, playerIndex: 0 | 1): GameMove {
         const legalMoves = getAllLegalMoves(gameState.board, playerIndex);
-        if (legalMoves.length > 0) {
-            return legalMoves[Math.floor(Math.random() * legalMoves.length)];
+        if (legalMoves.length === 0) {
+            return {};
         }
-        return {}; 
+
+        // Use intelligent move selection
+        const bestMove = findBestCheckerMove(gameState.board, legalMoves, playerIndex);
+        return bestMove || legalMoves[0];
     }
 };

@@ -131,6 +131,18 @@
     cursor: not-allowed;
 }
 
+.btnSecondary {
+    background-color: #6b7280;
+    color: white;
+}
+.btnSecondary:hover:not(:disabled) {
+    background-color: #4b5563;
+}
+.btnSecondary:disabled {
+    background-color: #475569;
+    cursor: not-allowed;
+}
+
 .roomList {
     display: flex;
     flex-direction: column;
@@ -196,4 +208,132 @@
 }
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* Modal styles */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.modalHeader h2 {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.closeBtn:hover {
+    background-color: #334155;
+    color: white;
+}
+
+.modalContent {
+    padding: 1.5rem;
+}
+
+.modalContent p {
+    color: #94a3b8;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.invitationBox {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.invitationInput {
+    flex: 1;
+    background-color: #334155;
+    border: 1px solid #475569;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    outline: none;
+    font-family: monospace;
+    font-size: 0.875rem;
+}
+
+.invitationInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.invitationDetails {
+    background-color: #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.invitationDetails p {
+    margin: 0.5rem 0;
+    color: #cbd5e1;
+}
+
+.invitationDetails p:last-child {
+    color: #fbbf24;
+    font-style: italic;
+    margin-top: 1rem;
+}
+
+.invitationDetails strong {
+    color: white;
+}
+
+.modalActions {
+    padding: 1.5rem;
+    border-top: 1px solid #334155;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.modalActions .btn {
+    width: auto;
+    min-width: 100px;
 }

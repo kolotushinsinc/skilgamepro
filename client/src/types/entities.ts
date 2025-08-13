@@ -1,5 +1,26 @@
 export type GameType = 'Chess' | 'Checkers' | 'Backgammon' | 'Tic-Tac-Toe' | 'Durak' | 'Domino' | 'Dice' | 'Bingo';
 
+// Private room related types
+export interface PrivateRoomInvitation {
+  id: string;
+  roomId: string;
+  gameType: string;
+  bet: number;
+  hostUsername: string;
+  token: string;
+  expiresAt: Date;
+  usedAt?: Date;
+  isUsed: boolean;
+}
+
+export interface PrivateRoomData {
+  isPrivate: boolean;
+  invitationToken?: string;
+  invitationUrl?: string;
+  allowBots: boolean;
+  hostUserId: string;
+}
+
 export interface IGameRecord {
   _id: string;
   gameName: 'Checkers' | 'Chess' | 'Backgammon' | 'Tic-Tac-Toe' | 'Durak' | 'Domino' | 'Dice' | 'Bingo';

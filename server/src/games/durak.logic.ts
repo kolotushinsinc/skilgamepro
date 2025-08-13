@@ -8,6 +8,287 @@ type DurakMove = {
     attackIndex?: number;
 };
 
+// Enhanced Durak AI functions
+function getCardValue(card: Card): number {
+    // Ace = 14, King = 13, Queen = 12, Jack = 11, 10 = 10, ... 6 = 6
+    if (card.value === 1) return 14; // Ace
+    return card.value;
+}
+
+function countRemainingCards(gameState: DurakGameState): Map<string, number> {
+    const allCards = new Map<string, number>();
+    
+    // Initialize full deck
+    const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+    for (const suit of suits) {
+        for (let value = 6; value <= 14; value++) {
+            const key = `${suit}-${value}`;
+            allCards.set(key, 1);
+        }
+    }
+    
+    // Remove cards that are known to be played
+    for (const pair of gameState.table) {
+        if (pair.attackCard) {
+            const key = `${pair.attackCard.suit}-${getCardValue(pair.attackCard)}`;
+            allCards.set(key, 0);
+        }
+        if (pair.defendCard) {
+            const key = `${pair.defendCard.suit}-${getCardValue(pair.defendCard)}`;
+            allCards.set(key, 0);
+        }
+    }
+    
+    // Remove cards from bot's hand
+    const botHand = gameState.players[0]?.hand || [];
+    for (const card of botHand) {
+        const key = `${card.suit}-${getCardValue(card)}`;
+        allCards.set(key, 0);
+    }
+    
+    return allCards;
+}
+
+function evaluateHandStrength(hand: Card[], trumpSuit: string): number {
+    let strength = 0;
+    
+    for (const card of hand) {
+        const value = getCardValue(card);
+        const isTrump = card.suit === trumpSuit;
+        
+        // Trump cards are more valuable
+        if (isTrump) {
+            strength += value * 1.5;
+        } else {
+            strength += value;
+        }
+        
+        // High cards are more valuable
+        if (value >= 12) strength += 5;
+        if (value === 14) strength += 10; // Ace bonus
+    }
+    
+    return strength;
+}
+
+function canCardBeBeaten(card: Card, trumpSuit: string, remainingCards: Map<string, number>): number {
+    let beatingProbability = 0;
+    
+    if (card.suit === trumpSuit) {
+        // Trump cards can only be beaten by higher trumps
+        const cardValue = getCardValue(card);
+        for (let value = cardValue + 1; value <= 14; value++) {
+            const key = `${trumpSuit}-${value}`;
+            if (remainingCards.get(key)) {
+                beatingProbability += 0.1; // Assume 10% chance per higher trump
+            }
+        }
+    } else {
+        // Non-trump cards can be beaten by higher cards of same suit or any trump
+        const cardValue = getCardValue(card);
+        
+        // Higher cards of same suit
+        for (let value = cardValue + 1; value <= 14; value++) {
+            const key = `${card.suit}-${value}`;
+            if (remainingCards.get(key)) {
+                beatingProbability += 0.05;
+            }
+        }
+        
+        // Any trump card
+        for (let value = 6; value <= 14; value++) {
+            const key = `${trumpSuit}-${value}`;
+            if (remainingCards.get(key)) {
+                beatingProbability += 0.08;
+            }
+        }
+    }
+    
+    return Math.min(beatingProbability, 0.9);
+}
+
+function findBestDurakMove(gameState: DurakGameState, validMoves: any[], playerIndex: 0 | 1): any {
+    if (validMoves.length === 0) return null;
+    if (validMoves.length === 1) return validMoves[0];
+    
+    const botHand = gameState.players[playerIndex]?.hand || [];
+    const opponentIndex = playerIndex === 0 ? 1 : 0;
+    const opponentHand = gameState.players[opponentIndex]?.hand || [];
+    const trumpSuit = gameState.trumpSuit;
+    const remainingCards = countRemainingCards(gameState);
+    
+    if (gameState.phase === 'ATTACKING') {
+        return findBestAttackMove(gameState, validMoves, botHand, opponentHand, trumpSuit, remainingCards);
+    } else if (gameState.phase === 'DEFENDING') {
+        return findBestDefenseMove(gameState, validMoves, botHand, opponentHand, trumpSuit, remainingCards);
+    }
+    
+    return validMoves[0];
+}
+
+function findBestAttackMove(gameState: DurakGameState, validMoves: any[], botHand: Card[], opponentHand: Card[], trumpSuit: string, remainingCards: Map<string, number>): any {
+    const attackMoves = validMoves.filter(move => move.type === 'ATTACK');
+    const passMoves = validMoves.filter(move => move.type === 'PASS');
+    
+    if (attackMoves.length === 0) {
+        return passMoves[0] || validMoves[0];
+    }
+    
+    // Evaluate each attack move
+    const evaluatedMoves = attackMoves.map(move => {
+        let score = 0;
+        const card = move.card;
+        const cardValue = getCardValue(card);
+        const isTrump = card.suit === trumpSuit;
+        
+        // Strategy: Attack with cards that are hard to beat but not too valuable
+        
+        // Prefer non-trump cards (save trumps for defense)
+        if (!isTrump) {
+            score += 20;
+        } else {
+            score -= 10; // Penalty for using trumps in attack
+        }
+        
+        // Prefer medium-value cards (not too low, not too high)
+        if (cardValue >= 8 && cardValue <= 11) {
+            score += 15;
+        } else if (cardValue >= 12) {
+            score -= 10; // Don't waste high cards in attack
+        }
+        
+        // Check how difficult this card is to beat
+        const beatingProbability = canCardBeBeaten(card, trumpSuit, remainingCards);
+        score += (1 - beatingProbability) * 25; // Prefer hard-to-beat cards
+        
+        // If opponent has few cards, be more aggressive
+        if (opponentHand.length <= 3) {
+            score += 10;
+        }
+        
+        // If we have many cards, prefer to attack more
+        if (botHand.length >= 7) {
+            score += 5;
+        }
+        
+        // Prefer cards that match already played cards (can add more attacks)
+        const tableCards = gameState.table.map(pair => pair.attackCard).filter(Boolean);
+        if (tableCards.some(tableCard => tableCard && getCardValue(tableCard) === cardValue)) {
+            score += 8;
+        }
+        
+        // Small randomness to avoid predictability
+        score += Math.random() * 2;
+        
+        return { move, score };
+    });
+    
+    evaluatedMoves.sort((a, b) => b.score - a.score);
+    
+    // Sometimes pass if we have a good hand and opponent has many cards
+    if (passMoves.length > 0 && opponentHand.length >= 6 && botHand.length <= 4) {
+        const handStrength = evaluateHandStrength(botHand, trumpSuit);
+        if (handStrength > 150 && Math.random() < 0.3) {
+            return passMoves[0];
+        }
+    }
+    
+    return evaluatedMoves[0].move;
+}
+
+function findBestDefenseMove(gameState: DurakGameState, validMoves: any[], botHand: Card[], opponentHand: Card[], trumpSuit: string, remainingCards: Map<string, number>): any {
+    const defendMoves = validMoves.filter(move => move.type === 'DEFEND');
+    const takeMoves = validMoves.filter(move => move.type === 'TAKE');
+    
+    if (defendMoves.length === 0) {
+        return takeMoves[0] || validMoves[0];
+    }
+    
+    // Count undefended attacks
+    const undefendedAttacks = gameState.table.filter(pair => pair.defendCard === null).length;
+    const totalAttacks = gameState.table.length;
+    
+    // Decision: Should we take or defend?
+    const shouldTake = decideShouldTake(gameState, botHand, opponentHand, trumpSuit, undefendedAttacks, totalAttacks);
+    
+    if (shouldTake && takeMoves.length > 0) {
+        return takeMoves[0];
+    }
+    
+    // Find best defense move
+    const evaluatedDefenses = defendMoves.map(move => {
+        let score = 0;
+        const card = move.card;
+        const cardValue = getCardValue(card);
+        const isTrump = card.suit === trumpSuit;
+        
+        // Get the attack card we're defending against
+        const attackIndex = move.attackIndex || 0;
+        const attackCard = gameState.table[attackIndex]?.attackCard;
+        
+        if (!attackCard) return { move, score: -1000 };
+        
+        const attackValue = getCardValue(attackCard);
+        const attackIsTrump = attackCard.suit === trumpSuit;
+        
+        // Prefer to defend with minimal value difference
+        const valueDifference = cardValue - attackValue;
+        if (valueDifference > 0 && valueDifference <= 2) {
+            score += 20; // Good minimal defense
+        } else if (valueDifference > 2) {
+            score -= valueDifference * 3; // Penalty for overkill
+        }
+        
+        // Avoid using trumps unless necessary
+        if (isTrump && !attackIsTrump) {
+            score -= 15; // Penalty for using trump on non-trump attack
+        }
+        
+        // Prefer to use cards that are less valuable strategically
+        if (cardValue <= 9) {
+            score += 10; // Low cards are good for defense
+        } else if (cardValue >= 13) {
+            score -= 15; // High cards should be saved
+        }
+        
+        // Consider hand size
+        if (botHand.length <= 3) {
+            score += 5; // More willing to defend when few cards
+        }
+        
+        return { move, score };
+    });
+    
+    evaluatedDefenses.sort((a, b) => b.score - a.score);
+    
+    // If best defense is still poor, consider taking
+    if (evaluatedDefenses[0].score < -10 && takeMoves.length > 0) {
+        return takeMoves[0];
+    }
+    
+    return evaluatedDefenses[0].move;
+}
+
+function decideShouldTake(gameState: DurakGameState, botHand: Card[], opponentHand: Card[], trumpSuit: string, undefendedAttacks: number, totalAttacks: number): boolean {
+    // Too many attacks to defend
+    if (undefendedAttacks >= 4) return true;
+    
+    // If we have very few cards and opponent has many
+    if (botHand.length <= 2 && opponentHand.length >= 6) return true;
+    
+    // If we would have to use too many valuable cards
+    const trumpsInHand = botHand.filter(card => card.suit === trumpSuit).length;
+    const highCardsInHand = botHand.filter(card => getCardValue(card) >= 12).length;
+    
+    if (undefendedAttacks >= 2 && (trumpsInHand <= 1 || highCardsInHand >= 4)) return true;
+    
+    // Strategic taking: if we have a very strong hand, sometimes take to get more cards
+    const handStrength = evaluateHandStrength(botHand, trumpSuit);
+    if (handStrength > 200 && botHand.length <= 4 && Math.random() < 0.2) return true;
+    
+    return false;
+}
+
 export const durakLogic: IGameLogic = {
     createInitialState(players: Room['players']): DurakGameState {
         console.log('[Durak] Creating initial state for Attack/Defense Durak with players:', players.length);
@@ -152,7 +433,6 @@ export const durakLogic: IGameLogic = {
         console.log('[Durak] Bot making move for Attack/Defense Durak, player:', playerIndex);
         
         // Check if it's bot's turn
-        const expectedPlayerId = gameState.turn;
         const botIsAttacker = playerIndex === gameState.currentAttackerIndex;
         const botIsDefender = playerIndex === gameState.currentDefenderIndex;
         
@@ -172,70 +452,11 @@ export const durakLogic: IGameLogic = {
             return {};
         }
 
-        // Bot AI strategy for Attack/Defense Durak
-        let selectedMove;
-        
-        if (gameState.phase === 'ATTACKING') {
-            // Attack strategy: prefer lowest value cards, avoid trump cards unless necessary
-            const attackMoves = validMoves.filter(move => move.type === 'ATTACK');
-            const passMoves = validMoves.filter(move => move.type === 'PASS');
-            
-            if (attackMoves.length > 0) {
-                // Sort by card value (prefer lower cards) and trump status (prefer non-trump)
-                attackMoves.sort((a, b) => {
-                    const aIsTrump = a.card.suit === gameState.trumpSuit;
-                    const bIsTrump = b.card.suit === gameState.trumpSuit;
-                    
-                    if (aIsTrump !== bIsTrump) {
-                        return aIsTrump ? 1 : -1; // Prefer non-trump
-                    }
-                    
-                    return a.card.value - b.card.value; // Prefer lower value
-                });
-                
-                // 70% chance to attack, 30% chance to pass if possible
-                if (passMoves.length > 0 && Math.random() < 0.3) {
-                    selectedMove = passMoves[0];
-                } else {
-                    selectedMove = attackMoves[0];
-                }
-            } else if (passMoves.length > 0) {
-                selectedMove = passMoves[0];
-            }
-        } else if (gameState.phase === 'DEFENDING') {
-            // Defense strategy: use minimal cards to defend, take if defense is too costly
-            const defendMoves = validMoves.filter(move => move.type === 'DEFEND');
-            const takeMoves = validMoves.filter(move => move.type === 'TAKE');
-            
-            if (defendMoves.length > 0) {
-                // Count undefended attacks
-                const undefendedAttacks = gameState.table.filter(pair => pair.defendCard === null).length;
-                
-                // If too many attacks to defend (more than 3), consider taking
-                if (undefendedAttacks > 3 && Math.random() < 0.6) {
-                    selectedMove = takeMoves[0];
-                } else {
-                    // Sort defend moves by card value (prefer lower cards) and trump status
-                    defendMoves.sort((a, b) => {
-                        const aIsTrump = a.card.suit === gameState.trumpSuit;
-                        const bIsTrump = b.card.suit === gameState.trumpSuit;
-                        
-                        if (aIsTrump !== bIsTrump) {
-                            return aIsTrump ? 1 : -1; // Prefer non-trump
-                        }
-                        
-                        return a.card.value - b.card.value; // Prefer lower value
-                    });
-                    
-                    selectedMove = defendMoves[0];
-                }
-            } else {
-                selectedMove = takeMoves[0];
-            }
-        }
+        // Use intelligent strategy
+        const selectedMove = findBestDurakMove(gameState, validMoves, playerIndex);
         
         if (selectedMove) {
-            console.log('[Durak] Bot selected move:', selectedMove.type);
+            console.log('[Durak] Bot selected intelligent move:', selectedMove.type);
             return {
                 type: selectedMove.type,
                 card: selectedMove.card,

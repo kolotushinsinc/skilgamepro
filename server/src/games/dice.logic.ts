@@ -239,14 +239,18 @@ export class DiceGameLogic implements IGameLogic {
     private getBestSelection(availableDice: { value: number; index: number }[]): number[] {
         const validSelections = this.generateValidSelections(availableDice);
         let bestSelection: number[] = [];
-        let bestScore = 0;
+        let bestValue = -1;
 
         for (const selection of validSelections) {
             const dice = selection.map(i => availableDice.find(d => d.index === i)!.value);
-            const score = this.calculateSelectionPoints(dice);
+            const points = this.calculateSelectionPoints(dice);
+            const remainingDice = availableDice.length - selection.length;
             
-            if (score > bestScore) {
-                bestScore = score;
+            // Enhanced evaluation: consider both points and future opportunities
+            const value = this.evaluateSelection(points, remainingDice, dice);
+            
+            if (value > bestValue) {
+                bestValue = value;
                 bestSelection = selection;
             }
         }
@@ -327,21 +331,22 @@ export class DiceGameLogic implements IGameLogic {
         const currentScore = gameState.scores[playerIndex];
         const opponentScore = gameState.scores[1 - playerIndex];
         const turnScore = gameState.turnScore;
+        const availableDice = gameState.availableDice;
+        const rollCount = gameState.rollCount;
 
-        // Conservative play when ahead
-        if (currentScore > opponentScore + 2000) {
-            return Math.min(500, turnScore);
-        }
+        // Enhanced risk calculation with multiple factors
+        let baseThreshold = this.getBaseThreshold(currentScore, opponentScore, turnScore);
+        
+        // Adjust for game situation
+        baseThreshold = this.adjustForGameSituation(baseThreshold, currentScore, opponentScore);
+        
+        // Adjust for roll risk
+        baseThreshold = this.adjustForRollRisk(baseThreshold, availableDice, rollCount);
+        
+        // Adjust for endgame
+        baseThreshold = this.adjustForEndgame(baseThreshold, currentScore, opponentScore);
 
-        // Aggressive play when behind
-        if (currentScore < opponentScore - 2000) {
-            return Math.max(1000, turnScore * 2);
-        }
-
-        // Balanced play
-        if (turnScore < 300) return 500;
-        if (turnScore < 600) return 750;
-        return 1000;
+        return Math.max(300, baseThreshold); // Minimum threshold
     }
 
     private processMoveDirect(gameState: IDiceGameState, move: DiceMove, playerId: string, players: Room['players']): { newState: IDiceGameState; error?: string; turnShouldSwitch: boolean } {
@@ -491,6 +496,169 @@ export class DiceGameLogic implements IGameLogic {
         
         // Three pairs
         if (this.isThreePairs(dice)) return true;
+        
+        return false;
+    }
+
+    // Enhanced AI helper methods
+    private evaluateSelection(points: number, remainingDice: number, selectedDice: number[]): number {
+        let value = points;
+        
+        // Bonus for leaving good number of dice (2-4 optimal for continued rolling)
+        if (remainingDice >= 2 && remainingDice <= 4) {
+            value += 50;
+        } else if (remainingDice === 1) {
+            value -= 30; // Risky to leave only 1 die
+        } else if (remainingDice >= 5) {
+            value += 20; // Good for safety
+        }
+        
+        // Bonus for keeping balanced options
+        const uniqueValues = new Set(selectedDice).size;
+        if (uniqueValues <= 2) {
+            value += 20; // Prefer focusing on specific numbers
+        }
+        
+        // Penalty for selecting too few points when many dice available
+        if (points < 200 && remainingDice >= 4) {
+            value -= 100; // Should aim for higher points
+        }
+        
+        // Bonus for high-value combinations
+        if (points >= 1000) {
+            value += 200;
+        } else if (points >= 500) {
+            value += 100;
+        }
+        
+        return value;
+    }
+
+    private getBaseThreshold(currentScore: number, opponentScore: number, turnScore: number): number {
+        const scoreDifference = currentScore - opponentScore;
+        
+        // Base threshold based on current turn score
+        let threshold = 0;
+        if (turnScore < 300) threshold = 500;
+        else if (turnScore < 600) threshold = 750;
+        else if (turnScore < 1000) threshold = 1000;
+        else if (turnScore < 1500) threshold = 1250;
+        else threshold = 1500;
+        
+        // Adjust based on score difference
+        if (scoreDifference > 3000) {
+            threshold *= 0.6; // Very conservative when far ahead
+        } else if (scoreDifference > 1500) {
+            threshold *= 0.8; // Conservative when ahead
+        } else if (scoreDifference < -3000) {
+            threshold *= 1.8; // Very aggressive when far behind
+        } else if (scoreDifference < -1500) {
+            threshold *= 1.4; // Aggressive when behind
+        }
+        
+        return threshold;
+    }
+
+    private adjustForGameSituation(threshold: number, currentScore: number, opponentScore: number): number {
+        // Early game (both players under 3000): more conservative
+        if (currentScore < 3000 && opponentScore < 3000) {
+            threshold *= 0.7;
+        }
+        
+        // Mid game (someone between 3000-7000): balanced
+        // No adjustment needed
+        
+        // Late game (someone over 7000): depends on position
+        if (Math.max(currentScore, opponentScore) > 7000) {
+            if (currentScore < opponentScore) {
+                threshold *= 1.5; // Must take risks when behind late
+            } else {
+                threshold *= 0.5; // Play safe when ahead late
+            }
+        }
+        
+        return threshold;
+    }
+
+    private adjustForRollRisk(threshold: number, availableDice: number, rollCount: number): number {
+        // More dice = lower farkle risk = can be more aggressive
+        if (availableDice >= 5) {
+            threshold *= 1.2; // Can afford to be aggressive
+        } else if (availableDice <= 2) {
+            threshold *= 0.6; // High farkle risk, bank sooner
+        }
+        
+        // More rolls in turn = higher cumulative risk
+        if (rollCount >= 3) {
+            threshold *= 0.7; // Bank sooner after many rolls
+        }
+        
+        return threshold;
+    }
+
+    private adjustForEndgame(threshold: number, currentScore: number, opponentScore: number): number {
+        const targetScore = 10000;
+        
+        // If opponent is close to winning (within 2000 points)
+        if (opponentScore >= targetScore - 2000) {
+            if (currentScore < opponentScore) {
+                // Must take big risks to catch up
+                threshold *= 2.0;
+            } else {
+                // Need to win this turn if possible
+                const pointsNeeded = targetScore - currentScore;
+                if (threshold < pointsNeeded) {
+                    threshold = Math.min(pointsNeeded, 3000);
+                }
+            }
+        }
+        
+        // If we're close to winning
+        if (currentScore >= targetScore - 2000) {
+            const pointsNeeded = targetScore - currentScore;
+            if (pointsNeeded <= 1000) {
+                // Go for the win
+                threshold = Math.max(threshold, pointsNeeded);
+            } else {
+                // Play a bit more conservatively, but not too much
+                threshold *= 0.8;
+            }
+        }
+        
+        return threshold;
+    }
+
+    private calculateFarkleRisk(availableDice: number): number {
+        // Empirical farkle probabilities based on number of dice
+        switch (availableDice) {
+            case 1: return 0.67; // 4/6 chance of farkle with 1 die
+            case 2: return 0.44; // Approximate
+            case 3: return 0.28;
+            case 4: return 0.16;
+            case 5: return 0.08;
+            case 6: return 0.02;
+            default: return 0.5;
+        }
+    }
+
+    private shouldTakeConservativeApproach(gameState: DiceGameState, playerIndex: number): boolean {
+        const currentScore = gameState.scores[playerIndex];
+        const opponentScore = gameState.scores[1 - playerIndex];
+        const turnScore = gameState.turnScore;
+        const availableDice = gameState.availableDice;
+        
+        // Be conservative if:
+        // 1. We're significantly ahead
+        if (currentScore > opponentScore + 3000) return true;
+        
+        // 2. We have a good turn score and high farkle risk
+        if (turnScore >= 1000 && availableDice <= 2) return true;
+        
+        // 3. Late in game and we're ahead
+        if (currentScore >= 8000 && currentScore > opponentScore) return true;
+        
+        // 4. Early in game and we have decent points
+        if (Math.max(currentScore, opponentScore) < 3000 && turnScore >= 600) return true;
         
         return false;
     }

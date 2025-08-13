@@ -56,6 +56,255 @@ function createEngineFromState(gameState: ChessState): ChessEngine {
     return engine;
 }
 
+// Chess AI evaluation and strategy functions
+const PIECE_VALUES: { [key in PieceType]: number } = {
+    'pawn': 100,
+    'knight': 320,
+    'bishop': 330,
+    'rook': 500,
+    'queen': 900,
+    'king': 20000
+};
+
+// Position bonus tables (from white's perspective)
+const PAWN_TABLE = [
+    0,  0,  0,  0,  0,  0,  0,  0,
+    50, 50, 50, 50, 50, 50, 50, 50,
+    10, 10, 20, 30, 30, 20, 10, 10,
+    5,  5, 10, 25, 25, 10,  5,  5,
+    0,  0,  0, 20, 20,  0,  0,  0,
+    5, -5,-10,  0,  0,-10, -5,  5,
+    5, 10, 10,-20,-20, 10, 10,  5,
+    0,  0,  0,  0,  0,  0,  0,  0
+];
+
+const KNIGHT_TABLE = [
+    -50,-40,-30,-30,-30,-30,-40,-50,
+    -40,-20,  0,  0,  0,  0,-20,-40,
+    -30,  0, 10, 15, 15, 10,  0,-30,
+    -30,  5, 15, 20, 20, 15,  5,-30,
+    -30,  0, 15, 20, 20, 15,  0,-30,
+    -30,  5, 10, 15, 15, 10,  5,-30,
+    -40,-20,  0,  5,  5,  0,-20,-40,
+    -50,-40,-30,-30,-30,-30,-40,-50
+];
+
+const BISHOP_TABLE = [
+    -20,-10,-10,-10,-10,-10,-10,-20,
+    -10,  0,  0,  0,  0,  0,  0,-10,
+    -10,  0,  5, 10, 10,  5,  0,-10,
+    -10,  5,  5, 10, 10,  5,  5,-10,
+    -10,  0, 10, 10, 10, 10,  0,-10,
+    -10, 10, 10, 10, 10, 10, 10,-10,
+    -10,  5,  0,  0,  0,  0,  5,-10,
+    -20,-10,-10,-10,-10,-10,-10,-20
+];
+
+const ROOK_TABLE = [
+    0,  0,  0,  0,  0,  0,  0,  0,
+    5, 10, 10, 10, 10, 10, 10,  5,
+    -5,  0,  0,  0,  0,  0,  0, -5,
+    -5,  0,  0,  0,  0,  0,  0, -5,
+    -5,  0,  0,  0,  0,  0,  0, -5,
+    -5,  0,  0,  0,  0,  0,  0, -5,
+    -5,  0,  0,  0,  0,  0,  0, -5,
+    0,  0,  0,  5,  5,  0,  0,  0
+];
+
+const QUEEN_TABLE = [
+    -20,-10,-10, -5, -5,-10,-10,-20,
+    -10,  0,  0,  0,  0,  0,  0,-10,
+    -10,  0,  5,  5,  5,  5,  0,-10,
+    -5,  0,  5,  5,  5,  5,  0, -5,
+    0,  0,  5,  5,  5,  5,  0, -5,
+    -10,  5,  5,  5,  5,  5,  0,-10,
+    -10,  0,  5,  0,  0,  0,  0,-10,
+    -20,-10,-10, -5, -5,-10,-10,-20
+];
+
+const KING_MIDDLE_GAME_TABLE = [
+    -30,-40,-40,-50,-50,-40,-40,-30,
+    -30,-40,-40,-50,-50,-40,-40,-30,
+    -30,-40,-40,-50,-50,-40,-40,-30,
+    -30,-40,-40,-50,-50,-40,-40,-30,
+    -20,-30,-30,-40,-40,-30,-30,-20,
+    -10,-20,-20,-20,-20,-20,-20,-10,
+    20, 20,  0,  0,  0,  0, 20, 20,
+    20, 30, 10,  0,  0, 10, 30, 20
+];
+
+function evaluatePosition(board: ChessBoard, color: PieceColor): number {
+    let score = 0;
+    
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const piece = board[row][col];
+            if (!piece) continue;
+            
+            const pieceValue = PIECE_VALUES[piece.type];
+            const position = row * 8 + col;
+            const adjustedPosition = piece.color === 'white' ? position : 63 - position;
+            
+            let positionalBonus = 0;
+            switch (piece.type) {
+                case 'pawn':
+                    positionalBonus = PAWN_TABLE[adjustedPosition];
+                    break;
+                case 'knight':
+                    positionalBonus = KNIGHT_TABLE[adjustedPosition];
+                    break;
+                case 'bishop':
+                    positionalBonus = BISHOP_TABLE[adjustedPosition];
+                    break;
+                case 'rook':
+                    positionalBonus = ROOK_TABLE[adjustedPosition];
+                    break;
+                case 'queen':
+                    positionalBonus = QUEEN_TABLE[adjustedPosition];
+                    break;
+                case 'king':
+                    positionalBonus = KING_MIDDLE_GAME_TABLE[adjustedPosition];
+                    break;
+            }
+            
+            const totalValue = pieceValue + positionalBonus;
+            
+            if (piece.color === color) {
+                score += totalValue;
+            } else {
+                score -= totalValue;
+            }
+        }
+    }
+    
+    return score;
+}
+
+function simulateChessMove(gameState: ChessState, move: { from: Position; to: Position }, engine: ChessEngine): ChessState | null {
+    try {
+        // Create a copy of the engine state
+        const testEngine = createEngineFromState(gameState);
+        const moveSuccess = testEngine.makeMove(move.from, move.to);
+        
+        if (!moveSuccess) return null;
+        
+        return {
+            ...gameState,
+            board: testEngine.getBoard(),
+            currentPlayer: testEngine.getCurrentPlayer(),
+            moveHistory: [...gameState.moveHistory, move]
+        };
+    } catch (error) {
+        return null;
+    }
+}
+
+function findBestChessMove(gameState: ChessState, engine: ChessEngine, color: PieceColor): GameMove | null {
+    const allMoves: { from: Position; to: Position; piece: ChessPiece; score: number }[] = [];
+    
+    // Generate all possible moves
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const piece = gameState.board[row][col];
+            if (piece && piece.color === color) {
+                const possibleMoves = engine.getPossibleMoves({ row, col });
+                for (const move of possibleMoves) {
+                    allMoves.push({
+                        from: { row, col },
+                        to: move,
+                        piece,
+                        score: 0
+                    });
+                }
+            }
+        }
+    }
+    
+    if (allMoves.length === 0) return null;
+    
+    // Evaluate each move
+    for (const move of allMoves) {
+        let score = 0;
+        
+        // Basic capture evaluation
+        const targetPiece = gameState.board[move.to.row][move.to.col];
+        if (targetPiece && targetPiece.color !== color) {
+            score += PIECE_VALUES[targetPiece.type];
+            
+            // Bonus for capturing with less valuable pieces
+            score += PIECE_VALUES[targetPiece.type] - PIECE_VALUES[move.piece.type];
+        }
+        
+        // Simulate the move to evaluate position
+        const newState = simulateChessMove(gameState, move, engine);
+        if (newState) {
+            const positionScore = evaluatePosition(newState.board, color);
+            const currentScore = evaluatePosition(gameState.board, color);
+            score += (positionScore - currentScore) * 0.1; // Weight positional improvements
+        }
+        
+        // Center control bonus
+        const centerSquares = [
+            { row: 3, col: 3 }, { row: 3, col: 4 },
+            { row: 4, col: 3 }, { row: 4, col: 4 }
+        ];
+        if (centerSquares.some(square => square.row === move.to.row && square.col === move.to.col)) {
+            score += 20;
+        }
+        
+        // Development bonus (knights and bishops moving from back rank)
+        if ((move.piece.type === 'knight' || move.piece.type === 'bishop')) {
+            const backRank = color === 'white' ? 7 : 0;
+            if (move.from.row === backRank && move.to.row !== backRank) {
+                score += 15;
+            }
+        }
+        
+        // Avoid moving the same piece multiple times in opening
+        if (gameState.moveCount < 10) {
+            const pieceAlreadyMoved = gameState.moveHistory.some(prevMove =>
+                prevMove.from.row === move.from.row && prevMove.from.col === move.from.col
+            );
+            if (pieceAlreadyMoved && move.piece.type !== 'pawn') {
+                score -= 10;
+            }
+        }
+        
+        // King safety - avoid early king moves
+        if (move.piece.type === 'king' && gameState.moveCount < 8) {
+            score -= 50;
+        }
+        
+        move.score = score;
+    }
+    
+    // Sort moves by score and add some randomness to top moves
+    allMoves.sort((a, b) => b.score - a.score);
+    
+    // Choose from top 3 moves with some randomness
+    const topMoves = allMoves.slice(0, Math.min(3, allMoves.length));
+    const weights = [0.6, 0.3, 0.1];
+    const random = Math.random();
+    let cumulativeWeight = 0;
+    
+    for (let i = 0; i < topMoves.length; i++) {
+        cumulativeWeight += weights[i] || 0;
+        if (random <= cumulativeWeight) {
+            const selectedMove = topMoves[i];
+            return {
+                from: selectedMove.from,
+                to: selectedMove.to
+            };
+        }
+    }
+    
+    // Fallback to best move
+    return {
+        from: allMoves[0].from,
+        to: allMoves[0].to
+    };
+}
+
 export const chessLogic: IGameLogic = {
     createInitialState(players: Room['players']): ChessState {
         console.log('[Chess] Creating initial state for players:', players.length);
@@ -177,49 +426,11 @@ export const chessLogic: IGameLogic = {
         }
 
         const engine = createEngineFromState(gameState);
+        const bestMove = findBestChessMove(gameState, engine, expectedColor);
         
-        const allMoves: { from: Position; to: Position; piece: ChessPiece }[] = [];
-        
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 8; col++) {
-                const piece = gameState.board[row][col];
-                if (piece && piece.color === expectedColor) {
-                    const possibleMoves = engine.getPossibleMoves({ row, col });
-                    for (const move of possibleMoves) {
-                        allMoves.push({
-                            from: { row, col },
-                            to: move,
-                            piece
-                        });
-                    }
-                }
-            }
-        }
-
-        console.log('[Chess] Available moves for bot:', allMoves.length);
-        
-        if (allMoves.length > 0) {
-            const captureMoves = allMoves.filter(move => {
-                const targetPiece = gameState.board[move.to.row][move.to.col];
-                return targetPiece && targetPiece.color !== expectedColor;
-            });
-            
-            let selectedMove;
-            if (captureMoves.length > 0) {
-                selectedMove = captureMoves[Math.floor(Math.random() * captureMoves.length)];
-                console.log('[Chess] Bot chose capture move');
-            } else {
-                selectedMove = allMoves[Math.floor(Math.random() * allMoves.length)];
-                console.log('[Chess] Bot chose random move');
-            }
-            
-            const botMove = {
-                from: selectedMove.from,
-                to: selectedMove.to
-            };
-            
-            console.log('[Chess] Bot move:', botMove);
-            return botMove;
+        if (bestMove) {
+            console.log('[Chess] Bot selected intelligent move:', bestMove);
+            return bestMove;
         }
         
         console.log('[Chess] No moves available for bot');

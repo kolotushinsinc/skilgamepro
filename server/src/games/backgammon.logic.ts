@@ -34,6 +34,264 @@ function createEngineFromState(gameState: BackgammonState): BackgammonEngine {
     return engine;
 }
 
+// Enhanced Backgammon AI functions
+function calculatePipCount(board: Point[], bar: any, color: PlayerColor): number {
+    let pipCount = 0;
+    
+    // Count pieces on the bar
+    const barPieces = bar[color] || [];
+    pipCount += barPieces.length * (color === 'white' ? 25 : 0);
+    
+    // Count pieces on the board
+    for (let i = 0; i < 24; i++) {
+        const point = board[i];
+        if (point && point.pieces) {
+            const pieces = point.pieces.filter((piece: any) => piece.color === color);
+            if (pieces.length > 0) {
+                const distance = color === 'white' ? (24 - i) : (i + 1);
+                pipCount += pieces.length * distance;
+            }
+        }
+    }
+    
+    return pipCount;
+}
+
+function evaluatePosition(gameState: BackgammonState, color: PlayerColor): number {
+    let score = 0;
+    const opponentColor = color === 'white' ? 'black' : 'white';
+    
+    // Pip count advantage (lower is better)
+    const myPips = calculatePipCount(gameState.board, gameState.bar, color);
+    const opponentPips = calculatePipCount(gameState.board, gameState.bar, opponentColor);
+    score += (opponentPips - myPips) * 0.5;
+    
+    // Penalty for pieces on the bar
+    const myBarPieces = gameState.bar[color]?.length || 0;
+    const opponentBarPieces = gameState.bar[opponentColor]?.length || 0;
+    score -= myBarPieces * 10;
+    score += opponentBarPieces * 8;
+    
+    // Evaluate board positions
+    for (let i = 0; i < 24; i++) {
+        const point = gameState.board[i];
+        if (!point || !point.pieces) continue;
+        
+        const myPieces = point.pieces.filter((piece: any) => piece.color === color);
+        const opponentPieces = point.pieces.filter((piece: any) => piece.color === opponentColor);
+        
+        if (myPieces.length > 0) {
+            // Bonus for multiple pieces (safe)
+            if (myPieces.length >= 2) {
+                score += 2;
+                
+                // Extra bonus for blocking points in opponent's home board
+                const isOpponentHomeBoard = color === 'white' ? (i < 6) : (i >= 18);
+                if (isOpponentHomeBoard) {
+                    score += 3;
+                }
+            } else {
+                // Penalty for blots (single pieces)
+                const vulnerabilityPenalty = calculateVulnerability(gameState, i, color);
+                score -= vulnerabilityPenalty;
+            }
+            
+            // Bonus for advanced pieces
+            const advancement = color === 'white' ? (24 - i) : (i + 1);
+            score += Math.max(0, advancement - 12) * 0.1;
+        }
+        
+        if (opponentPieces.length === 1) {
+            // Opportunity to hit opponent's blot
+            const hitChance = calculateHitProbability(i, color);
+            score += hitChance * 2;
+        }
+    }
+    
+    // Bonus for pieces in home board (ready to bear off)
+    const homeBoard = color === 'white' ? [18, 19, 20, 21, 22, 23] : [0, 1, 2, 3, 4, 5];
+    let piecesInHome = 0;
+    for (const pointIndex of homeBoard) {
+        const point = gameState.board[pointIndex];
+        if (point && point.pieces) {
+            const myPieces = point.pieces.filter((piece: any) => piece.color === color);
+            piecesInHome += myPieces.length;
+        }
+    }
+    score += piecesInHome * 1.5;
+    
+    return score;
+}
+
+function calculateVulnerability(gameState: BackgammonState, pointIndex: number, color: PlayerColor): number {
+    const opponentColor = color === 'white' ? 'black' : 'white';
+    let vulnerability = 0;
+    
+    // Calculate probability of being hit
+    for (let distance = 1; distance <= 6; distance++) {
+        const opponentPosition = color === 'white' ? pointIndex + distance : pointIndex - distance;
+        
+        // Check if opponent can hit from this position
+        if (opponentPosition >= 0 && opponentPosition < 24) {
+            const point = gameState.board[opponentPosition];
+            if (point && point.pieces) {
+                const opponentPieces = point.pieces.filter((piece: any) => piece.color === opponentColor);
+                if (opponentPieces.length > 0) {
+                    // Probability of rolling this exact distance
+                    const rollProbability = distance === 6 ? 11/36 : (6 - distance + 1) / 36;
+                    vulnerability += rollProbability * opponentPieces.length;
+                }
+            }
+        }
+        
+        // Check bar pieces
+        const barPieces = gameState.bar[opponentColor]?.length || 0;
+        if (barPieces > 0) {
+            const targetPoint = color === 'white' ? (25 - distance) : (distance - 1);
+            if (targetPoint === pointIndex) {
+                vulnerability += 1/6 * barPieces;
+            }
+        }
+    }
+    
+    return Math.min(vulnerability * 3, 8); // Cap the penalty
+}
+
+function calculateHitProbability(targetPoint: number, color: PlayerColor): number {
+    // Calculate probability of hitting a piece at targetPoint
+    let probability = 0;
+    
+    for (let distance = 1; distance <= 6; distance++) {
+        const shooterPosition = color === 'white' ? targetPoint - distance : targetPoint + distance;
+        
+        if (shooterPosition >= 0 && shooterPosition < 24) {
+            // Direct hit probability
+            probability += 1/6;
+        }
+    }
+    
+    // Double probability for distances that can be made with two dice
+    for (let die1 = 1; die1 <= 6; die1++) {
+        for (let die2 = 1; die2 <= 6; die2++) {
+            if (die1 + die2 <= 6 && die1 + die2 >= 1) {
+                const shooterPosition = color === 'white' ? targetPoint - (die1 + die2) : targetPoint + (die1 + die2);
+                if (shooterPosition >= 0 && shooterPosition < 24) {
+                    probability += 1/36;
+                }
+            }
+        }
+    }
+    
+    return Math.min(probability, 1);
+}
+
+function simulateBackgammonMove(gameState: BackgammonState, move: any, engine: BackgammonEngine): BackgammonState | null {
+    try {
+        const testEngine = createEngineFromState(gameState);
+        const moveSuccess = testEngine.makeMove(move.from, move.to, move.dieValue);
+        
+        if (!moveSuccess) return null;
+        
+        const newEngineState = testEngine.getGameState();
+        return {
+            ...gameState,
+            board: newEngineState.board,
+            bar: newEngineState.bar,
+            home: newEngineState.home,
+            diceRoll: newEngineState.diceRoll
+        };
+    } catch (error) {
+        return null;
+    }
+}
+
+function findBestBackgammonMove(gameState: BackgammonState, possibleMoves: any[], color: PlayerColor, engine: BackgammonEngine): any {
+    if (possibleMoves.length === 0) return null;
+    if (possibleMoves.length === 1) return possibleMoves[0];
+    
+    // Evaluate each possible move
+    const evaluatedMoves = possibleMoves.map(move => {
+        let score = 0;
+        
+        // Prioritize bear off moves (highest priority)
+        if (move.to === -2) {
+            score += 100;
+            // Prefer bearing off from higher points first
+            score += move.from;
+        }
+        
+        // High priority for getting pieces off the bar
+        if (move.from === -1) {
+            score += 80;
+            // Prefer safer landing spots
+            const targetPoint = gameState.board[move.to];
+            if (targetPoint && targetPoint.pieces && targetPoint.pieces.length === 1) {
+                const enemyPiece = targetPoint.pieces[0];
+                if (enemyPiece.color !== color) {
+                    score += 20; // Bonus for hitting
+                }
+            }
+        }
+        
+        // Simulate the move and evaluate resulting position
+        const newState = simulateBackgammonMove(gameState, move, engine);
+        if (newState) {
+            const positionScore = evaluatePosition(newState, color);
+            const currentScore = evaluatePosition(gameState, color);
+            score += (positionScore - currentScore);
+        }
+        
+        // Bonus for hitting opponent pieces
+        const targetPoint = gameState.board[move.to];
+        if (targetPoint && targetPoint.pieces && targetPoint.pieces.length === 1) {
+            const targetPiece = targetPoint.pieces[0];
+            if (targetPiece.color !== color) {
+                score += 15;
+            }
+        }
+        
+        // Bonus for making safe moves (creating or joining safe points)
+        const landingPoint = gameState.board[move.to];
+        if (landingPoint && landingPoint.pieces) {
+            const samePieces = landingPoint.pieces.filter((piece: any) => piece.color === color);
+            if (samePieces.length >= 1) {
+                score += 5; // Making a safe point
+            }
+        }
+        
+        // Penalty for leaving blots
+        const sourcePoint = gameState.board[move.from];
+        if (sourcePoint && sourcePoint.pieces && sourcePoint.pieces.length === 2) {
+            // Would leave a blot
+            const vulnerability = calculateVulnerability(gameState, move.from, color);
+            score -= vulnerability;
+        }
+        
+        // Small randomness to avoid completely predictable play
+        score += Math.random() * 0.5;
+        
+        return { move, score };
+    });
+    
+    // Sort by score and pick the best
+    evaluatedMoves.sort((a, b) => b.score - a.score);
+    
+    // Add some variety by occasionally picking from top 3 moves
+    const topMoves = evaluatedMoves.slice(0, Math.min(3, evaluatedMoves.length));
+    const weights = [0.7, 0.2, 0.1];
+    const random = Math.random();
+    let cumulativeWeight = 0;
+    
+    for (let i = 0; i < topMoves.length; i++) {
+        cumulativeWeight += weights[i] || 0;
+        if (random <= cumulativeWeight) {
+            return topMoves[i].move;
+        }
+    }
+    
+    return evaluatedMoves[0].move;
+}
+
 export const backgammonLogic: IGameLogic = {
     createInitialState(players: Room['players']): BackgammonState {
         console.log('[Backgammon] Creating initial state for players:', players.length);
@@ -168,49 +426,20 @@ export const backgammonLogic: IGameLogic = {
         }
 
         const engine = createEngineFromState(gameState);
-        
         const possibleMoves = engine.getPossibleMoves();
         
         console.log('[Backgammon] Available moves for bot:', possibleMoves.length);
         
         if (possibleMoves.length > 0) {
-            let selectedMove = possibleMoves[0];
-            
-            const bearOffMoves = possibleMoves.filter(move => move.to === -2);
-            if (bearOffMoves.length > 0) {
-                selectedMove = bearOffMoves[0];
-                console.log('[Backgammon] Bot chose bear off move');
-            } else {
-                const barMoves = possibleMoves.filter(move => move.from === -1);
-                if (barMoves.length > 0) {
-                    selectedMove = barMoves[0];
-                    console.log('[Backgammon] Bot chose bar move');
-                } else {
-                    const forwardMoves = possibleMoves.filter(move => {
-                        if (expectedColor === 'white') {
-                            return move.to > move.from;
-                        } else {
-                            return move.to < move.from;
-                        }
-                    });
-                    
-                    if (forwardMoves.length > 0) {
-                        selectedMove = forwardMoves[Math.floor(Math.random() * forwardMoves.length)];
-                        console.log('[Backgammon] Bot chose forward move');
-                    } else {
-                        selectedMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-                        console.log('[Backgammon] Bot chose random move');
-                    }
-                }
-            }
+            const bestMove = findBestBackgammonMove(gameState, possibleMoves, expectedColor, engine);
             
             const botMove = {
-                from: selectedMove.from,
-                to: selectedMove.to,
-                dieValue: selectedMove.dieValue
+                from: bestMove.from,
+                to: bestMove.to,
+                dieValue: bestMove.dieValue
             };
             
-            console.log('[Backgammon] Bot move:', botMove);
+            console.log('[Backgammon] Bot selected intelligent move:', botMove);
             return botMove;
         }
         

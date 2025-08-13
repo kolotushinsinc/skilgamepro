@@ -8,6 +8,176 @@ type DominoMove = {
     side?: 'left' | 'right';
 };
 
+// Enhanced Domino AI functions
+function analyzeHand(hand: Domino[]): Map<number, number> {
+    const numberCount = new Map<number, number>();
+    
+    // Count occurrences of each number
+    for (const domino of hand) {
+        numberCount.set(domino.left, (numberCount.get(domino.left) || 0) + 1);
+        numberCount.set(domino.right, (numberCount.get(domino.right) || 0) + 1);
+    }
+    
+    return numberCount;
+}
+
+function calculateHandValue(hand: Domino[]): number {
+    return hand.reduce((sum, domino) => sum + domino.left + domino.right, 0);
+}
+
+function getChainEnds(gameState: DominoGameState): { left: number; right: number } {
+    if (gameState.board.length === 0) {
+        return { left: -1, right: -1 };
+    }
+    
+    // Get the actual ends from chain ends or board
+    const leftEnd = gameState.chainEnds?.left?.value ?? gameState.board[0]?.left ?? -1;
+    const rightEnd = gameState.chainEnds?.right?.value ?? gameState.board[gameState.board.length - 1]?.right ?? -1;
+    
+    return { left: leftEnd, right: rightEnd };
+}
+
+function canPlayNumber(hand: Domino[], number: number): boolean {
+    return hand.some(domino => domino.left === number || domino.right === number);
+}
+
+function evaluateDominoMove(gameState: DominoGameState, move: any, playerIndex: 0 | 1, botHand: Domino[], opponentHand: Domino[]): number {
+    let score = 0;
+    const domino = move.domino;
+    const side = move.side;
+    
+    if (!domino) return -1000;
+    
+    const dominoValue = domino.left + domino.right;
+    const isDouble = domino.left === domino.right;
+    
+    // 1. Priority: Get rid of high-value dominoes
+    score += dominoValue * 2;
+    
+    // 2. Bonus for playing doubles (they can be harder to play later)
+    if (isDouble) {
+        score += 15;
+    }
+    
+    // 3. Hand control strategy
+    const botNumberCount = analyzeHand(botHand);
+    const chainEnds = getChainEnds(gameState);
+    
+    // The number that will be exposed after playing this domino
+    let exposedNumber: number;
+    if (side === 'left') {
+        exposedNumber = domino.left === chainEnds.left ? domino.right : domino.left;
+    } else {
+        exposedNumber = domino.right === chainEnds.right ? domino.left : domino.right;
+    }
+    
+    // 4. Control strategy: prefer numbers we have more of
+    const numberCount = botNumberCount.get(exposedNumber) || 0;
+    score += numberCount * 8;
+    
+    // 5. Blocking strategy: estimate opponent's ability to play
+    const opponentCanPlay = canPlayNumber(opponentHand, exposedNumber);
+    if (!opponentCanPlay) {
+        score += 25; // High bonus for potential blocking
+    }
+    
+    // 6. Flexibility bonus: prefer keeping diverse numbers
+    const uniqueNumbers = new Set<number>();
+    for (const d of botHand) {
+        if (d.id !== domino.id) { // Exclude the domino we're playing
+            uniqueNumbers.add(d.left);
+            uniqueNumbers.add(d.right);
+        }
+    }
+    score += uniqueNumbers.size * 2;
+    
+    // 7. Endgame strategy: when few dominoes left, minimize hand value
+    if (botHand.length <= 3) {
+        score += dominoValue * 3; // Extra priority to get rid of high values
+    }
+    
+    // 8. Opening strategy: if this is early in game, prefer middle numbers (more flexible)
+    if (gameState.board.length <= 3) {
+        if (exposedNumber >= 3 && exposedNumber <= 4) {
+            score += 5;
+        }
+    }
+    
+    // 9. Side preference: slightly prefer playing on the side that gives more control
+    const leftEnd = chainEnds.left;
+    const rightEnd = chainEnds.right;
+    const leftCount = botNumberCount.get(leftEnd) || 0;
+    const rightCount = botNumberCount.get(rightEnd) || 0;
+    
+    if (side === 'left' && leftCount > rightCount) {
+        score += 3;
+    } else if (side === 'right' && rightCount > leftCount) {
+        score += 3;
+    }
+    
+    // 10. Avoid leaving only high-value dominoes
+    const remainingAfterPlay = botHand.filter(d => d.id !== domino.id);
+    const avgRemainingValue = remainingAfterPlay.length > 0 ?
+        calculateHandValue(remainingAfterPlay) / remainingAfterPlay.length : 0;
+    if (avgRemainingValue > 8 && remainingAfterPlay.length > 1) {
+        score += 5; // Bonus for playing when hand average is high
+    }
+    
+    return score;
+}
+
+function findBestDominoMove(gameState: DominoGameState, validMoves: any[], playerIndex: 0 | 1): any {
+    const botHand = gameState.players[playerIndex]?.hand || [];
+    const opponentIndex = playerIndex === 0 ? 1 : 0;
+    const opponentHand = gameState.players[opponentIndex]?.hand || [];
+    
+    // Prioritize playing dominoes over drawing/passing
+    const playMoves = validMoves.filter(move => move.type === 'PLAY');
+    const drawMoves = validMoves.filter(move => move.type === 'DRAW');
+    const passMoves = validMoves.filter(move => move.type === 'PASS');
+    
+    if (playMoves.length > 0) {
+        // Evaluate each play move
+        const evaluatedMoves = playMoves.map(move => {
+            const score = evaluateDominoMove(gameState, move, playerIndex, botHand, opponentHand);
+            return { move, score };
+        });
+        
+        // Sort by score and add some randomness to avoid predictability
+        evaluatedMoves.forEach(item => {
+            item.score += Math.random() * 2; // Small random factor
+        });
+        
+        evaluatedMoves.sort((a, b) => b.score - a.score);
+        
+        // Sometimes choose from top 2-3 moves for variety
+        const topMoves = evaluatedMoves.slice(0, Math.min(3, evaluatedMoves.length));
+        const weights = [0.6, 0.3, 0.1];
+        const random = Math.random();
+        let cumulativeWeight = 0;
+        
+        for (let i = 0; i < topMoves.length; i++) {
+            cumulativeWeight += weights[i] || 0;
+            if (random <= cumulativeWeight) {
+                return topMoves[i].move;
+            }
+        }
+        
+        return evaluatedMoves[0].move;
+    }
+    
+    // If no play moves available, prefer drawing over passing when possible
+    if (drawMoves.length > 0) {
+        return drawMoves[0];
+    }
+    
+    if (passMoves.length > 0) {
+        return passMoves[0];
+    }
+    
+    return validMoves[0] || null;
+}
+
 export const dominoLogic: IGameLogic = {
     createInitialState(players: Room['players']): DominoGameState {
         console.log('[Domino] Creating initial state for players:', players.length);
@@ -161,31 +331,11 @@ export const dominoLogic: IGameLogic = {
             return {};
         }
 
-        // Bot AI strategy for Domino
-        let selectedMove;
-        
-        // Prioritize playing dominoes over drawing
-        const playMoves = validMoves.filter(move => move.type === 'PLAY');
-        const drawMoves = validMoves.filter(move => move.type === 'DRAW');
-        const passMoves = validMoves.filter(move => move.type === 'PASS');
-        
-        if (playMoves.length > 0) {
-            // Strategy: prefer playing dominoes with higher pip count to get rid of high-value dominoes
-            playMoves.sort((a, b) => {
-                const aValue = a.domino.left + a.domino.right;
-                const bValue = b.domino.left + b.domino.right;
-                return bValue - aValue; // Higher value first
-            });
-            
-            selectedMove = playMoves[0];
-        } else if (drawMoves.length > 0) {
-            selectedMove = drawMoves[0];
-        } else if (passMoves.length > 0) {
-            selectedMove = passMoves[0];
-        }
+        // Use intelligent strategy
+        const selectedMove = findBestDominoMove(gameState, validMoves, playerIndex);
         
         if (selectedMove) {
-            console.log('[Domino] Bot selected move:', selectedMove.type);
+            console.log('[Domino] Bot selected intelligent move:', selectedMove.type);
             return {
                 type: selectedMove.type,
                 domino: selectedMove.domino,

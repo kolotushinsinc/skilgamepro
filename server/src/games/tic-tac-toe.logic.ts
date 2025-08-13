@@ -6,6 +6,100 @@ type TicTacToeState = {
     turn: string;
 };
 
+// Minimax algorithm for intelligent bot play
+function checkWinner(board: (string | null)[]): string | null {
+    const winningCombinations = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+        [0, 4, 8], [2, 4, 6] // diagonals
+    ];
+
+    for (const combination of winningCombinations) {
+        const [a, b, c] = combination;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return board[a];
+        }
+    }
+    return null;
+}
+
+function isBoardFull(board: (string | null)[]): boolean {
+    return board.every(cell => cell !== null);
+}
+
+function getAvailableMoves(board: (string | null)[]): number[] {
+    const moves: number[] = [];
+    board.forEach((cell, index) => {
+        if (cell === null) {
+            moves.push(index);
+        }
+    });
+    return moves;
+}
+
+function minimax(board: (string | null)[], depth: number, isMaximizing: boolean, botSymbol: string, humanSymbol: string): number {
+    const winner = checkWinner(board);
+    
+    // Terminal states
+    if (winner === botSymbol) return 10 - depth; // Bot wins (prefer faster wins)
+    if (winner === humanSymbol) return depth - 10; // Human wins (prefer slower losses)
+    if (isBoardFull(board)) return 0; // Draw
+    
+    if (isMaximizing) {
+        let maxEval = -Infinity;
+        const availableMoves = getAvailableMoves(board);
+        
+        for (const move of availableMoves) {
+            board[move] = botSymbol;
+            const eval_ = minimax(board, depth + 1, false, botSymbol, humanSymbol);
+            board[move] = null;
+            maxEval = Math.max(maxEval, eval_);
+        }
+        return maxEval;
+    } else {
+        let minEval = Infinity;
+        const availableMoves = getAvailableMoves(board);
+        
+        for (const move of availableMoves) {
+            board[move] = humanSymbol;
+            const eval_ = minimax(board, depth + 1, true, botSymbol, humanSymbol);
+            board[move] = null;
+            minEval = Math.min(minEval, eval_);
+        }
+        return minEval;
+    }
+}
+
+function findBestMove(board: (string | null)[], botSymbol: string, humanSymbol: string): number {
+    const availableMoves = getAvailableMoves(board);
+    
+    if (availableMoves.length === 0) return -1;
+    
+    // For the first move, choose center or corner for better strategy
+    if (availableMoves.length === 9) {
+        // Prefer center, then corners
+        if (board[4] === null) return 4; // center
+        const corners = [0, 2, 6, 8];
+        return corners[Math.floor(Math.random() * corners.length)];
+    }
+    
+    let bestMove = availableMoves[0];
+    let bestValue = -Infinity;
+    
+    for (const move of availableMoves) {
+        board[move] = botSymbol;
+        const moveValue = minimax(board, 0, false, botSymbol, humanSymbol);
+        board[move] = null;
+        
+        if (moveValue > bestValue) {
+            bestValue = moveValue;
+            bestMove = move;
+        }
+    }
+    
+    return bestMove;
+}
+
 export const ticTacToeLogic: IGameLogic = {
     createInitialState(players: Room['players']): TicTacToeState {
         console.log(`[TicTacToe] Creating initial state for players:`, players.map(p => ({ 
@@ -106,8 +200,13 @@ export const ticTacToeLogic: IGameLogic = {
     },
     
     makeBotMove(gameState: { board: (string | null)[] }, playerIndex: 0 | 1): GameMove {
+        const board = gameState.board;
+        const botSymbol = playerIndex === 0 ? 'X' : 'O';
+        const humanSymbol = playerIndex === 0 ? 'O' : 'X';
+
+        // Get available moves
         const availableCells: number[] = [];
-        gameState.board.forEach((cell, index) => {
+        board.forEach((cell, index) => {
             if (cell === null) {
                 availableCells.push(index);
             }
@@ -117,9 +216,8 @@ export const ticTacToeLogic: IGameLogic = {
             return { cellIndex: -1 };
         }
 
-        const randomIndex = Math.floor(Math.random() * availableCells.length);
-        const randomCell = availableCells[randomIndex];
-
-        return { cellIndex: randomCell };
+        // Use minimax algorithm for optimal play
+        const bestMove = findBestMove(board, botSymbol, humanSymbol);
+        return { cellIndex: bestMove };
     }
 };

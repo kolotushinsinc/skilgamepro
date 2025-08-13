@@ -26,6 +26,8 @@ interface GameRoomState {
     players: Player[];
     gameState: { board: ('X' | 'O' | null)[]; turn: string; };
     bet: number;
+    isPrivate?: boolean;
+    invitationToken?: string;
 }
 
 const formatGameName = (gameType: string = ''): string => {
@@ -62,6 +64,7 @@ const GamePage: React.FC = () => {
         result: 'win' as 'win' | 'lose' | 'draw',
         opponentName: ''
     });
+    const [showInvitationLink, setShowInvitationLink] = useState(false);
     const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -220,6 +223,18 @@ const GamePage: React.FC = () => {
         } else {
             navigate(`/lobby/${gameType}`);
         }
+    };
+
+    const copyInvitationLink = () => {
+        if (roomState?.invitationToken) {
+            const invitationUrl = `http://localhost:3000/private-room/${roomState.invitationToken}`;
+            navigator.clipboard.writeText(invitationUrl);
+            alert('Private room invitation link copied to clipboard!');
+        }
+    };
+
+    const toggleInvitationLink = () => {
+        setShowInvitationLink(!showInvitationLink);
     };
 
     const handleRollDice = () => {
@@ -394,8 +409,72 @@ const GamePage: React.FC = () => {
                     <div>
                         <h1>{formatGameName(gameType)}</h1>
                         {isTournamentGame && <p style={{fontSize: '0.9em', opacity: 0.8}}>Tournament Match</p>}
+                        {roomState?.isPrivate && (
+                            <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
+                                <span style={{fontSize: '0.9em', opacity: 0.8, color: '#fbbf24'}}>🔒 Private Room</span>
+                                <button
+                                    onClick={toggleInvitationLink}
+                                    style={{
+                                        background: '#374151',
+                                        border: 'none',
+                                        color: '#d1d5db',
+                                        padding: '0.25rem 0.5rem',
+                                        borderRadius: '4px',
+                                        fontSize: '0.75rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {showInvitationLink ? 'Hide Link' : 'Share Link'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
+                
+                {roomState?.isPrivate && showInvitationLink && (
+                    <div style={{
+                        background: '#334155',
+                        border: '1px solid #475569',
+                        borderRadius: '8px',
+                        padding: '1rem',
+                        marginTop: '1rem'
+                    }}>
+                        <p style={{color: '#94a3b8', margin: '0 0 0.5rem 0', fontSize: '0.875rem'}}>
+                            Share this link with your friend to join the private room:
+                        </p>
+                        <div style={{display: 'flex', gap: '0.5rem'}}>
+                            <input
+                                type="text"
+                                value={`http://localhost:3000/private-room/${roomState.invitationToken}`}
+                                readOnly
+                                style={{
+                                    flex: 1,
+                                    background: '#1f2937',
+                                    border: '1px solid #374151',
+                                    color: '#d1d5db',
+                                    padding: '0.5rem',
+                                    borderRadius: '4px',
+                                    fontFamily: 'monospace',
+                                    fontSize: '0.75rem'
+                                }}
+                            />
+                            <button
+                                onClick={copyInvitationLink}
+                                style={{
+                                    background: '#2563eb',
+                                    border: 'none',
+                                    color: 'white',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.75rem'
+                                }}
+                            >
+                                📋 Copy
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className={`${styles.card} ${styles.cardPadding}`}>

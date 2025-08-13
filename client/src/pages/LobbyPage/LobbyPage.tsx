@@ -41,6 +41,13 @@ const LobbyPage: React.FC = () => {
     const [bet, setBet] = useState(10);
     const [error, setError] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+    const [showPrivateModal, setShowPrivateModal] = useState(false);
+    const [privateRoomData, setPrivateRoomData] = useState<{
+        invitationToken: string;
+        invitationUrl: string;
+        expiresAt: string;
+        room?: any;
+    } | null>(null);
 
     useEffect(() => {
         if (!socket || !gameType) return;
@@ -52,16 +59,28 @@ const LobbyPage: React.FC = () => {
             setError(message);
             setIsCreating(false);
         };
+        const onPrivateRoomCreated = (data: any) => {
+            setPrivateRoomData({
+                invitationToken: data.invitationToken,
+                invitationUrl: data.invitationUrl,
+                expiresAt: data.expiresAt,
+                room: data.room
+            });
+            setShowPrivateModal(true);
+            setIsCreating(false);
+        };
         
         socket.on('roomsList', onRoomsList);
         socket.on('gameStart', onGameStart);
         socket.on('error', onError);
+        socket.on('privateRoomCreated', onPrivateRoomCreated);
 
         return () => {
             socket.emit('leaveLobby', gameType);
             socket.off('roomsList', onRoomsList);
             socket.off('gameStart', onGameStart);
             socket.off('error', onError);
+            socket.off('privateRoomCreated', onPrivateRoomCreated);
         };
     }, [socket, gameType, navigate]);
 
@@ -73,11 +92,38 @@ const LobbyPage: React.FC = () => {
         }
     };
 
+    const handleCreatePrivateRoom = () => {
+        if (socket && gameType) {
+            setError('');
+            setIsCreating(true);
+            socket.emit('createPrivateRoom', { gameType, bet });
+        }
+    };
+
     const handleJoinRoom = (roomId: string) => {
         if (socket) {
             setError('');
             socket.emit('joinRoom', roomId);
         }
+    };
+
+    const copyInvitationLink = () => {
+        if (privateRoomData) {
+            navigator.clipboard.writeText(privateRoomData.invitationUrl);
+            alert('Invitation link copied to clipboard!');
+        }
+    };
+
+    const closePrivateModal = () => {
+        setShowPrivateModal(false);
+        setPrivateRoomData(null);
+    };
+
+    const joinPrivateRoom = () => {
+        if (privateRoomData?.room) {
+            navigate(`/game/${privateRoomData.room.gameType}/${privateRoomData.room.id}`);
+        }
+        closePrivateModal();
     };
 
     if (!user || !gameType) {
@@ -128,6 +174,22 @@ const LobbyPage: React.FC = () => {
                             `▶️ Create a game on $${bet}`
                         )}
                     </button>
+                    
+                    <button
+                        onClick={handleCreatePrivateRoom}
+                        disabled={isCreating || bet > user.balance}
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                        style={{ marginTop: '0.5rem' }}
+                    >
+                        {isCreating ? (
+                            <>
+                                <div className={styles.spinner}></div>
+                                Creation...
+                            </>
+                        ) : (
+                            `🔒 Create private room on $${bet}`
+                        )}
+                    </button>
                 </div>
 
                 <div className={styles.lobbySection}>
@@ -163,6 +225,48 @@ const LobbyPage: React.FC = () => {
                         )}
                     </div>
                 </div>
+    
+                {/* Private Room Modal */}
+                {showPrivateModal && privateRoomData && (
+                    <div className={styles.modalOverlay}>
+                        <div className={styles.modal}>
+                            <div className={styles.modalHeader}>
+                                <h2>🔒 Private Room Created!</h2>
+                                <button className={styles.closeBtn} onClick={closePrivateModal}>×</button>
+                            </div>
+                            <div className={styles.modalContent}>
+                                <p>Your private room has been created successfully. Share this invitation link with your opponent:</p>
+                                
+                                <div className={styles.invitationBox}>
+                                    <input
+                                        type="text"
+                                        value={privateRoomData.invitationUrl}
+                                        readOnly
+                                        className={styles.invitationInput}
+                                    />
+                                    <button onClick={copyInvitationLink} className={`${styles.btn} ${styles.btnPrimary}`}>
+                                        📋 Copy
+                                    </button>
+                                </div>
+                                
+                                <div className={styles.invitationDetails}>
+                                    <p><strong>Game:</strong> {formatGameName(gameType)}</p>
+                                    <p><strong>Bet:</strong> ${bet}</p>
+                                    <p><strong>Expires:</strong> {new Date(privateRoomData.expiresAt).toLocaleString()}</p>
+                                    <p><strong>Note:</strong> This link can only be used once and will expire in 15 minutes.</p>
+                                </div>
+                            </div>
+                            <div className={styles.modalActions}>
+                                <button onClick={closePrivateModal} className={`${styles.btn} ${styles.btnSecondary}`}>
+                                    Stay in Lobby
+                                </button>
+                                <button onClick={joinPrivateRoom} className={`${styles.btn} ${styles.btnPrimary}`}>
+                                    Join Private Room
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

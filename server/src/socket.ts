@@ -41,9 +41,28 @@ export interface Room {
     gameState: GameState;
     botJoinTimer?: NodeJS.Timeout;
     disconnectTimer?: NodeJS.Timeout;
+    // Private room properties
+    isPrivate?: boolean;
+    invitationToken?: string;
+    allowBots?: boolean;
+    hostUserId?: string;
+    expiresAt?: Date;
+}
+
+export interface PrivateRoomInvitation {
+    id: string;
+    roomId: string;
+    gameType: string;
+    bet: number;
+    hostUsername: string;
+    token: string;
+    expiresAt: Date;
+    usedAt?: Date;
+    isUsed: boolean;
 }
 
 export const rooms: Record<string, Room> = {};
+export const privateInvitations: Record<string, PrivateRoomInvitation> = {};
 export const userSocketMap: Record<string, string> = {};
 export const chatUserSockets: Record<string, string> = {}; // For chat connections
 
@@ -51,6 +70,29 @@ export const chatUserSockets: Record<string, string> = {}; // For chat connectio
 const generateChatId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
+
+// Generate secure invitation token
+const generateInvitationToken = (): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 32; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// Clean expired invitations
+const cleanExpiredInvitations = (): void => {
+  const now = new Date();
+  Object.keys(privateInvitations).forEach(token => {
+    if (privateInvitations[token].expiresAt < now) {
+      delete privateInvitations[token];
+    }
+  });
+};
+
+// Run cleanup every 5 minutes
+setInterval(cleanExpiredInvitations, 5 * 60 * 1000);
 
 let globalIO: Server | null = null;
 
@@ -80,7 +122,11 @@ function isBot(player: Player): boolean {
 
 function broadcastLobbyState(io: Server, gameType: Room['gameType']) {
     const availableRooms = Object.values(rooms)
-        .filter(room => room.gameType === gameType && room.players.length < 2)
+        .filter(room =>
+            room.gameType === gameType &&
+            room.players.length < 2 &&
+            !room.isPrivate  // Exclude private rooms from public lobby
+        )
         .map(r => ({ id: r.id, bet: r.bet, host: r.players.length > 0
                 ? r.players[0]
                 : { user: { username: 'Waiting for player' } } }));
@@ -517,6 +563,145 @@ export const initializeSocket = (io: Server) => {
                     }
                 }
             }, BOT_WAIT_TIME);
+        });
+
+        socket.on('createPrivateRoom', async ({ gameType, bet }: { gameType: Room['gameType'], bet: number }) => {
+            if (!initialUser) {
+                return socket.emit('error', { message: 'Authentication required' });
+            }
+            
+            const gameLogic = gameLogics[gameType];
+            if (!gameLogic || !gameLogic.createInitialState) return socket.emit('error', { message: "Game unavailable." });
+            
+            const currentUser = await User.findById(initialUser._id);
+            if (!currentUser) return socket.emit('error', { message: "User not found." });
+            if (currentUser.balance < bet) return socket.emit('error', { message: 'Insufficient funds.' });
+
+            const roomId = `private-room-${socket.id}-${Date.now()}`;
+            const invitationToken = generateInvitationToken();
+            const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+            
+            const players: Player[] = [{ socketId: socket.id, user: currentUser }];
+            const newRoom: Room = {
+                id: roomId,
+                gameType,
+                bet,
+                players,
+                gameState: gameLogic.createInitialState(players),
+                isPrivate: true,
+                invitationToken,
+                allowBots: false,
+                hostUserId: (currentUser._id as any).toString(),
+                expiresAt
+            };
+            
+            rooms[roomId] = newRoom;
+            socket.join(roomId);
+
+            // Create invitation record
+            const invitation: PrivateRoomInvitation = {
+                id: generateChatId(),
+                roomId,
+                gameType,
+                bet,
+                hostUsername: currentUser.username,
+                token: invitationToken,
+                expiresAt,
+                isUsed: false
+            };
+            
+            privateInvitations[invitationToken] = invitation;
+
+            const invitationUrl = `http://localhost:3000/private-room/${invitationToken}`;
+            
+            socket.emit('privateRoomCreated', {
+                room: getPublicRoomState(newRoom),
+                invitationToken,
+                invitationUrl,
+                expiresAt
+            });
+
+            console.log(`Private room created: ${roomId} with token: ${invitationToken}`);
+        });
+
+        socket.on('joinPrivateRoom', async (token: string) => {
+            if (!initialUser) {
+                return socket.emit('error', { message: 'Authentication required' });
+            }
+
+            const invitation = privateInvitations[token];
+            if (!invitation) {
+                return socket.emit('error', { message: 'Invalid or expired invitation' });
+            }
+
+            if (invitation.isUsed) {
+                return socket.emit('error', { message: 'This invitation has already been used' });
+            }
+
+            if (invitation.expiresAt < new Date()) {
+                delete privateInvitations[token];
+                return socket.emit('error', { message: 'Invitation has expired' });
+            }
+
+            const room = rooms[invitation.roomId];
+            if (!room) {
+                delete privateInvitations[token];
+                return socket.emit('error', { message: 'Room no longer exists' });
+            }
+
+            if (room.players.length >= 2) {
+                return socket.emit('error', { message: 'Room is already full' });
+            }
+
+            const currentUser = await User.findById(initialUser._id);
+            if (!currentUser) return socket.emit('error', { message: "User not found." });
+            if (currentUser.balance < room.bet) return socket.emit('error', { message: 'Insufficient funds to join.' });
+
+            // Check if user is the host (prevent host from joining their own room via invitation)
+            if (room.hostUserId === (currentUser._id as any).toString()) {
+                return socket.emit('error', { message: 'Cannot join your own private room via invitation' });
+            }
+
+            const gameLogic = gameLogics[room.gameType];
+            room.players.push({ socketId: socket.id, user: currentUser });
+            socket.join(room.id);
+
+            // Mark invitation as used
+            invitation.isUsed = true;
+            invitation.usedAt = new Date();
+
+            // Update game state for 2 players
+            room.gameState = gameLogic.createInitialState(room.players);
+            io.to(room.id).emit('gameStart', getPublicRoomState(room));
+
+            console.log(`User ${currentUser.username} joined private room ${room.id} using token ${token}`);
+        });
+
+        socket.on('getPrivateRoomInfo', (token: string) => {
+            const invitation = privateInvitations[token];
+            if (!invitation) {
+                return socket.emit('error', { message: 'Invalid or expired invitation' });
+            }
+
+            if (invitation.expiresAt < new Date()) {
+                delete privateInvitations[token];
+                return socket.emit('error', { message: 'Invitation has expired' });
+            }
+
+            const room = rooms[invitation.roomId];
+            if (!room) {
+                delete privateInvitations[token];
+                return socket.emit('error', { message: 'Room no longer exists' });
+            }
+
+            socket.emit('privateRoomInfo', {
+                gameType: invitation.gameType,
+                bet: invitation.bet,
+                hostUsername: invitation.hostUsername,
+                isUsed: invitation.isUsed,
+                playersCount: room.players.length,
+                expiresAt: invitation.expiresAt
+            });
         });
 
         socket.on('joinRoom', async (roomId: string) => {

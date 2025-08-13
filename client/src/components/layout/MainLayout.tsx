@@ -17,6 +17,7 @@ import GamePage from '../../pages/GamePage/GamePage';
 import AdminPage from '../../pages/AdminPage/AdminPage';
 import AdminRoute from '../AdminRoute/AdminRoute';
 import DemoPaymentPage from '../../pages/DemoPaymentPage/DemoPaymentPage';
+import PrivateRoomPage from '../../pages/PrivateRoomPage/PrivateRoomPage';
 
 const MainLayout: React.FC = () => {
     const { isSidebarOpen } = useUI();
@@ -38,6 +39,7 @@ const MainLayout: React.FC = () => {
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/lobby/:gameType" element={<LobbyPage />} />
                         <Route path="/game/:gameType/:roomId" element={<GamePage />} />
+                        <Route path="/private-room/:token" element={<PrivateRoomPage />} />
                         <Route path="/demo-payment" element={<DemoPaymentPage />} />
 
                         <Route element={<AdminRoute />}>
