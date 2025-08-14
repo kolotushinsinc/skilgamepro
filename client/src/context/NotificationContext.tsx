@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useSocket } from './SocketContext';
-import { getMyNotifications, markNotificationsAsRead, INotification } from '../services/notificationService';
+import { getMyNotifications, markNotificationsAsRead, INotification, IPaginationInfo } from '../services/notificationService';
 import { useAuth } from './AuthContext';
 
 interface NotificationContextType {
     notifications: INotification[];
     unreadCount: number;
-    fetchNotifications: () => Promise<void>;
+    pagination: IPaginationInfo | null;
+    isLoading: boolean;
+    error: string;
+    fetchNotifications: (page?: number, limit?: number) => Promise<void>;
+    refreshUnreadCount: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -16,36 +20,93 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     const { isAuthenticated } = useAuth();
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [pagination, setPagination] = useState<IPaginationInfo | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const fetchNotifications = useCallback(async () => {
+    const fetchNotifications = useCallback(async (page: number = 1, limit: number = 10) => {
         if (!isAuthenticated) return;
+        
+        setIsLoading(true);
+        setError('');
+        
         try {
-            const data = await getMyNotifications();
-            setNotifications(data);
-            setUnreadCount(data.filter(n => !n.isRead).length);
-        } catch (error) {
+            const response = await getMyNotifications(page, limit);
+            setNotifications(response.notifications);
+            setPagination(response.pagination);
+        } catch (error: any) {
             console.error("Failed to fetch notifications", error);
+            setError(error.response?.data?.message || 'Failed to load notifications');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isAuthenticated]);
+
+    const refreshUnreadCount = useCallback(async () => {
+        if (!isAuthenticated) return;
+        
+        try {
+            // Fetch first page to get total unread count
+            const response = await getMyNotifications(1, 10);
+            const totalUnread = response.notifications.filter(n => !n.isRead).length;
+            
+            // If there are more pages, we need to get a rough estimate
+            if (response.pagination.totalPages > 1) {
+                // This is an approximation - in a real app you might want a separate endpoint for unread count
+                const estimatedUnread = Math.floor((totalUnread / response.notifications.length) * response.pagination.totalItems);
+                setUnreadCount(estimatedUnread);
+            } else {
+                setUnreadCount(totalUnread);
+            }
+        } catch (error) {
+            console.error("Failed to refresh unread count", error);
         }
     }, [isAuthenticated]);
 
     useEffect(() => {
-        fetchNotifications();
-    }, [fetchNotifications]);
+        if (isAuthenticated) {
+            fetchNotifications();
+            refreshUnreadCount();
+        }
+    }, [isAuthenticated, fetchNotifications, refreshUnreadCount]);
 
     useEffect(() => {
         if (!socket) return;
+        
         const handleNewNotification = (notification: INotification) => {
-            setNotifications(prev => [notification, ...prev]);
+            // Only add to current list if we're on the first page
+            if (pagination?.currentPage === 1) {
+                setNotifications(prev => [notification, ...prev.slice(0, 9)]); // Keep only 10 items
+            }
             setUnreadCount(prev => prev + 1);
         };
+
+        const handleNotificationRead = (notificationId: string) => {
+            setNotifications(prev =>
+                prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
+            );
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        };
+
         socket.on('newNotification', handleNewNotification);
+        socket.on('notificationRead', handleNotificationRead);
+        
         return () => {
             socket.off('newNotification', handleNewNotification);
+            socket.off('notificationRead', handleNotificationRead);
         };
-    }, [socket]);
+    }, [socket, pagination?.currentPage]);
 
     return (
-        <NotificationContext.Provider value={{ notifications, unreadCount, fetchNotifications }}>
+        <NotificationContext.Provider value={{
+            notifications,
+            unreadCount,
+            pagination,
+            isLoading,
+            error,
+            fetchNotifications,
+            refreshUnreadCount
+        }}>
             {children}
         </NotificationContext.Provider>
     );
