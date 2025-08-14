@@ -415,6 +415,9 @@ const SupportChatPage: React.FC = () => {
           <MessageCircle className={styles.titleIcon} />
           Support Chat Management
         </h1>
+        <p className={styles.subtitle}>
+          Manage customer support conversations and provide real-time assistance
+        </p>
         
         {stats && (
           <div className={styles.statsGrid}>
@@ -483,8 +486,8 @@ const SupportChatPage: React.FC = () => {
                 className={styles.filter}
               >
                 <option value="all">All Sources</option>
-                <option value="landing">Landing</option>
-                <option value="client">Client</option>
+                <option value="landing">Website</option>
+                <option value="client">Game Client</option>
               </select>
             </div>
           </div>
@@ -535,7 +538,7 @@ const SupportChatPage: React.FC = () => {
                   
                   <div className={styles.chatItemFooter}>
                     <span className={styles.messagesCount}>
-                      {chat.messages.length} messages
+                      {chat.messages.length} {chat.messages.length === 1 ? 'message' : 'messages'}
                     </span>
                     {chat.assignedAdmin && (
                       <span className={styles.assignedAdmin}>

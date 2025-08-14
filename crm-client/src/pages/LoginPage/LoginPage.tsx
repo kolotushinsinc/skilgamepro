@@ -27,21 +27,53 @@ const LoginPage: React.FC = () => {
     return (
         <AuthLayout>
             <div className={styles.authHeader}>
-                <div className={styles.logoIconContainer}><Crown /></div>
-                        <h1 className={styles.logoText}>Skill Game</h1>
+                <div className={styles.logoContainer}>
+                    <div className={styles.logoIconContainer}>
+                        <Crown size={32} />
+                    </div>
+                    <h1 className={styles.logoText}>Skill Game</h1>
+                </div>
                 <p className={styles.authSubtitle}>Access for administrators only</p>
             </div>
             <form onSubmit={handleSubmit} className={styles.authForm}>
                 <div className={styles.formGroup}>
-                    <label htmlFor="email" className={styles.formLabel}>Email</label>
-                    <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required className={styles.formInput} placeholder="admin@example.com"/>
+                    <label htmlFor="email" className={styles.formLabel}>Email Address</label>
+                    <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        required
+                        className={styles.formInput}
+                        placeholder="admin@example.com"
+                        autoComplete="email"
+                    />
                 </div>
                 <div className={styles.formGroup}>
                     <label htmlFor="password" className={styles.formLabel}>Password</label>
-                    <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required className={styles.formInput} placeholder="••••••••" />
+                    <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        required
+                        className={styles.formInput}
+                        placeholder="••••••••"
+                        autoComplete="current-password"
+                    />
                 </div>
-                {error && <div className={styles.alertError}><p>{error}</p></div>}
-                <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Log In</button>
+                {error && (
+                    <div className={styles.alertError}>
+                        <p>{error}</p>
+                    </div>
+                )}
+                <button
+                    type="submit"
+                    className={`${styles.btn} ${styles.btnPrimary}`}
+                    disabled={!email || !password}
+                >
+                    Sign In
+                </button>
             </form>
         </AuthLayout>
     );

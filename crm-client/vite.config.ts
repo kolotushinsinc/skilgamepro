@@ -7,9 +7,9 @@ export default defineConfig({
   server: {
     host: true,
     port: 5178,
-    // allowedHosts: [
-    //   'crm.skillgame.pro'
-    // ]
+    allowedHosts: [
+      'crm.skillgame.pro'
+    ]
   }
 })
 

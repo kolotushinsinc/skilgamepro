@@ -188,8 +188,8 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
     const playerCounts = [4, 8, 16, 32];
     const scheduleTypes = [
         { value: 'interval', label: 'Interval-based' },
-        { value: 'fixed_time', label: 'Fixed time' },
-        { value: 'dynamic', label: 'Dynamic' }
+        { value: 'fixed_time', label: 'Fixed Times' },
+        { value: 'dynamic', label: 'Dynamic Rules' }
     ];
 
     const daysOfWeekLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -221,6 +221,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                     onChange={(e) => updateFormData('name', e.target.value)}
                                     required
                                     className={styles.input}
+                                    placeholder="Enter template name"
                                 />
                             </div>
 
@@ -240,7 +241,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Max Players</label>
+                                <label>Maximum Players</label>
                                 <select
                                     value={formData.maxPlayers}
                                     onChange={(e) => updateFormData('maxPlayers', Number(e.target.value))}
@@ -248,7 +249,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                 >
                                     {playerCounts.map(count => (
                                         <option key={count} value={count}>
-                                            {count}
+                                            {count} players
                                         </option>
                                     ))}
                                 </select>
@@ -263,6 +264,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                     value={formData.entryFee}
                                     onChange={(e) => updateFormData('entryFee', Number(e.target.value))}
                                     className={styles.input}
+                                    placeholder="0.00"
                                 />
                             </div>
 
@@ -276,6 +278,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                     value={formData.platformCommission}
                                     onChange={(e) => updateFormData('platformCommission', Number(e.target.value))}
                                     className={styles.input}
+                                    placeholder="10.0"
                                 />
                             </div>
 
@@ -287,15 +290,15 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                         onChange={(e) => updateFormData('isActive', e.target.checked)}
                                         className={styles.checkbox}
                                     />
-                                    Active
+                                    Active Template
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    {/* Schedule */}
+                    {/* Schedule Configuration */}
                     <div className={styles.section}>
-                        <h3>Schedule</h3>
+                        <h3>Schedule Configuration</h3>
                         <div className={styles.formGroup}>
                             <label>Schedule Type</label>
                             <select
@@ -313,7 +316,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
 
                         {formData.schedule.type === 'interval' && (
                             <div className={styles.formGroup}>
-                                <label>Interval (minutes)</label>
+                                <label>Repeat Interval (minutes)</label>
                                 <input
                                     type="number"
                                     min="5"
@@ -321,13 +324,14 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                     value={formData.schedule.intervalMinutes || 60}
                                     onChange={(e) => updateScheduleData('intervalMinutes', Number(e.target.value))}
                                     className={styles.input}
+                                    placeholder="60"
                                 />
                             </div>
                         )}
 
                         {formData.schedule.type === 'fixed_time' && (
                             <div className={styles.formGroup}>
-                                <label>Times (comma-separated, HH:MM format)</label>
+                                <label>Fixed Times (comma-separated, HH:MM format)</label>
                                 <input
                                     type="text"
                                     value={formData.schedule.fixedTimes?.join(', ') || ''}
@@ -341,7 +345,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                         {formData.schedule.type === 'dynamic' && (
                             <div className={styles.formGrid}>
                                 <div className={styles.formGroup}>
-                                    <label>Min Active Tournaments</label>
+                                    <label>Minimum Active Tournaments</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -351,10 +355,11 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                             minActiveTournaments: Number(e.target.value)
                                         })}
                                         className={styles.input}
+                                        placeholder="1"
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label>Max Active Tournaments</label>
+                                    <label>Maximum Active Tournaments</label>
                                     <input
                                         type="number"
                                         min="1"
@@ -364,10 +369,11 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                             maxActiveTournaments: Number(e.target.value)
                                         })}
                                         className={styles.input}
+                                        placeholder="3"
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label>Min Players Online</label>
+                                    <label>Minimum Players Online</label>
                                     <input
                                         type="number"
                                         min="1"
@@ -377,15 +383,16 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                             minPlayersOnline: Number(e.target.value)
                                         })}
                                         className={styles.input}
+                                        placeholder="10"
                                     />
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* Time Settings */}
+                    {/* Time Configuration */}
                     <div className={styles.section}>
-                        <h3>Time Settings</h3>
+                        <h3>Time Configuration</h3>
                         <div className={styles.formGrid}>
                             <div className={styles.formGroup}>
                                 <label>Time Zone</label>
@@ -394,10 +401,11 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                     value={formData.timeSettings.timeZone}
                                     onChange={(e) => updateTimeSettings('timeZone', e.target.value)}
                                     className={styles.input}
+                                    placeholder="Europe/Moscow"
                                 />
                             </div>
                             <div className={styles.formGroup}>
-                                <label>Start Hour</label>
+                                <label>Start Hour (24h format)</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -405,10 +413,11 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                     value={formData.timeSettings.startHour}
                                     onChange={(e) => updateTimeSettings('startHour', Number(e.target.value))}
                                     className={styles.input}
+                                    placeholder="10"
                                 />
                             </div>
                             <div className={styles.formGroup}>
-                                <label>End Hour</label>
+                                <label>End Hour (24h format)</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -416,12 +425,13 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                                     value={formData.timeSettings.endHour}
                                     onChange={(e) => updateTimeSettings('endHour', Number(e.target.value))}
                                     className={styles.input}
+                                    placeholder="23"
                                 />
                             </div>
                         </div>
 
                         <div className={styles.formGroup}>
-                            <label>Days of Week</label>
+                            <label>Active Days of Week</label>
                             <div className={styles.daysOfWeek}>
                                 {daysOfWeekLabels.map((label, index) => (
                                     <label key={index} className={styles.dayLabel}>
@@ -443,7 +453,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                             Cancel
                         </button>
                         <button type="submit" disabled={loading} className={styles.submitButton}>
-                            {loading ? 'Saving...' : 'Save'}
+                            {loading ? 'Saving Template...' : 'Save Template'}
                         </button>
                     </div>
                 </form>

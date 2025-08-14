@@ -1,7 +1,20 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import styles from './AdminLayout.module.css';
-import { LayoutDashboard, Users, Gamepad2, List, Home, Trophy, PlusSquare, Settings, ShieldCheck, MessageCircle, Zap } from 'lucide-react';
+import {
+    LayoutDashboard,
+    Users,
+    Gamepad2,
+    List,
+    Home,
+    Trophy,
+    PlusSquare,
+    ShieldCheck,
+    MessageCircle,
+    Zap,
+    LogOut,
+    Crown
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 
@@ -25,7 +38,10 @@ const Sidebar: React.FC = () => {
     return (
         <aside className={styles.sidebar}>
             <div className={styles.sidebarHeader}>
-                <div>Skill Game CRM</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Crown size={24} />
+                    <span>Skill Game CRM</span>
+                </div>
                 <div className={styles.connectionStatus}>
                     <div className={`${styles.statusDot} ${isConnected ? styles.connected : styles.disconnected}`}></div>
                     <span className={styles.statusText}>
@@ -42,7 +58,7 @@ const Sidebar: React.FC = () => {
                         className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}
                     >
                         <div className={styles.navLinkContent}>
-                            <item.icon />
+                            <item.icon size={20} />
                             <span>{item.label}</span>
                         </div>
                         {item.badge && item.badge > 0 && (
@@ -51,11 +67,10 @@ const Sidebar: React.FC = () => {
                     </NavLink>
                 ))}
             </nav>
-            <div style={{ marginTop: 'auto', padding: '1rem' }}>
-                 <button onClick={logout} className={styles.navLink} style={{width: '100%'}}>
-                    Выйти
-                </button>
-            </div>
+            <button onClick={logout} className={styles.logoutButton}>
+                <LogOut size={16} />
+                <span>Sign Out</span>
+            </button>
         </aside>
     );
 };
