@@ -22,21 +22,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         },
       });
 
-      newSocket.on('tournamentMatchReady', (data: {
-        tournamentId: string;
-        matchId: string;
-        gameType: string;
-        opponent: any;
-      }) => {
-        console.log('[Tournament] Match ready, redirecting to game:', data);
-        
-        setTimeout(() => {
-          if (!window.location.pathname.includes('/tournament-game/')) {
-            window.history.pushState(null, '', `/tournament-game/${data.matchId}`);
-            window.dispatchEvent(new PopStateEvent('popstate'));
-          }
-        }, 1000);
-      });
 
       setSocket(newSocket);
 

@@ -74,6 +74,20 @@ export async function registerPlayerInTournament(
     try {
         console.log(`[Tournament] Registering player ${userId} in tournament ${tournamentId}`);
 
+        // Проверяем, не зарегистрирован ли игрок уже в другом турнире
+        const existingTournament = await Tournament.findOne({
+            'players._id': userId,
+            status: 'WAITING',
+            _id: { $ne: tournamentId }
+        });
+
+        if (existingTournament) {
+            return {
+                success: false,
+                message: `Вы уже зарегистрированы в турнире "${existingTournament.name}". Отмените регистрацию в том турнире, чтобы зарегистрироваться в новом.`
+            };
+        }
+
         const tournament = activeTournaments[tournamentId] || await Tournament.findById(tournamentId);
         if (!tournament) {
             return { success: false, message: 'Tournament not found' };
@@ -168,6 +182,29 @@ async function startTournamentWithBots(io: Server, tournamentId: string): Promis
             return;
         }
 
+        // Check if there are any real players left
+        const realPlayers = tournament.players.filter(p => !p.isBot);
+        if (realPlayers.length === 0) {
+            console.log(`[Tournament] No real players left in tournament ${tournamentId}, cancelling start`);
+            
+            // Clear timer and reset tournament
+            if (tournamentTimers[tournamentId]) {
+                clearTimeout(tournamentTimers[tournamentId]);
+                delete tournamentTimers[tournamentId];
+            }
+            
+            tournament.players = [];
+            tournament.firstRegistrationTime = undefined;
+            await tournament.save();
+            
+            if (activeTournaments[tournamentId]) {
+                delete activeTournaments[tournamentId];
+            }
+            
+            io.emit('tournamentUpdated', tournament);
+            return;
+        }
+
         if (tournamentTimers[tournamentId]) {
             clearTimeout(tournamentTimers[tournamentId]);
             delete tournamentTimers[tournamentId];
@@ -225,10 +262,20 @@ async function startTournament(io: Server, tournamentId: string): Promise<void> 
         await tournament.save();
         activeTournaments[tournamentId] = tournament;
 
+        // Отправляем событие о старте турнира
         io.emit('tournamentStarted', tournament);
 
+        // Отправляем персональные уведомления каждому игроку
         for (const player of tournament.players) {
             if (!player.isBot) {
+                // Отправляем direct socket event для немедленного перенаправления
+                const playerSockets = Array.from(io.sockets.sockets.values())
+                    .filter(socket => socket.data?.userId === player._id);
+                
+                playerSockets.forEach(socket => {
+                    socket.emit('tournamentStarted', tournament);
+                });
+
                 await createNotification(io, player._id, {
                     title: `🚀 Tournament "${tournament.name}" started!`,
                     message: `Game: ${tournament.gameType}. Good luck in the first round!`,
@@ -618,6 +665,21 @@ async function checkPlayerReturnStatus(
         console.log(`[Tournament] Checking return status for player ${playerId} in match ${matchId}`);
     } catch (error) {
         console.error(`[Tournament] Error checking player return status:`, error);
+    }
+}
+
+export function clearTournamentTimer(tournamentId: string): void {
+    if (tournamentTimers[tournamentId]) {
+        clearTimeout(tournamentTimers[tournamentId]);
+        delete tournamentTimers[tournamentId];
+        console.log(`[Tournament] Cleared timer for tournament ${tournamentId}`);
+    }
+}
+
+export function removeFromActiveTournaments(tournamentId: string): void {
+    if (activeTournaments[tournamentId]) {
+        delete activeTournaments[tournamentId];
+        console.log(`[Tournament] Removed tournament ${tournamentId} from active cache`);
     }
 }
 

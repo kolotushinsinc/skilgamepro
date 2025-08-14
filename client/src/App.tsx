@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import { NotificationHandler } from './components/NotificationHandler/NotificationHandler';
 import TournamentExitManager from './components/tournament/TournamentExitManager';
+import TournamentNotificationHandler from './components/tournament/TournamentNotificationHandler';
 import SupportChat from './components/SupportChat/SupportChat';
 
 import MainLayout from './components/layout/MainLayout';
@@ -29,6 +30,7 @@ function App() {
         <TournamentExitManager>
             <Toaster position="bottom-right" />
             {isAuthenticated && <NotificationHandler />}
+            {isAuthenticated && <TournamentNotificationHandler />}
             
             <Routes>
                 {isAuthenticated ? (

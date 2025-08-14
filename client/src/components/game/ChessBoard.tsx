@@ -352,11 +352,43 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         setPossibleMoves(moves);
     }, [isMyTurn, isGameFinished, gameState.board, myPlayerIndex, getPossibleMovesForPiece]);
 
+    const onTouchStart = useCallback((e: React.TouchEvent, row: number, col: number) => {
+        if (!isMyTurn || isGameFinished) return;
+
+        const piece = gameState.board[row][col];
+        if (!piece) return;
+
+        const myColor: PieceColor = myPlayerIndex === 0 ? 'white' : 'black';
+        if (piece.color !== myColor) return;
+
+        e.preventDefault();
+        const touch = e.touches[0];
+        setDraggedPiece({
+            piece,
+            from: { row, col },
+            mousePos: { x: touch.clientX, y: touch.clientY }
+        });
+
+        const moves = getPossibleMovesForPiece({ row, col });
+        setPossibleMoves(moves);
+    }, [isMyTurn, isGameFinished, gameState.board, myPlayerIndex, getPossibleMovesForPiece]);
+
     const onMouseMove = useCallback((e: MouseEvent) => {
         if (draggedPiece) {
             setDraggedPiece(prev => prev ? {
                 ...prev,
                 mousePos: { x: e.clientX, y: e.clientY }
+            } : null);
+        }
+    }, [draggedPiece]);
+
+    const onTouchMove = useCallback((e: TouchEvent) => {
+        if (draggedPiece) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            setDraggedPiece(prev => prev ? {
+                ...prev,
+                mousePos: { x: touch.clientX, y: touch.clientY }
             } : null);
         }
     }, [draggedPiece]);
@@ -412,16 +444,73 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         setPossibleMoves([]);
     }, [draggedPiece, possibleMoves, isFlipped, onMove]);
 
+    const onTouchEnd = useCallback((e: TouchEvent) => {
+        if (!draggedPiece) return;
+
+        e.preventDefault();
+        const boardElement = document.querySelector(`.${styles.boardGrid}`);
+        if (boardElement) {
+            const rect = boardElement.getBoundingClientRect();
+            
+            const touch = e.changedTouches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+                setDraggedPiece(null);
+                setPossibleMoves([]);
+                return;
+            }
+            
+            const squareSize = rect.width / 8;
+            let col = Math.floor(x / squareSize);
+            let row = Math.floor(y / squareSize);
+
+            if (isFlipped) {
+                row = 7 - row;
+                col = 7 - col;
+            }
+
+            if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+                const isValidMove = possibleMoves.some(move =>
+                    move.row === row && move.col === col
+                );
+
+                if (isValidMove) {
+                    const move: ChessMove = {
+                        from: draggedPiece.from,
+                        to: { row, col },
+                    };
+
+                    if (draggedPiece.piece.type === 'pawn' &&
+                        ((draggedPiece.piece.color === 'white' && row === 0) ||
+                         (draggedPiece.piece.color === 'black' && row === 7))) {
+                        setPromotionMove(move);
+                    } else {
+                        onMove(move);
+                    }
+                }
+            }
+        }
+
+        setDraggedPiece(null);
+        setPossibleMoves([]);
+    }, [draggedPiece, possibleMoves, isFlipped, onMove]);
+
     useEffect(() => {
         if (draggedPiece) {
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            document.addEventListener('touchend', onTouchEnd, { passive: false });
             return () => {
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onTouchEnd);
             };
         }
-    }, [draggedPiece, onMouseMove, onMouseUp]);
+    }, [draggedPiece, onMouseMove, onMouseUp, onTouchMove, onTouchEnd]);
 
     const handlePromotion = useCallback((pieceType: PieceType) => {
         if (promotionMove) {
@@ -477,11 +566,13 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
             <div
                 className={pieceClass}
                 onMouseDown={(e) => onMouseDown(e, row, col)}
+                onTouchStart={(e) => onTouchStart(e, row, col)}
+                style={{ touchAction: 'none' }}
             >
                 {PIECE_SYMBOLS[piece.color][piece.type]}
             </div>
         );
-    }, [draggedPiece, onMouseDown]);
+    }, [draggedPiece, onMouseDown, onTouchStart]);
 
     const renderBoard = () => {
         const squares = [];
@@ -497,6 +588,11 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                         key={`${row}-${col}`}
                         className={`${styles.square} ${getSquareClass(displayRow, displayCol)}`}
                         onClick={() => onSquareClick(displayRow, displayCol)}
+                        onTouchEnd={(e) => {
+                            e.preventDefault();
+                            onSquareClick(displayRow, displayCol);
+                        }}
+                        style={{ touchAction: 'manipulation' }}
                     >
                         {renderPiece(piece, displayRow, displayCol)}
                         

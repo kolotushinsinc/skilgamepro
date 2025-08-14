@@ -70,7 +70,7 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
                 
                 <div className={styles.footer}>
                     <div className={styles.countdown}>
-                        <p>Return to lobby via: <span className={styles.countdownNumber}>{countdown} сек</span></p>
+                        <p>Return to lobby via: <span className={styles.countdownNumber}>{countdown} sec</span></p>
                     </div>
                     <div className={styles.actions}>
                         <button 
@@ -78,12 +78,6 @@ const GameResultModal: React.FC<GameResultModalProps> = ({
                             onClick={onBackToLobby}
                         >
                             Return to lobby
-                        </button>
-                        <button 
-                            className={`${styles.button} ${styles.secondaryButton}`} 
-                            onClick={onClose}
-                        >
-                            Stay
                         </button>
                     </div>
                 </div>

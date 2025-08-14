@@ -2,12 +2,14 @@ import { Request, Response } from 'express';
 import { Server } from 'socket.io';
 import Tournament from '../models/Tournament.model';
 import User from '../models/User.model';
-import { 
+import {
     createTournament,
     registerPlayerInTournament,
     getActiveTournaments,
     getAllTournaments,
-    getTournamentById
+    getTournamentById,
+    clearTournamentTimer,
+    removeFromActiveTournaments
 } from '../services/tournament.service';
 
 export const getActiveTournamentsController = async (req: Request, res: Response) => {
@@ -153,6 +155,31 @@ export const unregisterFromTournament = async (req: Request, res: Response) => {
         tournament.players.splice(playerIndex, 1);
         
         if (tournament.players.length === 0) {
+            tournament.firstRegistrationTime = undefined;
+            
+            // Clear the tournament timer if no players left
+            clearTournamentTimer(tournamentId);
+            
+            // Remove from active tournaments cache if no players
+            removeFromActiveTournaments(tournamentId);
+        } else {
+            // Check if only bots are left and reset tournament state if needed
+            const realPlayersLeft = tournament.players.filter(p => !p.isBot);
+            if (realPlayersLeft.length === 0) {
+                // Remove all bot players and reset tournament
+                tournament.players = [];
+                tournament.firstRegistrationTime = undefined;
+                
+                clearTournamentTimer(tournamentId);
+                removeFromActiveTournaments(tournamentId);
+                
+                console.log(`[Tournament] All real players left tournament ${tournamentId}, removing bots and resetting`);
+            }
+        }
+
+        // Ensure tournament status is correct
+        if (tournament.players.length === 0 && tournament.status === 'WAITING') {
+            // Tournament should remain in WAITING state but with no registered time
             tournament.firstRegistrationTime = undefined;
         }
 

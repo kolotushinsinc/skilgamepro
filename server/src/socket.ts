@@ -402,6 +402,8 @@ export const initializeSocket = (io: Server) => {
         if (initialUser) {
             // @ts-ignore
             userSocketMap[initialUser._id.toString()] = socket.id;
+            // @ts-ignore
+            socket.data = { userId: initialUser._id.toString() };
         }
 
         // Only handle game reconnection for authenticated users

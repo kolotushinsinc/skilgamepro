@@ -9,7 +9,7 @@ const TournamentsListPage: React.FC = () => {
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [filter, setFilter] = useState<'all' | 'waiting' | 'active' | 'finished' | 'cancelled'>('all');
+    const [filter, setFilter] = useState<'all' | 'waiting' | 'active' | 'finished' | 'cancelled'>('waiting');
     const [gameTypeFilter, setGameTypeFilter] = useState<'all' | 'tic-tac-toe' | 'checkers' | 'chess' | 'backgammon' | 'durak' | 'domino' | 'dice' | 'bingo'>('all');
     
     const { user } = useAuth();
@@ -91,7 +91,16 @@ const TournamentsListPage: React.FC = () => {
             await tournamentService.registerInTournament(tournamentId, socketId);
             await loadTournaments();
         } catch (err: any) {
-            alert(err.message);
+            // Если ошибка связана с регистрацией в другом турнире, показываем подробное сообщение
+            if (err.message.includes('уже зарегистрированы в турнире')) {
+                const confirmMessage = `${err.message}\n\nХотите перейти к списку ваших турниров для отмены регистрации?`;
+                if (confirm(confirmMessage)) {
+                    // Можно добавить навигацию к списку турниров игрока, если такая страница есть
+                    console.log('Пользователь хочет отменить регистрацию в другом турнире');
+                }
+            } else {
+                alert(err.message);
+            }
         }
     };
 
