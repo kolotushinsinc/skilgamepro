@@ -242,7 +242,7 @@ const GamePage: React.FC = () => {
 
     const copyInvitationLink = () => {
         if (roomState?.invitationToken) {
-            const invitationUrl = `https://skillgame.pro/private-room/${roomState.invitationToken}`;
+            const invitationUrl = `https://platform.skillgame.pro/private-room/${roomState.invitationToken}`;
             navigator.clipboard.writeText(invitationUrl);
             alert('Private room invitation link copied to clipboard!');
         }
@@ -450,7 +450,7 @@ const GamePage: React.FC = () => {
                         <div className={styles.invitationBox}>
                             <input
                                 type="text"
-                                value={`https://skillgame.pro/private-room/${roomState.invitationToken}`}
+                                value={`https://platform.skillgame.pro/private-room/${roomState.invitationToken}`}
                                 readOnly
                                 className={styles.invitationInput}
                             />

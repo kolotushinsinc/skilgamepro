@@ -614,7 +614,7 @@ export const initializeSocket = (io: Server) => {
             
             privateInvitations[invitationToken] = invitation;
 
-            const invitationUrl = `https://skillgame.pro/private-room/${invitationToken}`;
+            const invitationUrl = `https://platform.skillgame.pro/private-room/${invitationToken}`;
             
             socket.emit('privateRoomCreated', {
                 room: getPublicRoomState(newRoom),
