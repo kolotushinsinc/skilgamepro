@@ -8,8 +8,8 @@ import Avatar from '../../components/common/Avatar';
 
 
 const Sidebar: React.FC = () => {
-    const { user, logout } = useAuth();
-    const { isSidebarOpen, setSidebarOpen } = useUI();
+    const { user } = useAuth();
+    const { isSidebarOpen, setSidebarOpen, showLogoutModal, setShowLogoutModal } = useUI();
 
     const menuItems = [
         { path: '/', icon: Home, label: 'Dashboard' },
@@ -27,6 +27,10 @@ const Sidebar: React.FC = () => {
         if (window.innerWidth < 1024) {
              setSidebarOpen(false);
         }
+    };
+
+    const handleLogoutClick = () => {
+        setShowLogoutModal(true);
     };
 
     return (
@@ -77,7 +81,7 @@ const Sidebar: React.FC = () => {
                             <p className={styles.userStatus}>{user?.role === 'ADMIN' ? 'Admin' : 'Gamer'}</p>
                         </div>
                     </div>
-                     <button onClick={() => { handleLinkClick(); logout(); }}className={`${styles.navLink} w-full mt-4`}>
+                     <button onClick={handleLogoutClick} className={`${styles.navLink} w-full mt-4`}>
                         <LogOut />
                         <span>Log out</span>
                     </button>

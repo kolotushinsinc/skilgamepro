@@ -1,0 +1,231 @@
+.boardContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.3) 50%, rgba(15, 22, 41, 0.4) 100%);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.board::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.board > * {
+    position: relative;
+    z-index: 1;
+}
+
+.cell {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.cell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.cell:hover::before {
+    opacity: 1;
+}
+
+.cell:hover {
+    transform: translateY(-2px) scale(1.02);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow:
+        0 8px 24px rgba(59, 130, 246, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.cell:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.cellX {
+    color: #3b82f6;
+    text-shadow: 
+        0 0 20px rgba(59, 130, 246, 0.6),
+        0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: cellAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cellO {
+    color: #f59e0b;
+    text-shadow: 
+        0 0 20px rgba(245, 158, 11, 0.6),
+        0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: cellAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cellDisabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    background: linear-gradient(135deg, rgba(20, 20, 30, 0.6) 0%, rgba(10, 10, 20, 0.8) 100%);
+}
+
+.cellDisabled:hover {
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.cellDisabled::before {
+    display: none;
+}
+
+.cellEmpty:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+}
+
+@keyframes cellAppear {
+    0% {
+        transform: scale(0) rotate(180deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(90deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.winningCell {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.3) 100%);
+    border-color: rgba(16, 185, 129, 0.5);
+    animation: winningPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes winningPulse {
+    0% {
+        box-shadow:
+            0 4px 16px rgba(16, 185, 129, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    100% {
+        box-shadow:
+            0 8px 24px rgba(16, 185, 129, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .boardContainer {
+        padding: 1rem;
+    }
+    
+    .board {
+        gap: 0.75rem;
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+    
+    .cell {
+        width: 90px;
+        height: 90px;
+        font-size: 2.5rem;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cell {
+        width: 75px;
+        height: 75px;
+        font-size: 2rem;
+    }
+    
+    .board {
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+}
+
+/* Game status indicator */
+.gameStatus {
+    margin-bottom: 1.5rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.gameStatus.myTurn {
+    color: #10b981;
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.gameStatus.opponentTurn {
+    color: #f59e0b;
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.gameStatus.gameFinished {
+    color: #ef4444;
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}

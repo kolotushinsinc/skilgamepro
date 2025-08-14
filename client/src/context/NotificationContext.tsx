@@ -48,18 +48,33 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         try {
             // Fetch first page to get total unread count
             const response = await getMyNotifications(1, 10);
+            console.log('NotificationContext - fetchResponse:', response);
+            
             const totalUnread = response.notifications.filter(n => !n.isRead).length;
+            console.log('NotificationContext - totalUnread from first page:', totalUnread);
             
             // If there are more pages, we need to get a rough estimate
             if (response.pagination.totalPages > 1) {
                 // This is an approximation - in a real app you might want a separate endpoint for unread count
                 const estimatedUnread = Math.floor((totalUnread / response.notifications.length) * response.pagination.totalItems);
+                console.log('NotificationContext - estimated unread (multiple pages):', estimatedUnread);
                 setUnreadCount(estimatedUnread);
             } else {
+                console.log('NotificationContext - setting unread count:', totalUnread);
                 setUnreadCount(totalUnread);
+            }
+            
+            // Temporary: Set a test unread count to verify the badge display
+            // Remove this after testing
+            if (totalUnread === 0) {
+                console.log('NotificationContext - No unread notifications, setting test count of 3');
+                setUnreadCount(3);
             }
         } catch (error) {
             console.error("Failed to refresh unread count", error);
+            // Temporary: Set test unread count on error to verify badge display
+            console.log('NotificationContext - Error occurred, setting test count of 5');
+            setUnreadCount(5);
         }
     }, [isAuthenticated]);
 

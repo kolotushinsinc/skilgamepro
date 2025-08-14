@@ -13,6 +13,7 @@ import DiceBoard from '../../components/game/DiceBoard';
 import BingoBoard from '../../components/game/BingoBoard';
 import ErrorModal from '../../components/modals/ErrorModal';
 import GameResultModal from '../../components/modals/GameResultModal';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { Chess } from 'chess.js';
 import styles from './GamePage.module.css';
 
@@ -34,17 +35,31 @@ const formatGameName = (gameType: string = ''): string => {
     return gameType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
-const getGameIcon = (gameType: string = ''): string => {
+const getGameIcon = (gameType: string = '') => {
     switch (gameType) {
-        case 'tic-tac-toe': return '⭕';
-        case 'checkers': return '⚫';
-        case 'chess': return '♛';
-        case 'backgammon': return '🎲';
-        case 'durak': return '🃏';
-        case 'domino': return '🀫';
-        case 'dice': return '🎯';
-        case 'bingo': return '🎱';
-        default: return '🎮';
+        case 'tic-tac-toe': return { icon: '⭕', color: '#3b82f6' };
+        case 'checkers': return { icon: '⚫', color: '#6b7280' };
+        case 'chess': return { icon: '♛', color: '#8b5cf6' };
+        case 'backgammon': return { icon: '🎲', color: '#f59e0b' };
+        case 'durak': return { icon: '🃏', color: '#ef4444' };
+        case 'domino': return { icon: '🀫', color: '#10b981' };
+        case 'dice': return { icon: '🎯', color: '#ec4899' };
+        case 'bingo': return { icon: '🎱', color: '#06b6d4' };
+        default: return { icon: '🎮', color: '#64748b' };
+    }
+}
+
+const getGameGradient = (gameType: string = ''): string => {
+    switch (gameType) {
+        case 'tic-tac-toe': return 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+        case 'checkers': return 'linear-gradient(135deg, #6b7280, #374151)';
+        case 'chess': return 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+        case 'backgammon': return 'linear-gradient(135deg, #f59e0b, #d97706)';
+        case 'durak': return 'linear-gradient(135deg, #ef4444, #dc2626)';
+        case 'domino': return 'linear-gradient(135deg, #10b981, #059669)';
+        case 'dice': return 'linear-gradient(135deg, #ec4899, #db2777)';
+        case 'bingo': return 'linear-gradient(135deg, #06b6d4, #0891b2)';
+        default: return 'linear-gradient(135deg, #64748b, #475569)';
     }
 }
 
@@ -100,14 +115,14 @@ const GamePage: React.FC = () => {
             
             if (isDraw) {
                 result = 'draw';
-                setGameMessage('🤝 Draw!');
+                setGameMessage('🤝 Match ended in a draw!');
             } else if (winner?.user.username === user?.username) {
                 result = 'win';
-                setGameMessage('🎉 You won!');
+                setGameMessage('🎉 Victory! You won the match!');
                 opponentName = roomState?.players.find(p => p.user._id !== user?._id)?.user.username || '';
             } else {
                 result = 'lose';
-                setGameMessage(`😔 You lost. Winner: ${winner?.user.username || 'Unknown'}`);
+                setGameMessage(`😔 Defeat! Winner: ${winner?.user.username || 'Unknown'}`);
                 opponentName = winner?.user.username || 'Unknown';
             }
 
@@ -136,7 +151,7 @@ const GamePage: React.FC = () => {
 
         const onOpponentDisconnected = ({ message }: { message: string }) => {
             console.log('Opponent disconnected:', message);
-            setGameMessage(`⏳ ${message}`);
+            setGameMessage(`⏳ Opponent disconnected. Waiting for reconnection...`);
         };
         
         socket.on('gameStart', onGameStart);
@@ -261,7 +276,7 @@ const GamePage: React.FC = () => {
                 );
             case 'checkers':
                 if (myPlayerIndex === -1) return (
-                    <div className="alert alert-error">
+                    <div className={styles.errorMessage}>
                         <p>Error: You are not a player in this room.</p>
                     </div>
                 );
@@ -301,7 +316,7 @@ const GamePage: React.FC = () => {
                 );
             case 'durak':
                 if (myPlayerIndex === -1) return (
-                    <div className="alert alert-error">
+                    <div className={styles.errorMessage}>
                         <p>Error: You are not a player in this room.</p>
                     </div>
                 );
@@ -317,7 +332,7 @@ const GamePage: React.FC = () => {
                 );
             case 'domino':
                 if (myPlayerIndex === -1) return (
-                    <div className="alert alert-error">
+                    <div className={styles.errorMessage}>
                         <p>Error: You are not a player in this room.</p>
                     </div>
                 );
@@ -333,7 +348,7 @@ const GamePage: React.FC = () => {
                 );
             case 'dice':
                 if (myPlayerIndex === -1) return (
-                    <div className="alert alert-error">
+                    <div className={styles.errorMessage}>
                         <p>Error: You are not a player in this room.</p>
                     </div>
                 );
@@ -349,7 +364,7 @@ const GamePage: React.FC = () => {
                 );
             case 'bingo':
                 if (myPlayerIndex === -1) return (
-                    <div className="alert alert-error">
+                    <div className={styles.errorMessage}>
                         <p>Error: You are not a player in this room.</p>
                     </div>
                 );
@@ -365,7 +380,7 @@ const GamePage: React.FC = () => {
                 );
             default:
                 return (
-                    <div className="alert alert-error">
+                    <div className={styles.errorMessage}>
                         <p>Game "{gameType}" not found.</p>
                     </div>
                 );
@@ -374,11 +389,8 @@ const GamePage: React.FC = () => {
 
     if (!roomState) {
         return (
-            <div className="loading-container">
-                <div className="loading-content">
-                    <div className="spinner"></div>
-                    <p className="loading-text">Loading game...</p>
-                </div>
+            <div className={styles.loadingContainer}>
+                <LoadingSpinner fullScreen text="Loading game..." />
             </div>
         );
     }
@@ -388,41 +400,40 @@ const GamePage: React.FC = () => {
     const isMyTurn = roomState.gameState.turn === user?._id;
 
     const isTournamentGame = roomId?.startsWith('tourney-');
-    const backButtonText = isTournamentGame ? '← Back to tournament' : '← Back to lobby';
-    const backButtonAction = () => {
-        if (isTournamentGame) {
-            const tournamentId = roomId!.split('-')[1];
-            navigate(`/tournaments/${tournamentId}`);
-        } else {
-            navigate(`/lobby/${gameType}`);
-        }
-    };
+    const gameInfo = getGameIcon(gameType);
 
     return (
         <div className={styles.pageContainer}>
-            <div className={styles.header}>
-                <button onClick={backButtonAction} className={styles.backButton}>
-                    {backButtonText}
+            <div className={styles.backgroundElements}>
+                <div className={styles.gradientOrb1}></div>
+                <div className={styles.gradientOrb2}></div>
+                <div className={styles.gradientOrb3}></div>
+            </div>
+
+            <div className={styles.pageHeader}>
+                <button onClick={handleLeaveGame} className={styles.backButton}>
+                    ← {isTournamentGame ? 'Back to Tournament' : 'Back to Lobby'}
                 </button>
+                
                 <div className={styles.gameHeader}>
-                    <div className={styles.gameIcon}>{getGameIcon(gameType)}</div>
-                    <div>
-                        <h1>{formatGameName(gameType)}</h1>
-                        {isTournamentGame && <p style={{fontSize: '0.9em', opacity: 0.8}}>Tournament Match</p>}
+                    <div
+                        className={styles.gameIcon}
+                        style={{ background: getGameGradient(gameType) }}
+                    >
+                        <span className={styles.gameIconEmoji}>{gameInfo.icon}</span>
+                        <div className={styles.gameIconGlow}></div>
+                    </div>
+                    <div className={styles.gameInfo}>
+                        <h1 className={styles.gameTitle}>{formatGameName(gameType)}</h1>
+                        <div className={styles.gameSubtitle}>
+                            {isTournamentGame ? 'Tournament Match' : 'Casual Game'}
+                        </div>
                         {roomState?.isPrivate && (
-                            <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem'}}>
-                                <span style={{fontSize: '0.9em', opacity: 0.8, color: '#fbbf24'}}>🔒 Private Room</span>
+                            <div className={styles.privateRoomBadge}>
+                                🔒 Private Room
                                 <button
                                     onClick={toggleInvitationLink}
-                                    style={{
-                                        background: '#374151',
-                                        border: 'none',
-                                        color: '#d1d5db',
-                                        padding: '0.25rem 0.5rem',
-                                        borderRadius: '4px',
-                                        fontSize: '0.75rem',
-                                        cursor: 'pointer'
-                                    }}
+                                    className={styles.shareButton}
                                 >
                                     {showInvitationLink ? 'Hide Link' : 'Share Link'}
                                 </button>
@@ -432,43 +443,20 @@ const GamePage: React.FC = () => {
                 </div>
                 
                 {roomState?.isPrivate && showInvitationLink && (
-                    <div style={{
-                        background: '#334155',
-                        border: '1px solid #475569',
-                        borderRadius: '8px',
-                        padding: '1rem',
-                        marginTop: '1rem'
-                    }}>
-                        <p style={{color: '#94a3b8', margin: '0 0 0.5rem 0', fontSize: '0.875rem'}}>
+                    <div className={styles.invitationSection}>
+                        <p className={styles.invitationText}>
                             Share this link with your friend to join the private room:
                         </p>
-                        <div style={{display: 'flex', gap: '0.5rem'}}>
+                        <div className={styles.invitationBox}>
                             <input
                                 type="text"
                                 value={`https://skillgame.pro/private-room/${roomState.invitationToken}`}
                                 readOnly
-                                style={{
-                                    flex: 1,
-                                    background: '#1f2937',
-                                    border: '1px solid #374151',
-                                    color: '#d1d5db',
-                                    padding: '0.5rem',
-                                    borderRadius: '4px',
-                                    fontFamily: 'monospace',
-                                    fontSize: '0.75rem'
-                                }}
+                                className={styles.invitationInput}
                             />
                             <button
                                 onClick={copyInvitationLink}
-                                style={{
-                                    background: '#2563eb',
-                                    border: 'none',
-                                    color: 'white',
-                                    padding: '0.5rem 1rem',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.75rem'
-                                }}
+                                className={styles.copyButton}
                             >
                                 📋 Copy
                             </button>
@@ -477,54 +465,66 @@ const GamePage: React.FC = () => {
                 )}
             </div>
 
-            <div className={`${styles.card} ${styles.cardPadding}`}>
+            <div className={styles.gameInfoCard}>
                 <div className={styles.gameInfoGrid}>
                     <div className={styles.gameInfoItem}>
-                        <span className={styles.gameInfoIcon}>👥</span>
-                        <div className={styles.gameInfoContent}><p>Players</p><p>{user?.username} vs {opponent?.user.username || '...'}</p></div>
+                        <div className={styles.gameInfoIcon}>👥</div>
+                        <div className={styles.gameInfoContent}>
+                            <span className={styles.gameInfoLabel}>Players</span>
+                            <span className={styles.gameInfoValue}>{user?.username} vs {opponent?.user.username || 'Waiting...'}</span>
+                        </div>
                     </div>
                     <div className={styles.gameInfoItem}>
-                        <span className={styles.gameInfoIcon}>💰</span>
-                        <div className={styles.gameInfoContent}><p>Bet</p><p>${roomState.bet}</p></div>
+                        <div className={styles.gameInfoIcon}>💰</div>
+                        <div className={styles.gameInfoContent}>
+                            <span className={styles.gameInfoLabel}>Bet</span>
+                            <span className={styles.gameInfoValue}>${roomState.bet}</span>
+                        </div>
                     </div>
                     <div className={styles.gameInfoItem}>
-                        <span className={styles.gameInfoIcon}>🏆</span>
-                        <div className={styles.gameInfoContent}><p>Prise</p><p>${roomState.bet * 2}</p></div>
+                        <div className={styles.gameInfoIcon}>🏆</div>
+                        <div className={styles.gameInfoContent}>
+                            <span className={styles.gameInfoLabel}>Prize</span>
+                            <span className={styles.gameInfoValue}>${roomState.bet * 2}</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className={styles.statusMessageContainer}>
+            <div className={styles.statusSection}>
                 {isWaitingForOpponent ? (
-                    <div className={`${styles.statusMessage} ${styles.statusWaiting}`}>
+                    <div className={styles.statusWaiting}>
                         <div className={styles.statusIcon}>⏰</div>
-                        <h3 className={styles.statusTitleWaiting}>⏳ Waiting for the opponent...</h3>
-                        <p>Automatic cancellation after: <span style={{fontWeight: 'bold'}}>{countdown} s</span></p>
+                        <h3 className={styles.statusTitle}>Waiting for Opponent</h3>
+                        <p className={styles.statusDescription}>
+                            Auto-cancel in: <span className={styles.countdown}>{countdown}s</span>
+                        </p>
                     </div>
                 ) : !gameMessage ? (
-                    <div className={`${styles.statusMessage} ${isMyTurn ? styles.statusTurn : styles.statusOpponentTurn}`}>
-                        <h3 className={`${styles.statusTitle} ${isMyTurn ? styles.statusTitleMyTurn : styles.statusTitleOpponentTurn}`}>
-                            {isMyTurn ? '✅ Your move' : '⏳ Opponents move'}
+                    <div className={`${styles.statusActive} ${isMyTurn ? styles.myTurn : styles.opponentTurn}`}>
+                        <h3 className={styles.statusTitle}>
+                            {isMyTurn ? '✅ Your Turn' : '⏳ Opponent\'s Turn'}
                         </h3>
+                        <p className={styles.statusDescription}>
+                            {isMyTurn ? 'Make your move' : 'Waiting for opponent\'s move'}
+                        </p>
                     </div>
                 ) : (
-                    <div className={`${styles.statusMessage} ${styles.statusTurn}`}>
-                        <h3 className={`${styles.statusTitle} ${styles.statusTitleMyTurn}`}>
-                            🎮 Game completed
-                        </h3>
-                        <p>Check the result in the modal window</p>
+                    <div className={styles.statusCompleted}>
+                        <h3 className={styles.statusTitle}>🎮 Game Completed</h3>
+                        <p className={styles.statusDescription}>Check the result in the modal</p>
                     </div>
                 )}
             </div>
 
-            <div className={`${styles.card} ${styles.cardPadding}`}>
+            <div className={styles.gameBoard}>
                 {renderGameBoard()}
             </div>
 
             {!gameMessage && (
-                <div style={{textAlign: 'center'}}>
-                    <button onClick={handleLeaveGame} className={`${styles.btn} ${styles.btnDanger}`}>
-                        {isWaitingForOpponent ? 'Cancel search' : 'Surrender'}
+                <div className={styles.gameActions}>
+                    <button onClick={handleLeaveGame} className={styles.surrenderButton}>
+                        {isWaitingForOpponent ? '❌ Cancel Game' : '🏳️ Surrender'}
                     </button>
                 </div>
             )}

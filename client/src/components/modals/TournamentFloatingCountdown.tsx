@@ -1,4 +1,5 @@
 import React from 'react';
+import { Clock, X, Gamepad2 } from 'lucide-react';
 import styles from './TournamentFloatingCountdown.module.css';
 
 interface TournamentFloatingCountdownProps {
@@ -24,15 +25,22 @@ const TournamentFloatingCountdown: React.FC<TournamentFloatingCountdownProps> = 
 
     return (
         <div className={styles.floatingCountdown}>
+            <div className={styles.animatedBackground}>
+                <div className={styles.floatingElement}></div>
+                <div className={styles.floatingElement}></div>
+            </div>
+            
             <div className={styles.header}>
-                <span className={styles.icon}>⏰</span>
-                <span className={styles.title}>Возврат в турнир</span>
+                <div className={styles.headerContent}>
+                    <Clock className={styles.icon} size={20} />
+                    <span className={styles.title}>Return to Tournament</span>
+                </div>
                 <button 
                     onClick={onConfirmExit}
                     className={styles.closeButton}
-                    title="Покинуть турнир окончательно"
+                    title="Leave tournament permanently"
                 >
-                    ✕
+                    <X size={16} />
                 </button>
             </div>
             
@@ -44,7 +52,7 @@ const TournamentFloatingCountdown: React.FC<TournamentFloatingCountdownProps> = 
                 <div className={styles.countdown}>
                     <div className={styles.timeDisplay}>
                         <span className={styles.timeNumber}>{timeString}</span>
-                        <span className={styles.timeLabel}>до автоматического поражения</span>
+                        <span className={styles.timeLabel}>until automatic defeat</span>
                     </div>
                     
                     <div className={styles.progressBar}>
@@ -59,7 +67,8 @@ const TournamentFloatingCountdown: React.FC<TournamentFloatingCountdownProps> = 
                     onClick={onReturnToGame}
                     className={styles.returnButton}
                 >
-                    🎮 Вернуться к игре
+                    <Gamepad2 size={16} />
+                    <span>Return to Game</span>
                 </button>
             </div>
         </div>

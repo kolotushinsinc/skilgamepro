@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Gamepad2, DoorOpen, Clock, RotateCcw } from 'lucide-react';
 import styles from './TournamentExitWarningModal.module.css';
 
 interface TournamentExitWarningModalProps {
@@ -50,28 +51,39 @@ const TournamentExitWarningModal: React.FC<TournamentExitWarningModalProps> = ({
     return (
         <div className={styles.overlay}>
             <div className={styles.modal}>
+                <div className={styles.animatedBackground}>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                </div>
+                
                 <div className={styles.header}>
-                    <span className={styles.icon}>⚠️</span>
-                    <h2 className={styles.title}>Warning about leaving the tournament</h2>
+                    <div className={styles.iconContainer}>
+                        <AlertTriangle className={styles.icon} size={40} />
+                    </div>
+                    <h2 className={styles.title}>Tournament Exit Warning</h2>
                 </div>
 
                 <div className={styles.content}>
                     <p className={styles.message}>
-                        You left a tournament match in a tournament <strong>"{tournamentName}"</strong>
+                        You left a tournament match in <strong>"{tournamentName}"</strong>
                     </p>
                     
                     <div className={styles.warningBox}>
-                        <p>
-                            Do you have <strong className={styles.countdown}>{countdown} seconds</strong> 
-                            to get back into the game, otherwise you will automatically lose the match!
-                        </p>
+                        <div className={styles.warningContent}>
+                            <Clock className={styles.warningIcon} size={24} />
+                            <p>
+                                You have <strong className={styles.countdown}>{countdown} seconds</strong> 
+                                to return to the game, otherwise you will automatically lose the match!
+                            </p>
+                        </div>
                     </div>
 
                     <div className={styles.countdownCircle}>
                         <div 
                             className={styles.countdownProgress}
                             style={{ 
-                                strokeDashoffset: `${283 - (283 * (30 - countdown)) / 30}px` 
+                                transform: `rotate(${(360 * (30 - countdown)) / 30}deg)` 
                             }}
                         />
                         <span className={styles.countdownNumber}>{countdown}</span>
@@ -83,13 +95,15 @@ const TournamentExitWarningModal: React.FC<TournamentExitWarningModalProps> = ({
                         onClick={handleReturnToGame}
                         className={styles.returnButton}
                     >
-                        🎮 Return to the game
+                        <Gamepad2 size={20} />
+                        <span>Return to Game</span>
                     </button>
                     <button 
                         onClick={onConfirmExit}
                         className={styles.exitButton}
                     >
-                        🚪 Leave the tournament
+                        <DoorOpen size={20} />
+                        <span>Leave Tournament</span>
                     </button>
                 </div>
             </div>

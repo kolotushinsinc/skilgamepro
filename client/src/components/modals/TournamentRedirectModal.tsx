@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Trophy, Clock, ArrowRight } from 'lucide-react';
 import styles from './TournamentRedirectModal.module.css';
 
 interface TournamentRedirectModalProps {
@@ -37,8 +38,16 @@ const TournamentRedirectModal: React.FC<TournamentRedirectModalProps> = ({
     return (
         <div className={styles.overlay}>
             <div className={styles.modal}>
+                <div className={styles.animatedBackground}>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                </div>
+                
                 <div className={styles.header}>
-                    <div className={styles.icon}>🏆</div>
+                    <div className={styles.iconContainer}>
+                        <Trophy className={styles.icon} size={32} />
+                    </div>
                     <h2 className={styles.title}>Tournament Starting</h2>
                 </div>
                 
@@ -46,9 +55,12 @@ const TournamentRedirectModal: React.FC<TournamentRedirectModalProps> = ({
                     <p className={styles.message}>
                         Your tournament <strong>"{tournamentName}"</strong> is starting now!
                     </p>
-                    <p className={styles.submessage}>
-                        You will be redirected to the tournament in <span className={styles.countdown}>{timeLeft}</span> seconds
-                    </p>
+                    <div className={styles.countdownContainer}>
+                        <Clock className={styles.clockIcon} size={20} />
+                        <p className={styles.submessage}>
+                            Redirecting in <span className={styles.countdown}>{timeLeft}</span> seconds
+                        </p>
+                    </div>
                 </div>
                 
                 <div className={styles.footer}>
@@ -56,7 +68,8 @@ const TournamentRedirectModal: React.FC<TournamentRedirectModalProps> = ({
                         className={styles.redirectButton}
                         onClick={onRedirect}
                     >
-                        Go to Tournament Now
+                        <span>Join Tournament Now</span>
+                        <ArrowRight size={20} />
                     </button>
                 </div>
             </div>

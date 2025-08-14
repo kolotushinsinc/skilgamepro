@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationContext';
 import { markNotificationsAsRead, markNotificationAsRead } from '../../services/notificationService';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import styles from './NotificationsPage.module.css';
 import { Bell, Check, CheckCheck, RefreshCw, Mail, MailOpen } from 'lucide-react';
 
@@ -235,8 +236,7 @@ const NotificationsPage: React.FC = () => {
 
             {isLoading && notifications.length === 0 ? (
                 <div className={styles.loadingState}>
-                    <div className={styles.spinner}></div>
-                    <span>Loading notifications...</span>
+                    <LoadingSpinner text="Loading notifications..." />
                 </div>
             ) : notifications.length === 0 ? (
                 <div className={styles.emptyState}>

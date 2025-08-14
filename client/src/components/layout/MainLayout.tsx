@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useUI } from '../../context/UIContext';
+import { useAuth } from '../../context/AuthContext';
+import LogoutConfirmModal from '../modals/LogoutConfirmModal';
 import styles from './MainLayout.module.css';
 
 import DashboardPage from '../../pages/DashboardPage/DashboardPage';
@@ -20,8 +22,18 @@ import DemoPaymentPage from '../../pages/DemoPaymentPage/DemoPaymentPage';
 import PrivateRoomPage from '../../pages/PrivateRoomPage/PrivateRoomPage';
 
 const MainLayout: React.FC = () => {
-    const { isSidebarOpen } = useUI();
+    const { isSidebarOpen, showLogoutModal, setShowLogoutModal } = useUI();
+    const { logout } = useAuth();
     
+    const handleLogoutConfirm = () => {
+        logout();
+        setShowLogoutModal(false);
+    };
+
+    const handleLogoutCancel = () => {
+        setShowLogoutModal(false);
+    };
+
     return (
         <div className="min-h-screen text-slate-300">
             <Sidebar />
@@ -50,7 +62,13 @@ const MainLayout: React.FC = () => {
                     </Routes>
                 </main>
             </div>
-            
+
+            {/* Logout Confirmation Modal - positioned over entire screen */}
+            <LogoutConfirmModal
+                isOpen={showLogoutModal}
+                onClose={handleLogoutCancel}
+                onConfirm={handleLogoutConfirm}
+            />
         </div>
     )
 }

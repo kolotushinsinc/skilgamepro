@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Tournament, TournamentMatch, tournamentService } from '../../services/tournamentService';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import styles from './TournamentDetailPage.module.css';
 
 const TournamentDetailPage: React.FC = () => {
@@ -269,9 +270,7 @@ const TournamentDetailPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <div className={styles.loading}>Loading tournament...</div>
-            </div>
+            <LoadingSpinner text="Loading tournament details..." />
         );
     }
 

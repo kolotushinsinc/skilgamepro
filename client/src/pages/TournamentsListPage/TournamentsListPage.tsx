@@ -4,6 +4,7 @@ import { Tournament, tournamentService } from '../../services/tournamentService'
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import CustomSelect from '../../components/ui/CustomSelect';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import styles from './TournamentsListPage.module.css';
 
 const TournamentsListPage: React.FC = () => {
@@ -12,6 +13,7 @@ const TournamentsListPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'waiting' | 'active' | 'finished' | 'cancelled'>('waiting');
     const [gameTypeFilter, setGameTypeFilter] = useState<'all' | 'tic-tac-toe' | 'checkers' | 'chess' | 'backgammon' | 'durak' | 'domino' | 'dice' | 'bingo'>('all');
+    const [currentTime, setCurrentTime] = useState(Date.now());
     
     const { user } = useAuth();
     const { socket } = useSocket();
@@ -106,6 +108,15 @@ const TournamentsListPage: React.FC = () => {
         }
     }, [socket]);
 
+    // Live timer update effect
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(Date.now());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
+
     const loadTournaments = async () => {
         try {
             setLoading(true);
@@ -179,8 +190,15 @@ const TournamentsListPage: React.FC = () => {
         const timeLeft = tournamentService.getTimeUntilStart(tournament);
         if (timeLeft <= 0) return '';
         
-        const seconds = Math.ceil(timeLeft / 1000);
-        return `Starting in ${seconds}s`;
+        const totalSeconds = Math.ceil(timeLeft / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        if (minutes > 0) {
+            return `Starting in ${minutes}m ${seconds}s`;
+        } else {
+            return `Starting in ${seconds}s`;
+        }
     };
 
     const isPlayerRegistered = (tournament: Tournament): boolean => {
@@ -193,9 +211,7 @@ const TournamentsListPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <div className={styles.loading}>Loading tournaments...</div>
-            </div>
+            <LoadingSpinner text="Loading tournaments..." />
         );
     }
 

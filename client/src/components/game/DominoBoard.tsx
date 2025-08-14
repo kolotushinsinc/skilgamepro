@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import LoadingSpinner from '../ui/LoadingSpinner';
 import styles from './DominoBoard.module.css';
 import { Domino, PlacedDomino, DominoGameState } from '../../types/entities';
 
@@ -45,10 +46,7 @@ const DominoBoard: React.FC<DominoBoardProps> = ({
     if (!gameState || !gameState.players || gameState.players.length < 2) {
         return (
             <div className={styles.dominoBoard}>
-                <div style={{ textAlign: 'center', color: 'white', padding: '50px' }}>
-                    <h3>Loading Domino...</h3>
-                    <p>Waiting for game state to initialize</p>
-                </div>
+                <LoadingSpinner text="Loading Domino..." />
             </div>
         );
     }

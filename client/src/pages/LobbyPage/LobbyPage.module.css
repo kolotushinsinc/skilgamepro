@@ -1,339 +1,908 @@
 .pageContainer {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 2rem 1rem;
+    border-radius: 24px;
+    margin: 1rem;
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Animated background elements */
+.backgroundElements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.gradientOrb1,
+.gradientOrb2,
+.gradientOrb3 {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.3;
+    animation: float 8s ease-in-out infinite;
+}
+
+.gradientOrb1 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+    top: -200px;
+    left: -200px;
+    animation-delay: 0s;
+}
+
+.gradientOrb2 {
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(45deg, #06b6d4, #3b82f6);
+    bottom: -150px;
+    right: -150px;
+    animation-delay: 3s;
+}
+
+.gradientOrb3 {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(45deg, #8b5cf6, #ec4899);
+    top: 40%;
+    right: -175px;
+    animation-delay: 6s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-30px) rotate(120deg); }
+    66% { transform: translateY(15px) rotate(240deg); }
+}
+
+.pageHeader {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 1rem;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2rem;
 }
 
 .backButton {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 2rem;
-    color: #94a3b8;
-    background: none;
-    border: none;
-    cursor: pointer;
+    padding: 0.75rem 1rem;
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    color: #e2e8f0;
+    border-radius: 12px;
+    text-decoration: none;
     font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
 }
+
 .backButton:hover {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: #3b82f6;
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
 
 .gameHeader {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
+
 .gameIcon {
-    width: 60px;
-    height: 60px;
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
-.gameHeader h1 {
-    font-size: 1.875rem;
+
+.gameIconEmoji {
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.gameIconGlow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.gameInfo {
+    flex: 1;
+}
+
+.gameTitle {
+    font-size: 2rem;
     font-weight: 700;
     color: white;
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, #fff, #e2e8f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
-.gameHeader p {
+
+.balanceInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: #94a3b8;
+    font-size: 1rem;
 }
-.gameHeader span {
+
+.balanceAmount {
+    color: #10b981;
     font-weight: 600;
-    color: #4ade80;
+    font-size: 1.1rem;
+}
+
+.errorAlert {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    padding: 1rem 1.25rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    color: #fca5a5;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
 }
 
 .mainGrid {
+    max-width: 1200px;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr;
     gap: 2rem;
+    position: relative;
+    z-index: 1;
+    overflow: visible;
 }
+
 @media (min-width: 1024px) {
     .mainGrid {
-        grid-template-columns: 400px 1fr;
+        grid-template-columns: 450px 1fr;
     }
 }
 
-.lobbySection {
-    background-color: #1e293b;
-    border: 1px solid #334155;
+.createSection,
+.roomsSection {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: visible;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.sectionIcon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
     border-radius: 12px;
-    padding: 1.5rem;
-}
-
-.lobbySectionHeader {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-}
-.lobbySectionHeader span {
-    font-size: 1.25rem;
-}
-.lobbySectionHeader h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: white;
-}
-
-.formGroup {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1rem;
-}
-.formLabel {
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #94a3b8;
-}
-.formInput {
-    background-color: #334155;
-    border: 1px solid #475569;
-    color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    outline: none;
-}
-.formInput:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-}
-
-.btn {
-    width: 100%;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: white;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+    flex-shrink: 0;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.25rem 0;
+    background: linear-gradient(135deg, #fff, #e2e8f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sectionSubtitle {
+    color: #94a3b8;
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.betSection {
+    margin-bottom: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.betLabel {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
-}
-.btnPrimary {
-    background-color: #2563eb;
-    color: white;
-}
-.btnPrimary:hover:not(:disabled) {
-    background-color: #1d4ed8;
-}
-.btnPrimary:disabled {
-    background-color: #475569;
-    cursor: not-allowed;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
-.btnSecondary {
-    background-color: #6b7280;
-    color: white;
-}
-.btnSecondary:hover:not(:disabled) {
-    background-color: #4b5563;
-}
-.btnSecondary:disabled {
-    background-color: #475569;
-    cursor: not-allowed;
-}
-
-.roomList {
+.betInputContainer {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.roomItem {
+.betInput {
+    width: 100%;
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.betInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 
+        0 0 0 3px rgba(59, 130, 246, 0.1),
+        0 4px 12px rgba(59, 130, 246, 0.15);
+    background: rgba(30, 41, 59, 0.95);
+}
+
+.betInput::placeholder {
+    color: #64748b;
+}
+
+.betSuggestions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.betSuggestion {
+    padding: 0.5rem 1rem;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    color: #94a3b8;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.betSuggestion:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    color: #60a5fa;
+}
+
+.betSuggestion.active {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.betSuggestion:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.actionButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.createButton,
+.privateButton {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.createButton {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+.createButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.createButton:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.createButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.privateButton {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+}
+
+.privateButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.privateButton:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.privateButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+.createButton:disabled,
+.privateButton:disabled {
+    background: linear-gradient(135deg, #475569, #64748b);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.roomsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: auto !important;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(30, 41, 59, 0.3);
+    border-radius: 24px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.emptyIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #64748b, #475569);
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    color: white;
+    box-shadow: 0 8px 32px rgba(100, 116, 139, 0.3);
+}
+
+.emptyTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin: 0 0 0.5rem 0;
+}
+
+.emptyDescription {
+    color: #94a3b8;
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.roomCard {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #334155;
-    padding: 1rem;
-    border-radius: 8px;
+    padding: 1.5rem;
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
+    transition: all 0.3s ease;
 }
+
+.roomCard:hover {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
 .roomInfo {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
-.roomAvatar {
-    width: 40px;
-    height: 40px;
+
+.playerAvatar {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background-color: #475569;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-}
-.roomDetails h4 {
-    font-weight: 500;
     color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
-.roomDetails p {
+
+.roomDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.roomHost {
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.roomBet {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #10b981;
     font-size: 0.875rem;
-    color: #94a3b8;
+    font-weight: 500;
 }
 
-.emptyState {
-    text-align: center;
-    padding: 2rem 0;
-}
-.emptyState div {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-}
-.emptyState p:first-of-type {
-    color: #94a3b8;
-    margin-bottom: 0.5rem;
-}
-.emptyState p:last-of-type {
-    font-size: 0.875rem;
-    color: #64748b;
+.joinButton {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.joinButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
 
-/* Modal styles */
+/* Modal Styles */
 .modalOverlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
     padding: 1rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal {
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
     width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-width: 600px;
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .modalHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem;
-    border-bottom: 1px solid #334155;
+    padding: 2rem;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
 }
 
-.modalHeader h2 {
+.modalTitleSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #f59e0b;
+}
+
+.modalTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
     color: white;
-    font-size: 1.25rem;
-    font-weight: 600;
     margin: 0;
 }
 
-.closeBtn {
-    background: none;
-    border: none;
+.closeButton {
+    background: rgba(71, 85, 105, 0.3);
+    border: 1px solid rgba(71, 85, 105, 0.5);
     color: #94a3b8;
-    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    transition: all 0.2s ease;
 }
 
-.closeBtn:hover {
-    background-color: #334155;
+.closeButton:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
     color: white;
 }
 
 .modalContent {
-    padding: 1.5rem;
+    padding: 2rem;
 }
 
-.modalContent p {
+.modalDescription {
     color: #94a3b8;
-    margin-bottom: 1rem;
-    line-height: 1.5;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.invitationSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .invitationBox {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    gap: 1rem;
+    align-items: stretch;
 }
 
 .invitationInput {
     flex: 1;
-    background-color: #334155;
-    border: 1px solid #475569;
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(71, 85, 105, 0.5);
     color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    outline: none;
-    font-family: monospace;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 0.875rem;
+    outline: none;
+    transition: all 0.3s ease;
 }
 
 .invitationInput:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.invitationDetails {
-    background-color: #334155;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-.invitationDetails p {
-    margin: 0.5rem 0;
-    color: #cbd5e1;
-}
-
-.invitationDetails p:last-child {
-    color: #fbbf24;
-    font-style: italic;
-    margin-top: 1rem;
-}
-
-.invitationDetails strong {
+.copyButton {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.copyButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.roomInfoGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 24px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+@media (min-width: 640px) {
+    .roomInfoGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.infoItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+}
+
+.infoItem svg {
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.warningNote {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 16px;
+    color: #fbbf24;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.warningNote svg {
+    color: #f59e0b;
+    flex-shrink: 0;
 }
 
 .modalActions {
-    padding: 1.5rem;
-    border-top: 1px solid #334155;
+    padding: 2rem;
+    border-top: 1px solid rgba(71, 85, 105, 0.3);
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
 }
 
-.modalActions .btn {
-    width: auto;
-    min-width: 100px;
+.stayButton,
+.joinPrivateButton {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.stayButton {
+    background: rgba(71, 85, 105, 0.3);
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    color: #94a3b8;
+}
+
+.stayButton:hover {
+    background: rgba(71, 85, 105, 0.5);
+    color: white;
+}
+
+.joinPrivateButton {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.joinPrivateButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .pageContainer {
+        padding: 1rem 0.5rem;
+    }
+    
+    .gameHeader {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .gameIcon {
+        width: 64px;
+        height: 64px;
+        font-size: 2rem;
+    }
+    
+    .gameTitle {
+        font-size: 1.5rem;
+    }
+    
+    .createSection,
+    .roomsSection {
+        padding: 1.5rem;
+    }
+    
+    .sectionHeader {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .betSuggestions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .roomCard {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .roomInfo {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .modalActions {
+        flex-direction: column-reverse;
+    }
+    
+    .invitationBox {
+        flex-direction: column;
+    }
+    
+    .gradientOrb1,
+    .gradientOrb2,
+    .gradientOrb3 {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageContainer {
+        padding: 1rem 0.25rem;
+    }
+    
+    .modal {
+        margin: 0.5rem;
+        border-radius: 16px;
+    }
+    
+    .modalHeader,
+    .modalContent,
+    .modalActions {
+        padding: 1.5rem;
+    }
+    
+    .gameIcon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.75rem;
+    }
+    
+    .sectionIcon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .playerAvatar {
+        width: 40px;
+        height: 40px;
+    }
 }

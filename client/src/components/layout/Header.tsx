@@ -5,13 +5,16 @@ import { useNotifications } from '../../context/NotificationContext';
 import { useUI } from '../../context/UIContext';
 import { useSocket } from '../../context/SocketContext';
 import styles from './Header.module.css';
-import { Menu } from 'lucide-react';
+import { Menu, Bell } from 'lucide-react';
 
 const Header: React.FC = () => {
     const { user, refreshUser } = useAuth();
-    const { unreadCount } = useNotifications();
+    const { unreadCount, refreshUnreadCount } = useNotifications();
     const { toggleSidebar } = useUI();
     const { socket } = useSocket();
+
+    // Debug log to see if unreadCount is being received
+    console.log('Header unreadCount:', unreadCount);
 
     useEffect(() => {
         if (!socket || !user) return;
@@ -55,9 +58,11 @@ const Header: React.FC = () => {
                     Balance: ${user?.balance.toFixed(2) || '0.00'}
                 </div>
                 <Link to="/notifications" className={styles.notificationBell}>
-                    🔔
+                    <Bell size={20} />
                     {unreadCount > 0 && (
-                        <span className={styles.notificationCount}>{unreadCount}</span>
+                        <span className={styles.notificationCount}>
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
                     )}
                 </Link>
             </div>

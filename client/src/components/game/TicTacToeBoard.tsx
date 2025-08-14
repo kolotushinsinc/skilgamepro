@@ -1,13 +1,23 @@
 import React from 'react';
+import styles from './TicTacToeBoard.module.css';
 
 interface TicTacToeBoardProps {
     board: ('X' | 'O' | null)[];
     onMove: (index: number) => void;
     isMyTurn: boolean;
     isGameFinished: boolean;
+    winner?: 'X' | 'O' | 'draw' | null;
+    winningLine?: number[] | null;
 }
 
-const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ board, onMove, isMyTurn, isGameFinished }) => {
+const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
+    board,
+    onMove,
+    isMyTurn,
+    isGameFinished,
+    winner,
+    winningLine
+}) => {
     const handleCellClick = (index: number) => {
         if (!isMyTurn || isGameFinished || board[index]) {
             return;
@@ -15,31 +25,73 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ board, onMove, isMyTurn
         onMove(index);
     };
 
+    const getCellClassName = (index: number, cell: 'X' | 'O' | null) => {
+        const baseClasses = [styles.cell];
+        
+        if (cell === 'X') {
+            baseClasses.push(styles.cellX);
+        } else if (cell === 'O') {
+            baseClasses.push(styles.cellO);
+        } else {
+            baseClasses.push(styles.cellEmpty);
+        }
+        
+        if (!isMyTurn || isGameFinished || cell) {
+            baseClasses.push(styles.cellDisabled);
+        }
+        
+        if (winningLine && winningLine.includes(index)) {
+            baseClasses.push(styles.winningCell);
+        }
+        
+        return baseClasses.join(' ');
+    };
+
+    const getGameStatusText = () => {
+        if (isGameFinished) {
+            if (winner === 'draw') {
+                return "It's a Draw!";
+            } else if (winner) {
+                return `Player ${winner} Wins!`;
+            }
+            return "Game Over";
+        }
+        return isMyTurn ? "Your Turn" : "Opponent's Turn";
+    };
+
+    const getGameStatusClassName = () => {
+        const baseClasses = [styles.gameStatus];
+        
+        if (isGameFinished) {
+            baseClasses.push(styles.gameFinished);
+        } else if (isMyTurn) {
+            baseClasses.push(styles.myTurn);
+        } else {
+            baseClasses.push(styles.opponentTurn);
+        }
+        
+        return baseClasses.join(' ');
+    };
+
     return (
-        <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 100px)',
-            gap: '5px',
-            justifyContent: 'center',
-            margin: '20px auto'
-        }}>
-            {board.map((cell, index) => (
-                <button 
-                    key={index} 
-                    onClick={() => handleCellClick(index)} 
-                    style={{
-                        width: '100px',
-                        height: '100px',
-                        fontSize: '3rem',
-                        fontWeight: 'bold',
-                        cursor: isMyTurn && !cell && !isGameFinished ? 'pointer' : 'not-allowed',
-                        color: cell === 'X' ? '#6495ED' : '#FF6347'
-                    }}
-                    disabled={!isMyTurn || isGameFinished || !!cell}
-                >
-                    {cell}
-                </button>
-            ))}
+        <div className={styles.boardContainer}>
+            <div className={getGameStatusClassName()}>
+                {getGameStatusText()}
+            </div>
+            
+            <div className={styles.board}>
+                {board.map((cell, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handleCellClick(index)}
+                        className={getCellClassName(index, cell)}
+                        disabled={!isMyTurn || isGameFinished || !!cell}
+                        aria-label={`Cell ${index + 1}, ${cell ? `occupied by ${cell}` : 'empty'}`}
+                    >
+                        {cell}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 };

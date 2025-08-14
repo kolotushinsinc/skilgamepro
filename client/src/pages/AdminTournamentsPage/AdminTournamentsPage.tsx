@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tournament, tournamentService, CreateTournamentRequest } from '../../services/tournamentService';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import styles from './AdminTournamentsPage.module.css';
 
 interface CreateTournamentForm {
@@ -148,9 +149,7 @@ const AdminTournamentsPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <div className={styles.loading}>Loading tournaments...</div>
-            </div>
+            <LoadingSpinner text="Loading tournaments..." />
         );
     }
 

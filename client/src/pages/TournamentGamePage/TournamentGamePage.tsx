@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { Trophy, Frown, Handshake, ArrowLeft, Clock } from 'lucide-react';
 import TicTacToeBoard from '../../components/game/TicTacToeBoard';
 import CheckersBoard from '../../components/game/CheckersBoard';
 import ChessBoard from '../../components/game/ChessBoard';
@@ -13,6 +14,7 @@ import BingoBoard from '../../components/game/BingoBoard';
 import TournamentExitWarningModal from '../../components/modals/TournamentExitWarningModal';
 import TournamentFloatingCountdown from '../../components/modals/TournamentFloatingCountdown';
 import { useTournamentExitWarning } from '../../hooks/useTournamentExitWarning';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import styles from './TournamentGamePage.module.css';
 
 interface TournamentGameState {
@@ -72,6 +74,8 @@ const TournamentGamePage: React.FC = () => {
     const [tournamentCompleted, setTournamentCompleted] = useState<TournamentCompleted | null>(null);
     const [currentMatchId, setCurrentMatchId] = useState<string | undefined>(matchId);
     const [replayInfo, setReplayInfo] = useState<TournamentReplay | null>(null);
+    const [eliminationCountdown, setEliminationCountdown] = useState<number | null>(null);
+    const [tournamentCountdown, setTournamentCountdown] = useState<number | null>(null);
     
     const { user } = useAuth();
     const { socket } = useSocket();
@@ -155,6 +159,26 @@ const TournamentGamePage: React.FC = () => {
         };
     }, [currentMatchId, socket, user]);
 
+    // Elimination countdown effect
+    useEffect(() => {
+        if (eliminationCountdown !== null && eliminationCountdown > 0) {
+            const timer = setTimeout(() => {
+                setEliminationCountdown(eliminationCountdown - 1);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [eliminationCountdown]);
+
+    // Tournament completion countdown effect
+    useEffect(() => {
+        if (tournamentCountdown !== null && tournamentCountdown > 0) {
+            const timer = setTimeout(() => {
+                setTournamentCountdown(tournamentCountdown - 1);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [tournamentCountdown]);
+
     const handleGameStart = (data: TournamentGameState) => {
         console.log('[TournamentGame] Game started:', {
             matchId: data.matchId,
@@ -234,6 +258,7 @@ const TournamentGamePage: React.FC = () => {
         setMatchResult(result);
         
         if (result.type === 'ELIMINATED') {
+            setEliminationCountdown(5);
             setTimeout(() => {
                 navigate('/tournaments');
             }, 5000);
@@ -254,6 +279,7 @@ const TournamentGamePage: React.FC = () => {
     const handleTournamentCompleted = (data: TournamentCompleted) => {
         console.log('[TournamentGame] Tournament completed:', data);
         setTournamentCompleted(data);
+        setTournamentCountdown(10);
         
         setTimeout(() => {
             navigate('/tournaments');
@@ -470,56 +496,76 @@ const TournamentGamePage: React.FC = () => {
         return (
             <div className={styles.gameResultOverlay}>
                 <div className={styles.gameResultModal}>
-                    <h2>Match Completed!</h2>
+                    <div className={styles.animatedBackground}>
+                        <div className={styles.floatingElement}></div>
+                        <div className={styles.floatingElement}></div>
+                        <div className={styles.floatingElement}></div>
+                    </div>
                     
-                    {isDraw ? (
-                        <div className={styles.drawResult}>
-                            <span className={styles.resultIcon}>🤝</span>
-                            <p>Draw!</p>
-                        </div>
-                    ) : isWinner ? (
-                        <div className={styles.winResult}>
-                            <span className={styles.resultIcon}>🏆</span>
-                            <p>Congratulations! You won!</p>
-                        </div>
-                    ) : (
-                        <div className={styles.loseResult}>
-                            <span className={styles.resultIcon}>😔</span>
-                            <p>You lost</p>
-                            {gameResult.winner && (
-                                <p>Winner: {gameResult.winner.username}</p>
-                            )}
-                        </div>
-                    )}
-
-                    {matchResult && (
-                        <div className={styles.tournamentStatus}>
-                            <h3>Tournament Status:</h3>
-                            <p>{matchResult.message}</p>
-                            
-                            {matchResult.type === 'ADVANCED' && (
-                                <p className={styles.waitingMessage}>
-                                    Waiting for next round...
-                                </p>
-                            )}
-                            
-                            {matchResult.type === 'ELIMINATED' && (
-                                <div className={styles.resultActions}>
-                                    <button
-                                        onClick={() => navigate('/tournaments')}
-                                        className={styles.backToTournamentsButton}
-                                    >
-                                        Return to Tournaments
-                                    </button>
+                    <div className={styles.header}>
+                        <h2 className={styles.title}>Match Completed!</h2>
+                    </div>
+                    
+                    <div className={styles.content}>
+                        {isDraw ? (
+                            <div className={styles.drawResult}>
+                                <div className={styles.iconContainer}>
+                                    <Handshake className={styles.resultIcon} size={48} />
                                 </div>
-                            )}
-                        </div>
-                    )}
+                                <h3 className={styles.resultTitle}>Draw!</h3>
+                                <p className={styles.resultMessage}>Both players played well!</p>
+                            </div>
+                        ) : isWinner ? (
+                            <div className={styles.winResult}>
+                                <div className={styles.iconContainer}>
+                                    <Trophy className={styles.resultIcon} size={48} />
+                                </div>
+                                <h3 className={styles.resultTitle}>Victory!</h3>
+                                <p className={styles.resultMessage}>Congratulations! You won the match!</p>
+                            </div>
+                        ) : (
+                            <div className={styles.loseResult}>
+                                <div className={styles.iconContainer}>
+                                    <Frown className={styles.resultIcon} size={48} />
+                                </div>
+                                <h3 className={styles.resultTitle}>Defeat</h3>
+                                <p className={styles.resultMessage}>You lost this match</p>
+                                {gameResult.winner && (
+                                    <p className={styles.winnerInfo}>Winner: {gameResult.winner.username}</p>
+                                )}
+                            </div>
+                        )}
+
+                        {matchResult && (
+                            <div className={styles.tournamentStatus}>
+                                <h3 className={styles.statusTitle}>Tournament Status</h3>
+                                <p className={styles.statusMessage}>{matchResult.message}</p>
+                                
+                                {matchResult.type === 'ADVANCED' && (
+                                    <div className={styles.waitingContainer}>
+                                        <Clock className={styles.waitingIcon} size={20} />
+                                        <p className={styles.waitingMessage}>
+                                            Waiting for next round...
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {matchResult?.type === 'ELIMINATED' && (
-                        <p className={styles.autoRedirect}>
-                            Automatic redirect in 5 seconds...
-                        </p>
+                        <div className={styles.actions}>
+                            <button
+                                onClick={() => navigate('/tournaments')}
+                                className={styles.backToTournamentsButton}
+                            >
+                                <ArrowLeft size={20} />
+                                <span>Return to Tournaments</span>
+                            </button>
+                            <p className={styles.autoRedirect}>
+                                Automatic redirect in {eliminationCountdown || 5} seconds...
+                            </p>
+                        </div>
                     )}
                 </div>
             </div>
@@ -532,38 +578,68 @@ const TournamentGamePage: React.FC = () => {
         return (
             <div className={styles.gameResultOverlay}>
                 <div className={styles.gameResultModal}>
-                    <h2>🏆 Tournament Completed!</h2>
+                    <div className={styles.animatedBackground}>
+                        <div className={styles.floatingElement}></div>
+                        <div className={styles.floatingElement}></div>
+                        <div className={styles.floatingElement}></div>
+                    </div>
                     
-                    {tournamentCompleted.isWinner ? (
-                        <div className={styles.winResult}>
-                            <span className={styles.resultIcon}>🥇</span>
-                            <h3>Congratulations on your victory!</h3>
-                            <p>You won tournament "{tournamentCompleted.tournamentName}"!</p>
-                            <p className={styles.prizeInfo}>
-                                Your prize: {Math.floor(tournamentCompleted.prizePool * 0.6)} coins
-                            </p>
+                    <div className={styles.header}>
+                        <div className={styles.iconContainer}>
+                            <Trophy className={styles.tournamentIcon} size={32} />
                         </div>
-                    ) : (
-                        <div className={styles.tournamentResult}>
-                            <span className={styles.resultIcon}>🏁</span>
-                            <h3>Tournament Completed</h3>
-                            <p>Tournament "{tournamentCompleted.tournamentName}" completed</p>
-                            <p>Winner: {tournamentCompleted.winner}</p>
-                        </div>
-                    )}
+                        <h2 className={styles.title}>Tournament Completed!</h2>
+                    </div>
+                    
+                    <div className={styles.content}>
+                        {tournamentCompleted.isWinner ? (
+                            <div className={styles.winResult}>
+                                <div className={styles.iconContainer}>
+                                    <Trophy className={styles.resultIcon} size={64} />
+                                </div>
+                                <h3 className={styles.resultTitle}>Champion!</h3>
+                                <p className={styles.resultMessage}>
+                                    Congratulations on your victory!
+                                </p>
+                                <p className={styles.tournamentInfo}>
+                                    You won tournament <strong>"{tournamentCompleted.tournamentName}"</strong>
+                                </p>
+                                <div className={styles.prizeContainer}>
+                                    <p className={styles.prizeInfo}>
+                                        Prize: <span className={styles.prizeAmount}>
+                                            {Math.floor(tournamentCompleted.prizePool * 0.6)} coins
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className={styles.tournamentResult}>
+                                <div className={styles.iconContainer}>
+                                    <Trophy className={styles.resultIcon} size={48} />
+                                </div>
+                                <h3 className={styles.resultTitle}>Tournament Finished</h3>
+                                <p className={styles.resultMessage}>
+                                    Tournament <strong>"{tournamentCompleted.tournamentName}"</strong> has been completed
+                                </p>
+                                <p className={styles.winnerInfo}>
+                                    Winner: <strong>{tournamentCompleted.winner}</strong>
+                                </p>
+                            </div>
+                        )}
+                    </div>
 
-                    <div className={styles.resultActions}>
+                    <div className={styles.actions}>
                         <button
                             onClick={() => navigate('/tournaments')}
                             className={styles.backToTournamentsButton}
                         >
-                            Return to Tournaments
+                            <ArrowLeft size={20} />
+                            <span>Return to Tournaments</span>
                         </button>
+                        <p className={styles.autoRedirect}>
+                            Automatic redirect in {tournamentCountdown || 10} seconds...
+                        </p>
                     </div>
-
-                    <p className={styles.autoRedirect}>
-                        Automatic redirect in 10 seconds...
-                    </p>
                 </div>
             </div>
         );

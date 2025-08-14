@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import LoadingSpinner from '../ui/LoadingSpinner';
 import styles from './BingoBoard.module.css';
 
 interface BingoCard {
@@ -192,10 +193,7 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
     if (!myCard || !opponentCard) {
         return (
             <div className={styles.bingoBoard}>
-                <div style={{ textAlign: 'center', padding: '50px' }}>
-                    <h3>Loading Bingo Game...</h3>
-                    <p>Waiting for game data...</p>
-                </div>
+                <LoadingSpinner text="Loading Bingo Game..." />
             </div>
         );
     }

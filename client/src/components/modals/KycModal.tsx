@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { submitKycDocument } from '../../services/api';
+import { X, ShieldCheck, Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import styles from './KycModal.module.css';
-import { X, ShieldCheck } from 'lucide-react';
 
 interface KycModalProps {
     isOpen: boolean;
@@ -55,34 +55,95 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, onSuccess }) => {
     return (
         <div className={styles.overlay}>
             <div className={styles.modal}>
-                <div className={styles.header}>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
-                        <ShieldCheck />
-                        <h2>Account Verification</h2>
-                    </div>
-                    <button onClick={onClose} className={styles.closeButton}><X /></button>
+                <div className={styles.animatedBackground}>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
                 </div>
-                <p style={{color: '#94a3b8', marginBottom: '1.5rem'}}>
-                    To withdraw funds, you need to verify your identity. Please upload one of the documents.
-                </p>
+                
+                <div className={styles.header}>
+                    <div className={styles.headerContent}>
+                        <div className={styles.iconContainer}>
+                            <ShieldCheck className={styles.icon} size={24} />
+                        </div>
+                        <h2 className={styles.title}>Account Verification</h2>
+                    </div>
+                    <button onClick={onClose} className={styles.closeButton}>
+                        <X size={20} />
+                    </button>
+                </div>
+                
+                <div className={styles.description}>
+                    <p>To withdraw funds, you need to verify your identity. Please upload one of the required documents.</p>
+                </div>
+                
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Document Type</label>
-                        <select value={kycDocType} onChange={(e) => setKycDocType(e.target.value)} className={styles.formInput}>
+                        <label className={styles.formLabel}>
+                            <FileText size={16} />
+                            Document Type
+                        </label>
+                        <select 
+                            value={kycDocType} 
+                            onChange={(e) => setKycDocType(e.target.value)} 
+                            className={styles.formInput}
+                        >
                             <option value="PASSPORT">Passport</option>
-                            <option value="UTILITY_BILL">Utility bill</option>
-                            <option value="INTERNATIONAL_PASSPORT">International passport</option>
+                            <option value="UTILITY_BILL">Utility Bill</option>
+                            <option value="INTERNATIONAL_PASSPORT">International Passport</option>
                             <option value="RESIDENCE_PERMIT">Residence Permit</option>
                         </select>
                     </div>
+                    
                     <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>File (up to 10MB)</label>
-                        <input type="file" accept="image/*,.pdf" onChange={handleFileChange} className={styles.formInput} required />
+                        <label className={styles.formLabel}>
+                            <Upload size={16} />
+                            Document File (up to 10MB)
+                        </label>
+                        <div className={styles.fileInputContainer}>
+                            <input 
+                                type="file" 
+                                accept="image/*,.pdf" 
+                                onChange={handleFileChange} 
+                                className={styles.fileInput}
+                                id="kyc-file"
+                                required 
+                            />
+                            <label htmlFor="kyc-file" className={styles.fileInputLabel}>
+                                <Upload size={20} />
+                                <span>{kycFile ? kycFile.name : 'Choose file...'}</span>
+                            </label>
+                        </div>
                     </div>
-                    <button type="submit" disabled={isLoading} className={`${styles.btn} ${styles.btnPrimary}`}>
-                        {isLoading ? 'Sending...' : 'Submit for Review'}
+                    
+                    <button 
+                        type="submit" 
+                        disabled={isLoading} 
+                        className={`${styles.submitButton} ${isLoading ? styles.loading : ''}`}
+                    >
+                        {isLoading ? (
+                            <>
+                                <div className={styles.spinner}></div>
+                                Uploading...
+                            </>
+                        ) : (
+                            <>
+                                <ShieldCheck size={20} />
+                                Submit for Verification
+                            </>
+                        )}
                     </button>
-                    {message.text && <p style={{color: message.type === 'error' ? 'salmon' : 'lightgreen', marginTop: '1rem'}}>{message.text}</p>}
+                    
+                    {message.text && (
+                        <div className={`${styles.messageContainer} ${styles[message.type]}`}>
+                            {message.type === 'error' ? (
+                                <AlertCircle size={20} />
+                            ) : (
+                                <CheckCircle size={20} />
+                            )}
+                            <span>{message.text}</span>
+                        </div>
+                    )}
                 </form>
             </div>
         </div>

@@ -47,27 +47,50 @@ const GameCard: React.FC<{ game: typeof gamesData[0] }> = ({ game }) => (
 );
 
 const HomePage: React.FC = () => {
-    const [categoryFilter, setCategoryFilter] = useState('All games');
+    const [categoryFilter, setCategoryFilter] = useState(() => {
+        const saved = localStorage.getItem('gamesCategory');
+        return saved || 'All games';
+    });
 
     const filteredGames = useMemo(() => {
         if (categoryFilter === 'All games') return gamesData;
         return gamesData.filter(game => game.category === categoryFilter);
     }, [categoryFilter]);
 
+    const handleCategoryChange = (category: string) => {
+        setCategoryFilter(category);
+        localStorage.setItem('gamesCategory', category);
+    };
+
     return (
-        <div>
+        <div className={styles.pageContainer}>
             <div className={styles.pageHeader}>
-                <h1>Games</h1>
-                <p>Select a game and start playing!</p>
+                <h1>🎮 Games</h1>
+                <p>Select a game and start playing against other players!</p>
             </div>
             
             <div className={styles.filtersContainer}>
                 <div className={styles.filterGroup}>
                     <span>Categories:</span>
                     <div className={styles.filterButtons}>
-                        <button onClick={() => setCategoryFilter('All games')} className={`${styles.filterButton} ${categoryFilter === 'All games' ? styles.active : ''}`}>All games</button>
-                        <button onClick={() => setCategoryFilter('Strategy')} className={`${styles.filterButton} ${categoryFilter === 'Strategy' ? styles.active : ''}`}>Strategy</button>
-                        <button onClick={() => setCategoryFilter('Casual')} className={`${styles.filterButton} ${categoryFilter === 'Casual' ? styles.active : ''}`}>Casual</button>
+                        <button
+                            onClick={() => handleCategoryChange('All games')}
+                            className={`${styles.filterButton} ${categoryFilter === 'All games' ? styles.active : ''}`}
+                        >
+                            🎯 All games
+                        </button>
+                        <button
+                            onClick={() => handleCategoryChange('Strategy')}
+                            className={`${styles.filterButton} ${categoryFilter === 'Strategy' ? styles.active : ''}`}
+                        >
+                            🧠 Strategy
+                        </button>
+                        <button
+                            onClick={() => handleCategoryChange('Casual')}
+                            className={`${styles.filterButton} ${categoryFilter === 'Casual' ? styles.active : ''}`}
+                        >
+                            🎲 Casual
+                        </button>
                     </div>
                 </div>
             </div>

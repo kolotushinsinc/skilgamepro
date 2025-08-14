@@ -6,6 +6,7 @@ import { NotificationHandler } from './components/NotificationHandler/Notificati
 import TournamentExitManager from './components/tournament/TournamentExitManager';
 import TournamentNotificationHandler from './components/tournament/TournamentNotificationHandler';
 import SupportChat from './components/SupportChat/SupportChat';
+import LoadingSpinner from './components/ui/LoadingSpinner';
 
 import MainLayout from './components/layout/MainLayout';
 
@@ -22,7 +23,7 @@ function App() {
   }, [refreshUser]);
 
   if (loading) {
-    return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Loading...</div>;
+    return <LoadingSpinner fullScreen text="Loading application..." />;
   }
 
   return (

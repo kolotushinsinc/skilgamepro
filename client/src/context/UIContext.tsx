@@ -4,6 +4,8 @@ interface UIContextType {
     isSidebarOpen: boolean;
     toggleSidebar: () => void;
     setSidebarOpen: (isOpen: boolean) => void;
+    showLogoutModal: boolean;
+    setShowLogoutModal: (show: boolean) => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -18,6 +20,8 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
             return true;
         }
     });
+
+    const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
     useEffect(() => {
         try {
@@ -36,7 +40,13 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     return (
-        <UIContext.Provider value={{ isSidebarOpen, toggleSidebar, setSidebarOpen }}>
+        <UIContext.Provider value={{
+            isSidebarOpen,
+            toggleSidebar,
+            setSidebarOpen,
+            showLogoutModal,
+            setShowLogoutModal
+        }}>
             {children}
         </UIContext.Provider>
     );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle, X } from 'lucide-react';
 import styles from './ErrorModal.module.css';
 
 interface ErrorModalProps {
@@ -13,16 +14,29 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, message, onClose }) => 
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.animatedBackground}>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                </div>
+                
                 <div className={styles.header}>
-                    <h3>⚠️ Wrong move</h3>
-                    <button className={styles.closeButton} onClick={onClose}>×</button>
+                    <div className={styles.iconContainer}>
+                        <AlertTriangle className={styles.icon} size={24} />
+                        <h3 className={styles.title}>Invalid Move</h3>
+                    </div>
+                    <button className={styles.closeButton} onClick={onClose}>
+                        <X size={20} />
+                    </button>
                 </div>
+                
                 <div className={styles.content}>
-                    <p>{message}</p>
+                    <p className={styles.message}>{message}</p>
                 </div>
+                
                 <div className={styles.footer}>
                     <button className={styles.okButton} onClick={onClose}>
-                        Ok
+                        Got it
                     </button>
                 </div>
             </div>

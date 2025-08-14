@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import styles from './PrivateRoomPage.module.css';
 
 interface PrivateRoomInfo {
@@ -98,8 +99,7 @@ const PrivateRoomPage: React.FC = () => {
         return (
             <div className={styles.container}>
                 <div className={styles.card}>
-                    <div className={styles.spinner}></div>
-                    <p>Loading room information...</p>
+                    <LoadingSpinner text="Loading room information..." />
                 </div>
             </div>
         );

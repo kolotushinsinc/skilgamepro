@@ -13,6 +13,7 @@ import PaymentStatusModal from '../../components/modals/PaymentStatusModal';
 import DepositModal from '../../components/modals/DepositModal';
 import WithdrawModal from '../../components/modals/WithdrawModal';
 import PaymentHistory from '../../components/PaymentHistory/PaymentHistory';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const HistoryTable: FC<{ headers: string[]; children: React.ReactNode }> = ({ headers, children }) => (
     <table className={styles.historyTable}>
@@ -334,8 +335,7 @@ const ProfilePage: React.FC = () => {
         return (
             <div className="loading-container">
                 <div className="loading-content">
-                    <div className="spinner"></div>
-                    <p className="loading-text">Loading profile data...</p>
+                    <LoadingSpinner text="Loading profile data..." />
                 </div>
             </div>
         );
@@ -567,8 +567,7 @@ const ProfilePage: React.FC = () => {
                                 <h4>🎮 Game History</h4>
                                 {loadingGames ? (
                                     <div className={styles.loadingState}>
-                                        <div className={styles.spinner}></div>
-                                        <p>Loading game history...</p>
+                                        <LoadingSpinner text="Loading game history..." />
                                     </div>
                                 ) : (
                                     <>
@@ -609,8 +608,7 @@ const ProfilePage: React.FC = () => {
                                 <h4>📈 Transaction History</h4>
                                 {loadingTransactions ? (
                                     <div className={styles.loadingState}>
-                                        <div className={styles.spinner}></div>
-                                        <p>Loading transaction history...</p>
+                                        <LoadingSpinner text="Loading transaction history..." />
                                     </div>
                                 ) : (
                                     <>

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import LoadingSpinner from '../ui/LoadingSpinner';
 import styles from './DurakBoard.module.css';
 
 // Types for Attack/Defense Durak game
@@ -100,10 +101,7 @@ const DurakBoard: React.FC<DurakBoardProps> = ({
     if (!gameState || !gameState.players || gameState.players.length < 2) {
         return (
             <div className={styles.durakBoard}>
-                <div style={{ textAlign: 'center', color: 'white', padding: '50px' }}>
-                    <h3>Loading Attack/Defense Durak...</h3>
-                    <p>Waiting for game state to initialize</p>
-                </div>
+                <LoadingSpinner text="Loading Attack/Defense Durak..." />
             </div>
         );
     }

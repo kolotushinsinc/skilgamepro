@@ -1,4 +1,5 @@
 import React from 'react';
+import { CheckCircle, XCircle, Loader2, CreditCard, TrendingUp, TrendingDown } from 'lucide-react';
 import styles from './PaymentStatusModal.module.css';
 
 interface PaymentStatusModalProps {
@@ -25,13 +26,13 @@ const PaymentStatusModal: React.FC<PaymentStatusModalProps> = ({
     const getStatusIcon = () => {
         switch (status) {
             case 'success':
-                return '✅';
+                return <CheckCircle className={styles.icon} size={48} />;
             case 'error':
-                return '❌';
+                return <XCircle className={styles.icon} size={48} />;
             case 'loading':
-                return '⏳';
+                return <Loader2 className={`${styles.icon} ${styles.spinning}`} size={48} />;
             default:
-                return '💰';
+                return <CreditCard className={styles.icon} size={48} />;
         }
     };
 
@@ -48,11 +49,28 @@ const PaymentStatusModal: React.FC<PaymentStatusModalProps> = ({
         }
     };
 
+    const getOperationIcon = () => {
+        if (operation === 'deposit') {
+            return <TrendingUp size={20} />;
+        } else if (operation === 'withdraw') {
+            return <TrendingDown size={20} />;
+        }
+        return <CreditCard size={20} />;
+    };
+
     return (
-        <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.overlay} onClick={status !== 'loading' ? onClose : undefined}>
             <div className={`${styles.modal} ${getStatusClass()}`} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.animatedBackground}>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                    <div className={styles.floatingElement}></div>
+                </div>
+                
                 <div className={styles.header}>
-                    <span className={styles.icon}>{getStatusIcon()}</span>
+                    <div className={styles.iconContainer}>
+                        {getStatusIcon()}
+                    </div>
                     <h2 className={styles.title}>{title}</h2>
                 </div>
                 
@@ -62,7 +80,8 @@ const PaymentStatusModal: React.FC<PaymentStatusModalProps> = ({
                     {amount && operation && status === 'success' && (
                         <div className={styles.amountInfo}>
                             <div className={styles.operationType}>
-                                {operation === 'deposit' ? '💰 Deposit' : '💸 Withdrawal'}
+                                {getOperationIcon()}
+                                <span>{operation === 'deposit' ? 'Deposit' : 'Withdrawal'}</span>
                             </div>
                             <div className={styles.amount}>
                                 {operation === 'deposit' ? '+' : '-'}${amount.toFixed(2)}
@@ -77,15 +96,14 @@ const PaymentStatusModal: React.FC<PaymentStatusModalProps> = ({
                             onClick={onClose} 
                             className={styles.closeButton}
                         >
-                            Close
+                            Got it
                         </button>
                     </div>
                 )}
 
                 {status === 'loading' && (
-                    <div className={styles.loadingSpinner}>
-                        <div className={styles.spinner}></div>
-                        <p>Processing payment...</p>
+                    <div className={styles.loadingContent}>
+                        <div className={styles.loadingText}>Processing payment...</div>
                     </div>
                 )}
             </div>
