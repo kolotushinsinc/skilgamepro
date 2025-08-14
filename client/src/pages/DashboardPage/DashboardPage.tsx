@@ -58,7 +58,7 @@ const DashboardPage: React.FC = () => {
     if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="space-y-6">
+        <div className={styles.container}>
             <div className={styles.header}>
                 <div className={styles.headerFirst}>
                     <h1>Dashboard</h1>

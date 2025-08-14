@@ -62,6 +62,22 @@ const ProfilePage: React.FC = () => {
     const [transactionHistory, setTransactionHistory] = useState<ITransaction[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
     const [historyError, setHistoryError] = useState('');
+    
+    // Pagination states
+    const [gamePage, setGamePage] = useState(() => {
+        const saved = localStorage.getItem('profileGamePage');
+        return saved ? parseInt(saved) : 1;
+    });
+    const [gameTotal, setGameTotal] = useState(0);
+    const [transactionPage, setTransactionPage] = useState(() => {
+        const saved = localStorage.getItem('profileTransactionPage');
+        return saved ? parseInt(saved) : 1;
+    });
+    const [transactionTotal, setTransactionTotal] = useState(0);
+    const [loadingGames, setLoadingGames] = useState(false);
+    const [loadingTransactions, setLoadingTransactions] = useState(false);
+    
+    const ITEMS_PER_PAGE = 10;
 
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -120,26 +136,67 @@ const ProfilePage: React.FC = () => {
         }
     };
 
+    const fetchGameHistory = async (page: number = 1) => {
+        setLoadingGames(true);
+        try {
+            const response = await axios.get(`${API_URL}/api/users/history/games`, {
+                params: { page, limit: ITEMS_PER_PAGE }
+            });
+            setGameHistory(response.data.games || response.data);
+            setGameTotal(response.data.total || response.data.length);
+        } catch (err: any) {
+            console.error('Failed to fetch game history:', err);
+            setHistoryError(err.response?.data?.message || 'Failed to load game history');
+        } finally {
+            setLoadingGames(false);
+        }
+    };
+
+    const fetchTransactionHistory = async (page: number = 1) => {
+        setLoadingTransactions(true);
+        try {
+            const response = await axios.get(`${API_URL}/api/users/history/transactions`, {
+                params: { page, limit: ITEMS_PER_PAGE }
+            });
+            setTransactionHistory(response.data.transactions || response.data);
+            setTransactionTotal(response.data.total || response.data.length);
+        } catch (err: any) {
+            console.error('Failed to fetch transaction history:', err);
+            setHistoryError(err.response?.data?.message || 'Failed to load transaction history');
+        } finally {
+            setLoadingTransactions(false);
+        }
+    };
+
     const fetchHistory = async () => {
         setHistoryError('');
         setLoadingHistory(true);
         try {
-            const [gamesRes, transactionsRes] = await Promise.all([
-                axios.get(`${API_URL}/api/users/history/games`),
-                axios.get(`${API_URL}/api/users/history/transactions`),
+            await Promise.all([
+                fetchGameHistory(1),
+                fetchTransactionHistory(1)
             ]);
-            setGameHistory(gamesRes.data);
-            setTransactionHistory(transactionsRes.data);
-        } catch (err: any) {
-            console.error('Failed to fetch history:', err);
-            setHistoryError(err.response?.data?.message || 'Failed to load history');
         } finally {
             setLoadingHistory(false);
         }
-    }
+    };
+
+    // Pagination handlers
+    const handleGamePageChange = (page: number) => {
+        setGamePage(page);
+        localStorage.setItem('profileGamePage', page.toString());
+        fetchGameHistory(page);
+    };
+
+    const handleTransactionPageChange = (page: number) => {
+        setTransactionPage(page);
+        localStorage.setItem('profileTransactionPage', page.toString());
+        fetchTransactionHistory(page);
+    };
 
     useEffect(() => {
-        fetchHistory();
+        fetchGameHistory(gamePage);
+        fetchTransactionHistory(transactionPage);
     }, []);
 
     useEffect(() => {
@@ -287,126 +344,335 @@ const ProfilePage: React.FC = () => {
     const statusTranslations: Record<IGameRecord['status'], string> = { WON: 'Won', LOST: 'Loss', DRAW: 'Draw' };
     const typeTranslations: Record<ITransaction['type'], string> = { DEPOSIT: 'Deposit', WITHDRAWAL: 'Withdrawal', WAGER_WIN: 'Wager win', WAGER_LOSS: 'Wager loss' };
 
+    const [activeTab, setActiveTab] = useState(() => {
+        return localStorage.getItem('profileActiveTab') || 'profile';
+    });
+
+    // Pagination component
+    const Pagination = ({ currentPage, totalItems, onPageChange, isLoading }: {
+        currentPage: number;
+        totalItems: number;
+        onPageChange: (page: number) => void;
+        isLoading: boolean;
+    }) => {
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+        
+        if (totalPages <= 1) return null;
+
+        const getVisiblePages = () => {
+            const maxVisible = 7; // Максимум видимых страниц
+            const pages = [];
+            
+            if (totalPages <= maxVisible) {
+                // Если страниц мало, показываем все
+                for (let i = 1; i <= totalPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                // Умная пагинация
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, currentPage + 2);
+                
+                // Всегда показываем первую страницу
+                if (startPage > 1) {
+                    pages.push(1);
+                    if (startPage > 2) {
+                        pages.push('...');
+                    }
+                }
+                
+                // Показываем страницы вокруг текущей
+                for (let i = startPage; i <= endPage; i++) {
+                    if (i !== 1 && i !== totalPages) {
+                        pages.push(i);
+                    }
+                }
+                
+                // Всегда показываем последнюю страницу
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        pages.push('...');
+                    }
+                    pages.push(totalPages);
+                }
+                
+                // Если не добавили первую страницу в начале
+                if (startPage === 1 && !pages.includes(1)) {
+                    pages.unshift(1);
+                }
+                
+                // Если не добавили последнюю страницу в конце
+                if (endPage === totalPages && !pages.includes(totalPages)) {
+                    pages.push(totalPages);
+                }
+            }
+            
+            return pages;
+        };
+
+        const visiblePages = getVisiblePages();
+
         return (
-        <>
-            <div className={styles.pageContainer}>
-                <div className={styles.profileContainer}>
-                    <div className={styles.profileSection}>
-                        <h3>Profile</h3>
-                        <div className={styles.profileHeader}>
-                            <div className={styles.avatarContainer}>
-                                {avatarPreview ? (
-                                    <img src={avatarPreview} alt="Preview" className={styles.profileAvatarImg} />
-                                ) : (
-                                    <Avatar size="large" />
-                                )}
-                                <label htmlFor="avatarInput" className={styles.avatarEditButton}>✏️</label>
-                                <input id="avatarInput" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
-                            </div>
-                            <div className={styles.profileInfo}>
-                                <h2>{user.username}</h2>
-                                {avatarFile && (
-                                    <div className={styles.avatarActions}>
-                                        <button onClick={handleAvatarUpload} className={`${styles.btn} ${styles.btnPrimary}`}>Save</button>
-                                        <button onClick={() => { setAvatarFile(null); setAvatarPreview(null); }} className={`${styles.btn} ${styles.btnSecondary}`}>Cancel</button>
+            <div className={styles.pagination}>
+                <button
+                    className={`${styles.paginationBtn} ${currentPage === 1 ? styles.disabled : ''}`}
+                    onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1 || isLoading}
+                    title="Previous page"
+                >
+                    ←
+                </button>
+                
+                {visiblePages.map((page, index) => (
+                    page === '...' ? (
+                        <span key={`ellipsis-${index}`} className={styles.paginationEllipsis}>
+                            ...
+                        </span>
+                    ) : (
+                        <button
+                            key={page}
+                            className={`${styles.paginationBtn} ${currentPage === page ? styles.active : ''}`}
+                            onClick={() => onPageChange(page as number)}
+                            disabled={isLoading}
+                            title={`Page ${page}`}
+                        >
+                            {page}
+                        </button>
+                    )
+                ))}
+                
+                <button
+                    className={`${styles.paginationBtn} ${currentPage === totalPages ? styles.disabled : ''}`}
+                    onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages || isLoading}
+                    title="Next page"
+                >
+                    →
+                </button>
+            </div>
+        );
+    };
+    
+        const tabs = [
+            { id: 'profile', label: 'Profile', icon: '👤' },
+            { id: 'security', label: 'Security', icon: '🔐' },
+            { id: 'wallet', label: 'Wallet', icon: '💰' },
+            { id: 'games', label: 'Game History', icon: '🎮' },
+            { id: 'transactions', label: 'Transactions', icon: '📈' }
+        ];
+    
+        const renderTabContent = () => {
+            switch (activeTab) {
+                case 'profile':
+                    return (
+                        <div className={styles.tabContent}>
+                            <div className={styles.profileHeader}>
+                                <div className={styles.avatarContainer}>
+                                    {avatarPreview ? (
+                                        <img src={avatarPreview} alt="Preview" className={styles.profileAvatarImg} />
+                                    ) : (
+                                        <Avatar size="large" />
+                                    )}
+                                    <label htmlFor="avatarInput" className={styles.avatarEditButton}>✏️</label>
+                                    <input id="avatarInput" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                                </div>
+                                <div className={styles.profileInfo}>
+                                    <h2>{user.username}</h2>
+                                    {avatarFile && (
+                                        <div className={styles.avatarActions}>
+                                            <button onClick={handleAvatarUpload} className={`${styles.btn} ${styles.btnPrimary}`}>Save</button>
+                                            <button onClick={() => { setAvatarFile(null); setAvatarPreview(null); }} className={`${styles.btn} ${styles.btnSecondary}`}>Cancel</button>
+                                        </div>
+                                    )}
+                                    <div className={styles.profileDetails}>
+                                        <div className={styles.profileItem}>
+                                            <span className={styles.profileLabel}>Email:</span>
+                                            <span>{user.email}</span>
+                                        </div>
+                                        <div className={styles.profileItem}>
+                                            <span className={styles.profileLabel}>Balance:</span>
+                                            <span className={styles.balanceHighlight}>${user.balance.toFixed(2)}</span>
+                                        </div>
+                                        <div className={styles.profileItem}>
+                                            <span className={styles.profileLabel}>Member since:</span>
+                                            <span>{new Date().toLocaleDateString()}</span>
+                                        </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                
+                case 'security':
+                    return (
+                        <div className={styles.tabContent}>
+                            <div className={styles.securitySection}>
+                                <h4>🔐 Change Password</h4>
+                                <form onSubmit={handlePasswordChange}>
+                                    <div className={styles.formGrid}>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>Current Password</label>
+                                            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className={styles.formInput} placeholder="Current Password" required />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>New Password</label>
+                                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={styles.formInput} placeholder="New Password" required />
+                                        </div>
+                                    </div>
+                                    <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Save Password</button>
+                                    {passwordMessage.text && <div className={`${styles.alert} ${passwordMessage.type === 'error' ? styles.alertError : styles.alertSuccess}`}><p>{passwordMessage.text}</p></div>}
+                                </form>
+                            </div>
+                            
+                            <div className={styles.kycSection}>
+                                <h4>🛡️ Identity Verification (KYC)</h4>
+                                <KYCStatus user={user} onVerifyClick={() => setIsKycModalOpen(true)} />
+                            </div>
+                        </div>
+                    );
+                
+                case 'wallet':
+                    return (
+                        <div className={styles.tabContent}>
+                            <div className={styles.walletSection}>
+                                <div className={styles.balanceActions}>
+                                    <div className={styles.balanceInfo}>
+                                        <div className={styles.balanceDisplay}>
+                                            <span className={styles.balanceLabel}>Current Balance</span>
+                                            <span className={styles.balanceAmount}>${user.balance.toFixed(2)}</span>
+                                        </div>
+                                        <p className={styles.balanceSubtext}>Manage your account funds using our secure payment gateway</p>
+                                    </div>
+                                    <div className={styles.balanceButtons}>
+                                        <button onClick={handleDepositClick} className={`${styles.btn} ${styles.btnSuccess}`}>
+                                            💰 Deposit Funds
+                                        </button>
+                                        <button onClick={handleWithdrawClick} className={`${styles.btn} ${styles.btnSecondary}`}>
+                                            💸 Withdraw Funds
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className={styles.historySection}>
+                                <PaymentHistory />
+                            </div>
+                        </div>
+                    );
+                
+                case 'games':
+                    return (
+                        <div className={styles.tabContent}>
+                            <div className={styles.historySection}>
+                                <h4>🎮 Game History</h4>
+                                {loadingGames ? (
+                                    <div className={styles.loadingState}>
+                                        <div className={styles.spinner}></div>
+                                        <p>Loading game history...</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className={styles.tableContainer}>
+                                            <HistoryTable headers={['Game', 'Result', 'Balance Change', 'Date']}>
+                                                {gameHistory.map(game => (
+                                                    <tr key={game._id}>
+                                                        <td>{game.gameName}</td>
+                                                        <td>
+                                                            <span className={`${styles.badge} ${game.status === 'WON' ? styles.badgeGreen : game.status === 'LOST' ? styles.badgeRed : styles.badgeYellow}`}>
+                                                                {statusTranslations[game.status]}
+                                                            </span>
+                                                        </td>
+                                                        <td className={game.amountChanged >= 0 ? styles.amountPositive : styles.amountNegative}>
+                                                            {game.amountChanged >= 0 ? '+' : ''}${game.amountChanged.toFixed(2)}
+                                                        </td>
+                                                        <td>{new Date(game.createdAt).toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </HistoryTable>
+                                        </div>
+                                        <Pagination
+                                            currentPage={gamePage}
+                                            totalItems={gameTotal}
+                                            onPageChange={handleGamePageChange}
+                                            isLoading={loadingGames}
+                                        />
+                                    </>
                                 )}
-                                <p><strong>Email:</strong> {user.email}</p>
-                                <p><strong>Balance:</strong> <span className={styles.balanceHighlight}>${user.balance.toFixed(2)}</span></p>
                             </div>
                         </div>
-                    </div>
-
-                    <div className={styles.card}>
-                             <h3>Verification (KYC)</h3>
-                             <KYCStatus user={user} onVerifyClick={() => setIsKycModalOpen(true)} />
-                         </div>
-
-                    <div className={styles.profileSection}>
-                        <h3>Security</h3>
-                        <form onSubmit={handlePasswordChange}>
-                            <div className={styles.formGrid}>
-                                <div className={styles.formGroup}>
-                                    <label className={styles.formLabel}>Current Password</label>
-                                    <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className={styles.formInput} placeholder="Current Password" required />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label className={styles.formLabel}>New Password</label>
-                                    <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={styles.formInput} placeholder="New Password" required />
-                                </div>
+                    );
+                
+                case 'transactions':
+                    return (
+                        <div className={styles.tabContent}>
+                            <div className={styles.historySection}>
+                                <h4>📈 Transaction History</h4>
+                                {loadingTransactions ? (
+                                    <div className={styles.loadingState}>
+                                        <div className={styles.spinner}></div>
+                                        <p>Loading transaction history...</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className={styles.tableContainer}>
+                                            <HistoryTable headers={['Type', 'Status', 'Amount', 'Date']}>
+                                                {transactionHistory.map(tx => (
+                                                    <tr key={tx._id}>
+                                                        <td>{typeTranslations[tx.type] || tx.type}</td>
+                                                        <td>{tx.status}</td>
+                                                        <td>${tx.amount.toFixed(2)}</td>
+                                                        <td>{new Date(tx.createdAt).toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </HistoryTable>
+                                        </div>
+                                        <Pagination
+                                            currentPage={transactionPage}
+                                            totalItems={transactionTotal}
+                                            onPageChange={handleTransactionPageChange}
+                                            isLoading={loadingTransactions}
+                                        />
+                                    </>
+                                )}
                             </div>
-                            <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>🔒 Save Password</button>
-                            {passwordMessage.text && <div className={`${styles.alert} ${passwordMessage.type === 'error' ? styles.alertError : styles.alertSuccess}`}><p>{passwordMessage.text}</p></div>}
-                        </form>
+                        </div>
+                    );
+                
+                default:
+                    return null;
+            }
+        };
+    
+        return (
+            <>
+                <div className={styles.container}>
+                    <div className={styles.header}>
+                        <h1>Profile Settings</h1>
+                        <p>Manage your account preferences and information</p>
                     </div>
-
-                    <div className={styles.profileSection}>
-                        <h3>Balance Management</h3>
-                        <div className={styles.balanceActions}>
-                            <div className={styles.balanceInfo}>
-                                <p>Current Balance: <span className={styles.balanceHighlight}>${user.balance.toFixed(2)}</span></p>
-                                <p className={styles.balanceSubtext}>Manage your account funds using our secure payment gateway</p>
-                            </div>
-                            <div className={styles.balanceButtons}>
+                    
+                    <div className={styles.tabsContainer}>
+                        <div className={styles.tabsList}>
+                            {tabs.map(tab => (
                                 <button
-                                    onClick={handleDepositClick}
-                                    className={`${styles.btn} ${styles.btnSuccess}`}
+                                    key={tab.id}
+                                    onClick={() => {
+                                        setActiveTab(tab.id);
+                                        localStorage.setItem('profileActiveTab', tab.id);
+                                    }}
+                                    className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
                                 >
-                                    💰 Deposit Funds
+                                    <span className={styles.tabIcon}>{tab.icon}</span>
+                                    <span className={styles.tabLabel}>{tab.label}</span>
                                 </button>
-                                <button
-                                    onClick={handleWithdrawClick}
-                                    className={`${styles.btn} ${styles.btnSecondary}`}
-                                >
-                                    💸 Withdraw Funds
-                                </button>
-                            </div>
+                            ))}
                         </div>
-                    </div>
-
-                    <div className={styles.profileSection}>
-                        <PaymentHistory />
-                    </div>
-
-                    <div className={styles.profileSection}>
-                        <h3>Game History</h3>
-                        <div className={styles.tableContainer}>
-                            <HistoryTable headers={['Game', 'Result', 'Balance Change', 'Date']}>
-                                {gameHistory.map(game => (
-                                    <tr key={game._id}>
-                                        <td>{game.gameName}</td>
-                                        <td>
-                                            <span className={`${styles.badge} ${game.status === 'WON' ? styles.badgeGreen : game.status === 'LOST' ? styles.badgeRed : styles.badgeYellow}`}>
-                                                {statusTranslations[game.status]}
-                                            </span>
-                                        </td>
-                                        <td className={game.amountChanged >= 0 ? styles.amountPositive : styles.amountNegative}>
-                                            {game.amountChanged >= 0 ? '+' : ''}${game.amountChanged.toFixed(2)}
-                                        </td>
-                                        <td>{new Date(game.createdAt).toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </HistoryTable>
-                        </div>
-                    </div>
-
-                    <div className={styles.profileSection}>
-                        <h3>Legacy Transaction History</h3>
-                        <div className={styles.tableContainer}>
-                            <HistoryTable headers={['Type', 'Status', 'Amount', 'Date']}>
-                                {transactionHistory.map(tx => (
-                                    <tr key={tx._id}>
-                                        <td>{typeTranslations[tx.type] || tx.type}</td>
-                                        <td>{tx.status}</td>
-                                        <td>${tx.amount.toFixed(2)}</td>
-                                        <td>{new Date(tx.createdAt).toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </HistoryTable>
+                        
+                        <div className={styles.tabPanel}>
+                            {renderTabContent()}
                         </div>
                     </div>
                 </div>
-            </div>
             <KycModal isOpen={isKycModalOpen} onClose={() => setIsKycModalOpen(false)} onSuccess={handleKycSuccess} />
             <DepositModal
                 isOpen={isDepositModalOpen}

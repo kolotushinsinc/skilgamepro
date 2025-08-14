@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Tournament, tournamentService } from '../../services/tournamentService';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import CustomSelect from '../../components/ui/CustomSelect';
 import styles from './TournamentsListPage.module.css';
 
 const TournamentsListPage: React.FC = () => {
@@ -17,10 +18,17 @@ const TournamentsListPage: React.FC = () => {
     const navigate = useNavigate();
 
     const statusText = {
-        WAITING: 'Waiting for players',
+        WAITING: 'Waiting',
         ACTIVE: 'Active',
         FINISHED: 'Finished',
         CANCELLED: 'Cancelled'
+    };
+
+    const statusFullText = {
+        WAITING: 'Waiting for players',
+        ACTIVE: 'Tournament active',
+        FINISHED: 'Tournament finished',
+        CANCELLED: 'Tournament cancelled'
     };
 
     const gameTypeText = {
@@ -33,6 +41,50 @@ const TournamentsListPage: React.FC = () => {
         'dice': 'Dice',
         'bingo': 'Bingo'
     };
+
+    const gameTypeIcons = {
+        'tic-tac-toe': '⭕',
+        'checkers': '🔴',
+        'chess': '♚',
+        'backgammon': '🎲',
+        'durak': '🃏',
+        'domino': '🀫',
+        'dice': '🎯',
+        'bingo': '🎱'
+    };
+
+    const gameTypeImages = {
+        'chess': 'https://images.pexels.com/photos/260024/pexels-photo-260024.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'checkers': 'https://avatars.dzeninfra.ru/get-zen_doc/271828/pub_67a99e7d6bcf180eb89c36da_67a99e866bcf180eb89c3b0d/scale_1200',
+        'backgammon': 'https://www.superbetinyeniadresi.net/wp-content/uploads/2020/10/Tavla-Oynanan-Bahis-Siteleri.jpg',
+        'bingo': 'https://avatars.mds.yandex.net/i?id=abe8723d93205892f919d0635deafded_l-5341604-images-thumbs&n=13',
+        'domino': 'https://wallpapers.com/images/hd/domino-2858-x-2037-background-51j0j2sp58c1n3b1.jpg',
+        'durak': 'https://play-lh.googleusercontent.com/iExl3GyKHtppXeORDO5YshBcrFD7xc6BSvj4NTl5wT-Zq53LBM93Nyx6AfrRUQTP77A=w1024-h500',
+        'dice': 'https://i.pinimg.com/originals/18/fd/e1/18fde15323d44e0c2d6bcd23e6f2c93f.jpg',
+        'tic-tac-toe': 'https://media.printables.com/media/prints/996434/images/7583870_392cdefa-1c3e-4318-9225-1bc12ed72a34_47a94660-c70d-4554-8a25-288442c379ea/tictac-2_configuration_no-configuration.png'
+    };
+
+    // Опции для селекта статуса
+    const statusOptions = [
+        { value: 'all', label: 'All Tournaments', icon: '🎯' },
+        { value: 'waiting', label: 'Waiting for Players', icon: '⏳' },
+        { value: 'active', label: 'Active Tournaments', icon: '🔥' },
+        { value: 'finished', label: 'Finished Tournaments', icon: '🏆' },
+        { value: 'cancelled', label: 'Cancelled Tournaments', icon: '❌' }
+    ];
+
+    // Опции для селекта типа игры
+    const gameTypeOptions = [
+        { value: 'all', label: 'All Games', icon: '🎮' },
+        { value: 'tic-tac-toe', label: 'Tic-Tac-Toe', icon: gameTypeIcons['tic-tac-toe'] },
+        { value: 'checkers', label: 'Checkers', icon: gameTypeIcons['checkers'] },
+        { value: 'chess', label: 'Chess', icon: gameTypeIcons['chess'] },
+        { value: 'backgammon', label: 'Backgammon', icon: gameTypeIcons['backgammon'] },
+        { value: 'durak', label: 'Durak', icon: gameTypeIcons['durak'] },
+        { value: 'domino', label: 'Domino', icon: gameTypeIcons['domino'] },
+        { value: 'dice', label: 'Dice', icon: gameTypeIcons['dice'] },
+        { value: 'bingo', label: 'Bingo', icon: gameTypeIcons['bingo'] }
+    ];
 
     useEffect(() => {
         loadTournaments();
@@ -176,36 +228,22 @@ const TournamentsListPage: React.FC = () => {
             <div className={styles.filters}>
                 <div className={styles.filterGroup}>
                     <label>Status:</label>
-                    <select 
-                        value={filter} 
-                        onChange={(e) => setFilter(e.target.value as any)}
-                        className={styles.filterSelect}
-                    >
-                        <option value="all">All</option>
-                        <option value="waiting">Waiting</option>
-                        <option value="active">Active</option>
-                        <option value="finished">Finished</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
+                    <CustomSelect
+                        options={statusOptions}
+                        value={filter}
+                        onChange={(value) => setFilter(value as any)}
+                        placeholder="Select status"
+                    />
                 </div>
 
                 <div className={styles.filterGroup}>
                     <label>Game:</label>
-                    <select 
-                        value={gameTypeFilter} 
-                        onChange={(e) => setGameTypeFilter(e.target.value as any)}
-                        className={styles.filterSelect}
-                    >
-                        <option value="all">All Games</option>
-                        <option value="tic-tac-toe">Tic-Tac-Toe</option>
-                        <option value="checkers">Checkers</option>
-                        <option value="chess">Chess</option>
-                        <option value="backgammon">Backgammon</option>
-                        <option value="durak">Durak</option>
-                        <option value="domino">Domino</option>
-                        <option value="dice">Dice</option>
-                        <option value="bingo">Bingo</option>
-                    </select>
+                    <CustomSelect
+                        options={gameTypeOptions}
+                        value={gameTypeFilter}
+                        onChange={(value) => setGameTypeFilter(value as any)}
+                        placeholder="Select game type"
+                    />
                 </div>
             </div>
 
@@ -217,9 +255,22 @@ const TournamentsListPage: React.FC = () => {
             ) : (
                 <div className={styles.tournamentsList}>
                     {filteredTournaments.map(tournament => (
-                        <div key={tournament._id} className={styles.tournamentCard}>
+                        <div
+                            key={tournament._id}
+                            className={styles.tournamentCard}
+                            style={{
+                                backgroundImage: `url(${gameTypeImages[tournament.gameType]})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat'
+                            }}
+                        >
+                            <div className={styles.cardOverlay}></div>
                             <div className={styles.tournamentHeader}>
-                                <h3 className={styles.tournamentName}>{tournament.name}</h3>
+                                <h3 className={styles.tournamentName}>
+                                    <span className={styles.gameIcon}>{gameTypeIcons[tournament.gameType]}</span>
+                                    {tournament.name}
+                                </h3>
                                 <span className={`${styles.status} ${styles[tournament.status.toLowerCase()]}`}>
                                     {statusText[tournament.status]}
                                 </span>
@@ -228,7 +279,10 @@ const TournamentsListPage: React.FC = () => {
                             <div className={styles.tournamentInfo}>
                                 <div className={styles.infoRow}>
                                     <span className={styles.label}>Game:</span>
-                                    <span>{gameTypeText[tournament.gameType]}</span>
+                                    <span>
+                                        <span className={styles.gameIcon}>{gameTypeIcons[tournament.gameType]}</span>
+                                        {gameTypeText[tournament.gameType]}
+                                    </span>
                                 </div>
                                 <div className={styles.infoRow}>
                                     <span className={styles.label}>Entry Fee:</span>

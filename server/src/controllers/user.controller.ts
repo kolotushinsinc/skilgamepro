@@ -23,9 +23,22 @@ export const getUserProfile = (req: Request, res: Response) => {
 
 export const getGameHistory = async (req: Request, res: Response) => {
   try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await GameRecord.countDocuments({ user: req.user?._id });
     const gameHistory = await GameRecord.find({ user: req.user?._id })
-      .sort({ createdAt: -1 });
-    res.json(gameHistory);
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      games: gameHistory,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (error: any) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -33,9 +46,22 @@ export const getGameHistory = async (req: Request, res: Response) => {
 
 export const getTransactionHistory = async (req: Request, res: Response) => {
   try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await Transaction.countDocuments({ user: req.user?._id });
     const transactionHistory = await Transaction.find({ user: req.user?._id })
-      .sort({ createdAt: -1 });
-    res.json(transactionHistory);
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      transactions: transactionHistory,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (error: any) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

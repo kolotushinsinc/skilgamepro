@@ -17,7 +17,7 @@ const TournamentDetailPage: React.FC = () => {
     const navigate = useNavigate();
 
     const statusText = {
-        WAITING: 'Waiting for players',
+        WAITING: 'Waiting',
         ACTIVE: 'Active',
         FINISHED: 'Finished',
         CANCELLED: 'Cancelled'
@@ -28,8 +28,32 @@ const TournamentDetailPage: React.FC = () => {
         'checkers': 'Checkers',
         'chess': 'Chess',
         'backgammon': 'Backgammon',
-        'bingo': 'Bingo',
-        'domino': 'Domino'
+        'durak': 'Durak',
+        'domino': 'Domino',
+        'dice': 'Dice',
+        'bingo': 'Bingo'
+    };
+
+    const gameTypeIcons = {
+        'tic-tac-toe': '⭕',
+        'checkers': '🔴',
+        'chess': '♚',
+        'backgammon': '🎲',
+        'durak': '🃏',
+        'domino': '🀫',
+        'dice': '🎯',
+        'bingo': '🎱'
+    };
+
+    const gameTypeImages = {
+        'chess': 'https://images.pexels.com/photos/260024/pexels-photo-260024.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'checkers': 'https://avatars.dzeninfra.ru/get-zen_doc/271828/pub_67a99e7d6bcf180eb89c36da_67a99e866bcf180eb89c3b0d/scale_1200',
+        'backgammon': 'https://www.superbetinyeniadresi.net/wp-content/uploads/2020/10/Tavla-Oynanan-Bahis-Siteleri.jpg',
+        'bingo': 'https://avatars.mds.yandex.net/i?id=abe8723d93205892f919d0635deafded_l-5341604-images-thumbs&n=13',
+        'domino': 'https://wallpapers.com/images/hd/domino-2858-x-2037-background-51j0j2sp58c1n3b1.jpg',
+        'durak': 'https://play-lh.googleusercontent.com/iExl3GyKHtppXeORDO5YshBcrFD7xc6BSvj4NTl5wT-Zq53LBM93Nyx6AfrRUQTP77A=w1024-h500',
+        'dice': 'https://i.pinimg.com/originals/18/fd/e1/18fde15323d44e0c2d6bcd23e6f2c93f.jpg',
+        'tic-tac-toe': 'https://media.printables.com/media/prints/996434/images/7583870_392cdefa-1c3e-4318-9225-1bc12ed72a34_47a94660-c70d-4554-8a25-288442c379ea/tictac-2_configuration_no-configuration.png'
     };
 
     useEffect(() => {
@@ -280,7 +304,10 @@ const TournamentDetailPage: React.FC = () => {
                 <button onClick={() => navigate('/tournaments')} className={styles.backButton}>
                     ← Back to Tournaments
                 </button>
-                <h1>{tournament.name}</h1>
+                <h1>
+                    <span className={styles.gameIcon}>{gameTypeIcons[tournament.gameType]}</span>
+                    {tournament.name}
+                </h1>
                 <span className={`${styles.status} ${styles[tournament.status.toLowerCase()]}`}>
                     {statusText[tournament.status]}
                 </span>
@@ -290,7 +317,10 @@ const TournamentDetailPage: React.FC = () => {
                 <div className={styles.infoGrid}>
                     <div className={styles.infoItem}>
                         <span className={styles.label}>Game:</span>
-                        <span>{gameTypeText[tournament.gameType]}</span>
+                        <span>
+                            <span className={styles.gameIcon}>{gameTypeIcons[tournament.gameType]}</span>
+                            {gameTypeText[tournament.gameType]}
+                        </span>
                     </div>
                     <div className={styles.infoItem}>
                         <span className={styles.label}>Entry Fee:</span>

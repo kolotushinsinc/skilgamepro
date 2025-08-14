@@ -1,90 +1,211 @@
 .container {
     max-width: 1400px;
-    margin: 0 auto;
-    padding: 1.5rem;
-    min-height: 100vh;
+    margin: 1rem auto;
+    padding: 2rem;
+    min-height: calc(100vh - 2rem);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f1629 100%);
+    border-radius: 24px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+}
+
+.container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container > * {
+    position: relative;
+    z-index: 1;
 }
 
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 1.5rem;
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .backButton {
-    background: linear-gradient(135deg, #6b7280, #4b5563);
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%);
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 8px 24px rgba(107, 114, 128, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.backButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.backButton:hover::before {
+    left: 100%;
 }
 
 .backButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(107, 114, 128, 0.3);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 12px 32px rgba(107, 114, 128, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .header h1 {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: white;
+    font-size: 2.75rem;
+    font-weight: 800;
     margin: 0;
     text-align: center;
     flex: 1;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 25%, #3b82f6 50%, #8b5cf6 75%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+    animation: shimmer 3s ease-in-out infinite;
+    position: relative;
+}
+
+@keyframes shimmer {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 .status {
     padding: 0.75rem 1.5rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    font-weight: 600;
+    border-radius: 24px;
+    font-size: 0.8rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.status:hover::before {
+    opacity: 1;
 }
 
 .waiting {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: 
+        0 4px 16px rgba(59, 130, 246, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: pulse-waiting 2s infinite;
+}
+
+@keyframes pulse-waiting {
+    0%, 100% {
+        box-shadow: 
+            0 4px 16px rgba(59, 130, 246, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    50% {
+        box-shadow: 
+            0 6px 24px rgba(59, 130, 246, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
 }
 
 .active {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    box-shadow: 
+        0 4px 16px rgba(16, 185, 129, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .finished {
-    background: linear-gradient(135deg, #6b7280, #4b5563);
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+    box-shadow: 
+        0 4px 16px rgba(107, 114, 128, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .cancelled {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    box-shadow: 
+        0 4px 16px rgba(239, 68, 68, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .tournamentInfo {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    border: 1px solid #475569;
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
     position: relative;
     overflow: hidden;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tournamentInfo::before {
@@ -94,95 +215,217 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #f59e0b, #fbbf24, #3b82f6);
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #3b82f6, #8b5cf6, #ec4899);
+    opacity: 1;
+}
+
+.tournamentInfo::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.tournamentInfo:hover::after {
+    opacity: 1;
 }
 
 .infoGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 2;
 }
 
 .infoItem {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background: rgba(15, 23, 42, 0.5);
-    border-radius: 12px;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
     border: 1px solid rgba(71, 85, 105, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.infoItem::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.infoItem:hover {
+    transform: translateY(-2px) scale(1.01);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+.infoItem:hover::before {
+    opacity: 1;
 }
 
 .label {
-    font-weight: 500;
+    font-weight: 600;
     color: #94a3b8;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .infoItem > span:last-child {
     font-weight: 700;
     color: white;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gameIcon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    animation: icon-glow 3s ease-in-out infinite;
+}
+
+@keyframes icon-glow {
+    0%, 100% {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.5));
+    }
+}
+
+.header .gameIcon {
+    font-size: 2rem;
+    margin-right: 1rem;
 }
 
 .startTimer {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #92400e 100%);
     color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    border-radius: 20px;
     text-align: center;
     font-weight: 700;
-    font-size: 1.125rem;
-    margin: 1.5rem 0;
-    animation: pulse 2s infinite;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    font-size: 1.25rem;
+    margin: 2rem 0;
+    animation: pulse-timer 1.5s infinite;
+    box-shadow: 
+        0 8px 24px rgba(245, 158, 11, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
 }
 
-@keyframes pulse {
+@keyframes pulse-timer {
     0%, 100% {
-        opacity: 1;
         transform: scale(1);
+        box-shadow: 
+            0 8px 24px rgba(245, 158, 11, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
     50% {
-        opacity: 0.9;
         transform: scale(1.02);
+        box-shadow: 
+            0 12px 32px rgba(245, 158, 11, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
     }
 }
 
 .winner {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
     color: white;
-    padding: 1.5rem;
-    border-radius: 16px;
+    padding: 2rem;
+    border-radius: 20px;
     text-align: center;
     font-weight: 700;
-    font-size: 1.25rem;
-    margin: 1.5rem 0;
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    font-size: 1.5rem;
+    margin: 2rem 0;
+    box-shadow: 
+        0 12px 40px rgba(16, 185, 129, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
+    animation: winner-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes winner-glow {
+    from {
+        box-shadow: 
+            0 12px 40px rgba(16, 185, 129, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    to {
+        box-shadow: 
+            0 16px 48px rgba(16, 185, 129, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
 }
 
 .playerPrize {
-    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #eab308 100%);
     color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    border-radius: 20px;
     text-align: center;
     font-weight: 700;
-    font-size: 1.125rem;
-    margin: 1.5rem 0;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    font-size: 1.25rem;
+    margin: 2rem 0;
+    box-shadow: 
+        0 8px 24px rgba(245, 158, 11, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
+    animation: prize-sparkle 3s ease-in-out infinite;
+}
+
+@keyframes prize-sparkle {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.01);
+    }
 }
 
 .prizeSection {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    border: 1px solid #475569;
-    border-radius: 20px;
-    padding: 2rem;
-    margin: 2rem 0;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin: 2.5rem 0;
     position: relative;
     overflow: hidden;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .prizeSection::before {
@@ -196,50 +439,80 @@
 }
 
 .prizeSection h3 {
-    margin: 0 0 1.5rem 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
+    margin: 0 0 2rem 0;
+    font-size: 1.75rem;
+    font-weight: 800;
     text-align: center;
     background: linear-gradient(135deg, #f59e0b, #fbbf24);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .prizeDistribution {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    position: relative;
+    z-index: 2;
 }
 
 .prizeItem {
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(71, 85, 105, 0.3);
-    border-radius: 12px;
-    padding: 1.25rem;
+    border-radius: 16px;
+    padding: 1.75rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.prizeItem::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .prizeItem:hover {
-    background: rgba(15, 23, 42, 0.8);
-    border-color: #3b82f6;
-    transform: translateY(-2px);
+    transform: translateY(-4px) scale(1.01);
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 12px 32px rgba(245, 158, 11, 0.2);
+}
+
+.prizeItem:hover::before {
+    opacity: 1;
 }
 
 .prizePlace {
-    font-weight: 600;
+    font-weight: 700;
     color: white;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .prizeAmount {
     font-weight: 700;
     color: #10b981;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .prizeItem:last-child .prizePlace {
@@ -252,196 +525,357 @@
 
 .actions {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
 }
 
 .registerButton {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
     color: white;
     border: none;
-    padding: 1rem 2rem;
+    padding: 1.25rem 2.5rem;
     border-radius: 16px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     flex: 1;
-    min-width: 200px;
+    min-width: 220px;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 8px 24px rgba(16, 185, 129, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.registerButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.registerButton:hover::before {
+    left: 100%;
 }
 
 .registerButton:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(16, 185, 129, 0.4);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 12px 32px rgba(16, 185, 129, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .unregisterButton {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
     color: white;
     border: none;
-    padding: 1rem 2rem;
+    padding: 1.25rem 2.5rem;
     border-radius: 16px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     flex: 1;
-    min-width: 200px;
+    min-width: 220px;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 8px 24px rgba(239, 68, 68, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.unregisterButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.unregisterButton:hover::before {
+    left: 100%;
 }
 
 .unregisterButton:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(239, 68, 68, 0.4);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 12px 32px rgba(239, 68, 68, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .disabledButton {
-    background: #374151;
+    background: rgba(55, 65, 81, 0.6);
     color: #9ca3af;
-    border: none;
-    padding: 1rem 2rem;
+    border: 1px solid rgba(75, 85, 99, 0.5);
+    padding: 1.25rem 2.5rem;
     border-radius: 16px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: not-allowed;
     flex: 1;
-    min-width: 200px;
+    min-width: 220px;
+    backdrop-filter: blur(10px);
 }
 
 .currentMatch {
-    background: linear-gradient(135deg, #7c3aed, #5b21b6);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.8) 0%, rgba(91, 33, 182, 0.6) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(124, 58, 237, 0.4);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
     color: white;
-    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+    box-shadow: 
+        0 12px 40px rgba(124, 58, 237, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.currentMatch::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #7c3aed, #8b5cf6);
 }
 
 .currentMatch h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.5rem;
-    font-weight: 700;
+    margin: 0 0 1.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .matchInfo {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 2;
 }
 
 .opponent {
-    font-size: 1.125rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .matchStatusInfo {
-    font-size: 1rem;
+    font-size: 1.1rem;
     opacity: 0.9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .joinGameButton {
     background: rgba(255, 255, 255, 0.2);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
     align-self: flex-start;
+    backdrop-filter: blur(10px);
 }
 
 .joinGameButton:hover {
     background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
 }
 
 .participants {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    border: 1px solid #475569;
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.participants::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
 }
 
 .participants h3 {
-    margin: 0 0 1.5rem 0;
-    font-size: 1.5rem;
-    font-weight: 700;
+    margin: 0 0 2rem 0;
+    font-size: 1.75rem;
+    font-weight: 800;
     color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .playersList {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    position: relative;
+    z-index: 2;
 }
 
 .participant {
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(71, 85, 105, 0.3);
-    border-radius: 12px;
-    padding: 1rem;
+    border-radius: 16px;
+    padding: 1.5rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
+    gap: 1.25rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.participant::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .participant:hover {
-    background: rgba(15, 23, 42, 0.8);
-    border-color: #3b82f6;
+    transform: translateY(-4px) scale(1.01);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
+}
+
+.participant:hover::before {
+    opacity: 1;
 }
 
 .playerNumber {
     background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .playerName {
     flex: 1;
-    font-weight: 600;
+    font-weight: 700;
     color: white;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .registrationTime {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: #94a3b8;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .bracketSection {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    border: 1px solid #475569;
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.bracketSection::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ec4899, #f59e0b, #fbbf24, #3b82f6);
 }
 
 .bracketSection h3 {
-    margin: 0 0 2rem 0;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: white;
+    margin: 0 0 2.5rem 0;
+    font-size: 2rem;
+    font-weight: 800;
     text-align: center;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 25%, #3b82f6 50%, #8b5cf6 75%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .noBracket {
     text-align: center;
     color: #94a3b8;
-    font-size: 1.125rem;
-    padding: 3rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding: 4rem;
     background: rgba(15, 23, 42, 0.3);
-    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
     border: 2px dashed #475569;
+    position: relative;
+    z-index: 2;
 }
 
 .bracket {
@@ -449,41 +883,36 @@
     gap: 4rem;
     overflow-x: auto;
     padding: 2rem 1rem;
-    min-height: 500px;
+    min-height: 600px;
     position: relative;
-}
-
-.bracket::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
-    border-radius: 20px;
-    pointer-events: none;
+    z-index: 2;
 }
 
 .round {
-    min-width: 320px;
+    min-width: 360px;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 2.5rem;
     position: relative;
-    z-index: 1;
+    animation: float 8s ease-in-out infinite;
+}
+
+.round:nth-child(even) {
+    animation-delay: -2s;
 }
 
 .roundTitle {
-    font-size: 1.375rem;
-    font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 800;
     color: white;
     text-align: center;
-    padding: 1.25rem 1.5rem;
+    padding: 1.5rem 2rem;
     background: linear-gradient(135deg, #3b82f6, #2563eb);
-    border-radius: 16px;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    box-shadow:
+        0 8px 24px rgba(59, 130, 246, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
 }
@@ -501,21 +930,22 @@
 .matches {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 2.5rem;
     align-items: center;
 }
 
 .match {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
-    border: 2px solid #475569;
-    border-radius: 20px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
     padding: 2rem;
-    transition: all 0.4s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     width: 100%;
-    max-width: 280px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .match::before {
@@ -529,14 +959,31 @@
     transition: all 0.4s ease;
 }
 
+.match::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
 .match:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.3);
-    transform: translateY(-4px);
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 16px 48px rgba(59, 130, 246, 0.3);
+    transform: translateY(-6px) scale(1.02);
 }
 
 .match:hover::before {
     background: linear-gradient(90deg, #3b82f6, #10b981);
+}
+
+.match:hover::after {
+    opacity: 1;
 }
 
 .match.finished::before {
@@ -545,22 +992,25 @@
 
 .match.active::before {
     background: linear-gradient(90deg, #f59e0b, #fbbf24);
-    animation: pulse 2s infinite;
+    animation: pulse-timer 2s infinite;
 }
 
 .matchPlayers {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
     margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 2;
 }
 
 .player {
     background: rgba(71, 85, 105, 0.4);
-    padding: 1rem 1.25rem;
-    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    padding: 1.25rem 1.5rem;
+    border-radius: 16px;
     border: 2px solid transparent;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
 }
@@ -579,8 +1029,10 @@
 .player.winner {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2));
     border-color: #10b981;
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
-    transform: scale(1.02);
+    box-shadow:
+        0 8px 24px rgba(16, 185, 129, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: scale(1.03);
 }
 
 .player.winner::before {
@@ -590,57 +1042,67 @@
 
 .player.winner .playerName {
     color: #10b981;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .playerName {
-    font-weight: 600;
+    font-weight: 700;
     color: white;
-    font-size: 1rem;
+    font-size: 1.1rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .vs {
     text-align: center;
     color: #94a3b8;
-    font-weight: 700;
-    font-size: 1rem;
-    margin: 0.5rem 0;
-    padding: 0.5rem;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin: 0.75rem 0;
+    padding: 0.75rem;
     background: rgba(148, 163, 184, 0.1);
-    border-radius: 8px;
+    backdrop-filter: blur(5px);
+    border-radius: 12px;
     letter-spacing: 1px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .matchStatus {
     text-align: center;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    border-radius: 16px;
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    position: relative;
+    z-index: 2;
 }
 
 .matchWinner {
     background: linear-gradient(135deg, #10b981, #059669);
     color: white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    box-shadow:
+        0 8px 24px rgba(16, 185, 129, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .matchActive {
     background: linear-gradient(135deg, #f59e0b, #d97706);
     color: white;
-    animation: pulse 2s infinite;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    animation: pulse-timer 2s infinite;
+    box-shadow:
+        0 8px 24px rgba(245, 158, 11, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .matchPending {
     background: rgba(107, 114, 128, 0.3);
     color: #94a3b8;
     border: 1px solid #6b7280;
+    backdrop-filter: blur(5px);
 }
 
 .round:not(:last-child)::after {
@@ -649,31 +1111,23 @@
     right: -2rem;
     top: 50%;
     width: 4rem;
-    height: 2px;
+    height: 3px;
     background: linear-gradient(90deg, #475569, #6b7280);
     transform: translateY(-50%);
     z-index: 0;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.9;
-        transform: scale(1.02);
-    }
+    border-radius: 2px;
 }
 
 .round:last-child .roundTitle {
     background: linear-gradient(135deg, #f59e0b, #fbbf24);
-    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+    box-shadow:
+        0 8px 24px rgba(245, 158, 11, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .round:last-child .match {
-    border-color: #f59e0b;
-    box-shadow: 0 12px 32px rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 16px 48px rgba(245, 158, 11, 0.2);
 }
 
 .round:last-child .match::before {
@@ -685,48 +1139,66 @@
     justify-content: center;
     align-items: center;
     min-height: 400px;
-    font-size: 1.125rem;
+    font-size: 1.5rem;
+    font-weight: 600;
     color: #94a3b8;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: pulse 2s ease-in-out infinite;
 }
 
 .error {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
     color: white;
-    padding: 2rem;
-    border-radius: 16px;
+    padding: 2.5rem;
+    border-radius: 20px;
     text-align: center;
     margin: 2rem 0;
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 8px 32px rgba(239, 68, 68, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .retryButton {
     background: rgba(255, 255, 255, 0.2);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
 .retryButton:hover {
     background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
 }
 
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
+        padding: 1.5rem;
     }
     
     .header {
         flex-direction: column;
         align-items: stretch;
         text-align: center;
+        padding: 1.5rem;
     }
     
     .header h1 {
-        font-size: 1.75rem;
+        font-size: 2.25rem;
+    }
+    
+    .status {
+        align-self: center;
     }
     
     .infoGrid {
@@ -748,18 +1220,31 @@
     }
     
     .bracket {
-        gap: 2rem;
+        gap: 2.5rem;
     }
     
     .round {
-        min-width: 250px;
+        min-width: 280px;
+    }
+    
+    .currentMatch {
+        padding: 2rem;
     }
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .header h1 {
+        font-size: 1.75rem;
+    }
+    
     .tournamentInfo,
     .participants,
-    .bracketSection {
+    .bracketSection,
+    .prizeSection {
         padding: 1.5rem;
     }
     
@@ -768,12 +1253,22 @@
     }
     
     .match {
-        padding: 1rem;
+        padding: 1.5rem;
+        max-width: 260px;
     }
     
     .participant {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.5rem;
+        gap: 0.75rem;
+    }
+    
+    .round {
+        min-width: 240px;
+    }
+    
+    .status {
+        padding: 0.5rem 1rem;
+        font-size: 0.7rem;
     }
 }

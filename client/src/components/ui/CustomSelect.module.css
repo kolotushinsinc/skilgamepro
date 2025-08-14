@@ -1,0 +1,286 @@
+.customSelect {
+    position: relative;
+    width: 100%;
+    min-width: 220px;
+}
+
+.selectTrigger {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(71, 85, 105, 0.4);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+}
+
+.selectTrigger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.selectTrigger:hover {
+    border-color: rgba(59, 130, 246, 0.6);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.85) 100%);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 
+        0 8px 32px rgba(59, 130, 246, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.selectTrigger:hover::before {
+    opacity: 1;
+}
+
+.customSelect.open .selectTrigger {
+    border-color: rgba(59, 130, 246, 0.8);
+    box-shadow: 
+        0 0 0 4px rgba(59, 130, 246, 0.15),
+        0 8px 32px rgba(59, 130, 246, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px) scale(1.01);
+}
+
+.customSelect.open .selectTrigger::before {
+    opacity: 1;
+}
+
+.selectedValue {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.selectedIcon {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.placeholder {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.arrow {
+    color: #94a3b8;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+.arrowUp {
+    transform: rotate(180deg);
+    color: #3b82f6;
+}
+
+.optionsContainer {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.optionsVisible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.optionsList {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(71, 85, 105, 0.4);
+    border-radius: 20px;
+    padding: 0.75rem;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 40px rgba(59, 130, 246, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    max-height: 300px;
+    overflow-y: auto;
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    color: #e2e8f0;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.option:last-child {
+    margin-bottom: 0;
+}
+
+.option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.option:hover::before,
+.highlighted::before {
+    opacity: 1;
+}
+
+.option:hover,
+.highlighted {
+    background: rgba(59, 130, 246, 0.1);
+    color: white;
+    transform: translateX(4px);
+    border-left: 3px solid #3b82f6;
+    padding-left: calc(1.25rem - 3px);
+}
+
+.selected {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+    color: white;
+    font-weight: 700;
+    border-left: 3px solid #3b82f6;
+    padding-left: calc(1.25rem - 3px);
+}
+
+.selected::before {
+    opacity: 0.5;
+}
+
+.optionIcon {
+    font-size: 1.1rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.checkmark {
+    margin-left: auto;
+    color: #10b981;
+    animation: checkmarkAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes checkmarkAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.5) rotate(-90deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Scrollbar styling */
+.optionsList::-webkit-scrollbar {
+    width: 6px;
+}
+
+.optionsList::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.3);
+    border-radius: 3px;
+}
+
+.optionsList::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.optionsList::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+}
+
+/* Focus states for accessibility */
+.selectTrigger:focus-visible {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.8);
+    box-shadow: 
+        0 0 0 4px rgba(59, 130, 246, 0.15),
+        0 8px 32px rgba(59, 130, 246, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .customSelect {
+        min-width: auto;
+    }
+    
+    .selectTrigger {
+        padding: 1rem 1.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .option {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .optionsList {
+        max-height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .selectTrigger {
+        padding: 0.875rem 1rem;
+        border-radius: 12px;
+    }
+    
+    .optionsList {
+        border-radius: 16px;
+        max-height: 200px;
+    }
+    
+    .option {
+        padding: 0.75rem 0.875rem;
+    }
+}
