@@ -132,10 +132,7 @@ const Footer: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-gray-400 text-sm text-center md:text-left">
               <p>© 2025 Skill Game. All rights reserved.</p>
-              <p className="mt-1">
-                UNITYRISE HOLDING LTD, Registration Number: 474712
-              </p>
-              <p>Jurisdiction: Republic of Cyprus, EU</p>
+              <p className="mt-1">UNITYRISE HOLDING LTD,Reg.Number:474712, Cyprus</p>
             </div>
             
             <div className="flex gap-4">
