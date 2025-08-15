@@ -20,12 +20,12 @@ const PrivacyPolicy: React.FC = () => {
                             <div className="text-center mb-8">
                                 <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
                                 <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
-                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITYRISE HOLDING LTD, Registration Number: 474712</p>
                                 <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
                             </div>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
-                            <p>This Privacy Policy explains how UNITRYSE HOLDING LTD ("the Company", "we", "us") collects, processes, stores, shares, and protects personal data in connection with the Skillgame.pro platform ("the Platform").</p>
+                            <p>This Privacy Policy explains how UNITYRISE HOLDING LTD ("the Company", "we", "us") collects, processes, stores, shares, and protects personal data in connection with the Skillgame.pro platform ("the Platform").</p>
                             <p>The objectives of this Policy are to:</p>
                             <ul>
                                 <li>Ensure compliance with Regulation (EU) 2016/679 (GDPR) and Cyprus Law 125(I)/2018.</li>

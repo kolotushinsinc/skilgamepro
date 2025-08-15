@@ -20,12 +20,12 @@ const LegalInformation: React.FC = () => {
                             <div className="text-center mb-8">
                                 <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
                                 <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
-                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITYRISE HOLDING LTD, Registration Number: 474712</p>
                                 <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
                             </div>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
-                            <p>The Security & Fraud Prevention Policy ("Policy") sets out the measures, procedures, and responsibilities implemented by UNITRYSE HOLDING LTD ("the Company") to:</p>
+                            <p>The Security & Fraud Prevention Policy ("Policy") sets out the measures, procedures, and responsibilities implemented by UNITYRISE HOLDING LTD ("the Company") to:</p>
                             <ul>
                                 <li>Protect the Skillgame.pro platform ("the Platform") from security breaches, fraud, and misuse.</li>
                                 <li>Safeguard User data in compliance with GDPR, PCI DSS v4.0, and ISO/IEC 27001 standards.</li>

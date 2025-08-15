@@ -20,12 +20,12 @@ const CookiePolicy: React.FC = () => {
                             <div className="text-center mb-8">
                                 <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
                                 <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
-                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITYRISE HOLDING LTD, Registration Number: 474712</p>
                                 <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
                             </div>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
-                            <p>This Cookie Policy ("Policy") explains how UNITRYSE HOLDING LTD ("the Company", "we", "our") uses cookies and similar technologies on the Skillgame.pro platform ("the Platform") to enhance User experience, provide analytics, enable core functionality, and comply with legal requirements.</p>
+                            <p>This Cookie Policy ("Policy") explains how UNITYRISE HOLDING LTD ("the Company", "we", "our") uses cookies and similar technologies on the Skillgame.pro platform ("the Platform") to enhance User experience, provide analytics, enable core functionality, and comply with legal requirements.</p>
                             <p>It also informs Users of their rights to control cookies and outlines the Company's compliance with:</p>
                             <ul>
                                 <li>Regulation (EU) 2016/679 (GDPR)</li>

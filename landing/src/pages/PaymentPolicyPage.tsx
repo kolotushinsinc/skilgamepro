@@ -20,12 +20,12 @@ const PaymentPolicy: React.FC = () => {
                             <div className="text-center mb-8">
                                 <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
                                 <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
-                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITYRISE HOLDING LTD, Registration Number: 474712</p>
                                 <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
                             </div>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
-                            <p>This Refund & Billing Policy ("Policy") defines the rules, processes, and limitations regarding all payments made on the Skillgame.pro platform ("the Platform"), operated by UNITRYSE HOLDING LTD ("the Company").</p>
+                            <p>This Refund & Billing Policy ("Policy") defines the rules, processes, and limitations regarding all payments made on the Skillgame.pro platform ("the Platform"), operated by UNITYRISE HOLDING LTD ("the Company").</p>
                             <p>Its objectives are to:</p>
                             <ul>
                                 <li>Provide transparency about payment terms.</li>

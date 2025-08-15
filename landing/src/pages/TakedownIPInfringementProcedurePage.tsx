@@ -20,12 +20,12 @@ const TakedownIPInfringementProcedure: React.FC = () => {
                             <div className="text-center mb-8">
                                 <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
                                 <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
-                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITYRISE HOLDING LTD, Registration Number: 474712</p>
                                 <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
                             </div>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
-                            <p>This Takedown & IP Infringement Procedure ("Procedure") establishes the process for reporting and addressing allegations of copyright, trademark, or other intellectual property (IP) infringement on the Skillgame.pro platform ("the Platform"), operated by UNITRYSE HOLDING LTD ("the Company").</p>
+                            <p>This Takedown & IP Infringement Procedure ("Procedure") establishes the process for reporting and addressing allegations of copyright, trademark, or other intellectual property (IP) infringement on the Skillgame.pro platform ("the Platform"), operated by UNITYRISE HOLDING LTD ("the Company").</p>
                             <p>The objectives are to:</p>
                             <ul>
                                 <li>Protect the intellectual property rights of creators and rights holders.</li>
@@ -64,7 +64,7 @@ const TakedownIPInfringementProcedure: React.FC = () => {
                             <p>Notices of infringement must be sent to:</p>
                             <ul>
                                 <li><strong>Email:</strong> legal@skillgame.pro</li>
-                                <li><strong>Postal address:</strong> UNITRYSE HOLDING LTD, Archiepiskopou Makariou III, 84 Office 1, 6017, Larnaca, Cyprus</li>
+                                <li><strong>Postal address:</strong> UNITYRISE HOLDING LTD, Archiepiskopou Makariou III, 84 Office 1, 6017, Larnaca, Cyprus</li>
                             </ul>
 
                             <h3 className="text-1xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">5.2 Required Information in a Notice</h3>

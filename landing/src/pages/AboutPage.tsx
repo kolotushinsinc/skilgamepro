@@ -9,33 +9,6 @@ const AboutPage: React.FC = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const teamMembers = [
-    {
-      name: 'Sarah Chen',
-      role: 'CEO & Founder',
-      image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bio: 'Former chess grandmaster turned entrepreneur, passionate about bringing competitive gaming to everyone.'
-    },
-    {
-      name: 'Marcus Rodriguez',
-      role: 'CTO',
-      image: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bio: 'Tech veteran with 15+ years in gaming platforms and secure payment systems.'
-    },
-    {
-      name: 'Emily Watson',
-      role: 'Head of Security',
-      image: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bio: 'Cybersecurity expert ensuring fair play and protecting our gaming community.'
-    },
-    {
-      name: 'David Kim',
-      role: 'Game Director',
-      image: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bio: 'Professional game designer with expertise in competitive board game mechanics.'
-    }
-  ];
-
   const milestones = [
     { year: '2020', event: 'Skill Game founded', description: 'Started with a vision to revolutionize online board gaming' },
     { year: '2021', event: 'First tournament launched', description: 'Hosted our inaugural chess championship with $10,000 prize pool' },
@@ -167,39 +140,6 @@ const AboutPage: React.FC = () => {
                     </div>
                     <h3 className="text-xl font-bold mb-3 text-white">{value.title}</h3>
                     <p className="text-gray-400">{value.description}</p>
-                  </div>
-                </FadeInOnScroll>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Team Section */}
-        <section className="py-20 bg-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <FadeInOnScroll>
-              <h2 className="text-4xl font-bold mb-12 text-center bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                Meet Our Team
-              </h2>
-            </FadeInOnScroll>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {teamMembers.map((member, index) => (
-                <FadeInOnScroll key={index} delay={index * 100} direction="up">
-                  <div className="bg-gray-900 rounded-xl overflow-hidden border border-gray-700 hover:border-yellow-500 hover:shadow-xl hover:shadow-yellow-500/20 transition-all duration-300 hover:scale-105 group">
-                    <div className="relative overflow-hidden">
-                      <img
-                        src={member.image}
-                        alt={member.name}
-                        className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-1 text-white group-hover:text-yellow-400 transition-colors duration-300">{member.name}</h3>
-                      <p className="text-yellow-400 font-semibold mb-3">{member.role}</p>
-                      <p className="text-gray-400 text-sm">{member.bio}</p>
-                    </div>
                   </div>
                 </FadeInOnScroll>
               ))}

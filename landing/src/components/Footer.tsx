@@ -9,7 +9,11 @@ const Footer: React.FC = () => {
       { name: 'Chess', href: `/chess` },
       { name: 'Checkers', href: `/checkers` },
       { name: 'Backgammon', href: `/backgammon` },
-      { name: 'Tic-Tac-Toe', href: `/tic-tac-toe` }
+      { name: 'Tic-Tac-Toe', href: `/tic-tac-toe` },
+      { name: 'Bingo', href: `/bingo` },
+      { name: 'Dice', href: `/dice` },
+      { name: 'Domino', href: `/domino` },
+      { name: 'Durak', href: `/durak` }
     ],
     company: [
       { name: 'About Us', href: '/about' },
@@ -126,9 +130,13 @@ const Footer: React.FC = () => {
         
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-400 text-sm">
-              © 2025 Skill Game. All rights reserved.
-            </p>
+            <div className="text-gray-400 text-sm text-center md:text-left">
+              <p>© 2025 Skill Game. All rights reserved.</p>
+              <p className="mt-1">
+                UNITYRISE HOLDING LTD, Registration Number: 474712
+              </p>
+              <p>Jurisdiction: Republic of Cyprus, EU</p>
+            </div>
             
             <div className="flex gap-4">
               {socialLinks.map((social) => (

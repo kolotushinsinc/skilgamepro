@@ -20,12 +20,12 @@ const ComplaintHandlingPolicy: React.FC = () => {
                             <div className="text-center mb-8">
                                 <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
                                 <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
-                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITYRISE HOLDING LTD, Registration Number: 474712</p>
                                 <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
                             </div>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
-                            <p>The Complaint Handling Policy ("Policy") establishes the framework for receiving, acknowledging, investigating, and resolving complaints from Users of the Skillgame.pro platform ("the Platform"), operated by UNITRYSE HOLDING LTD ("the Company").</p>
+                            <p>The Complaint Handling Policy ("Policy") establishes the framework for receiving, acknowledging, investigating, and resolving complaints from Users of the Skillgame.pro platform ("the Platform"), operated by UNITYRISE HOLDING LTD ("the Company").</p>
                             <p>Its objectives are to:</p>
                             <ul>
                                 <li>Provide a transparent and fair process for handling complaints.</li>
@@ -61,7 +61,7 @@ const ComplaintHandlingPolicy: React.FC = () => {
                             <ul>
                                 <li><strong>Email:</strong> complaints@skillgame.pro</li>
                                 <li><strong>Web form:</strong> Available in the "Contact Us" section.</li>
-                                <li><strong>Postal mail:</strong> UNITRYSE HOLDING LTD, Archiepiskopou Makariou III, 84 Office 1, 6017, Larnaca, Cyprus.</li>
+                                <li><strong>Postal mail:</strong> UNITYRISE HOLDING LTD, Archiepiskopou Makariou III, 84 Office 1, 6017, Larnaca, Cyprus.</li>
                             </ul>
                             <p>Complaints should include:</p>
                             <ul>

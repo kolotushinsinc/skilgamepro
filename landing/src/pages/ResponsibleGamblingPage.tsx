@@ -21,12 +21,12 @@ const ResponsibleGambling: React.FC = () => {
               <div className="text-center mb-8">
                 <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
                 <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
-                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                <p className="text-sm text-gray-400">Prepared for: UNITYRISE HOLDING LTD, Registration Number: 474712</p>
                 <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
               </div>
 
               <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
-              <p>The Responsible Gaming Policy ("Policy") sets out UNITRYSE HOLDING LTD's ("the Company") commitment to providing a safe, fair, and supportive environment for Users of the Skillgame.pro platform ("the Platform").</p>
+              <p>The Responsible Gaming Policy ("Policy") sets out UNITYRISE HOLDING LTD's ("the Company") commitment to providing a safe, fair, and supportive environment for Users of the Skillgame.pro platform ("the Platform").</p>
               <p>While the Platform offers skill-based games and not games of chance, we recognize that any form of competitive gaming involving Entry Fees may pose risks to certain individuals.</p>
               <p>This Policy outlines preventive measures, educational initiatives, and available tools to help Users manage their participation responsibly.</p>
 

@@ -19,12 +19,12 @@ const AMLPolicy: React.FC = () => {
                             <div className="text-center mb-8">
                                 <h2 className="text-xl font-semibold mb-2">Skillgame.pro</h2>
                                 <p className="text-sm text-gray-400">Version 1.0 – August 2025</p>
-                                <p className="text-sm text-gray-400">Prepared for: UNITRYSE HOLDING LTD, Registration Number: 474712</p>
+                                <p className="text-sm text-gray-400">Prepared for: UNITYRISE HOLDING LTD, Registration Number: 474712</p>
                                 <p className="text-sm text-gray-400">Jurisdiction: Republic of Cyprus, EU</p>
                             </div>
 
                             <h2 className="text-2xl font-bold mb-6 mt-6 bg-white from-blue-200 to-purple-300 bg-clip-text text-transparent">1. Purpose</h2>
-                            <p>This Anti-Money Laundering and Know Your Customer Policy ("Policy") establishes the principles, controls, and procedures implemented by UNITRYSE HOLDING LTD ("the Company") to prevent the use of the Skillgame.pro platform ("the Platform") for money laundering, terrorist financing, fraud, or other financial crimes.</p>
+                            <p>This Anti-Money Laundering and Know Your Customer Policy ("Policy") establishes the principles, controls, and procedures implemented by UNITYRISE HOLDING LTD ("the Company") to prevent the use of the Skillgame.pro platform ("the Platform") for money laundering, terrorist financing, fraud, or other financial crimes.</p>
                             <p><strong>Objectives:</strong></p>
                             <ul>
                                 <li>Ensure compliance with Cyprus AML Law 188(I)/2007.</li>
