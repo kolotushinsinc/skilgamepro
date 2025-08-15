@@ -55,7 +55,7 @@ const Header: React.FC = () => {
                     <span className="text-sm font-medium">Online</span>
                 </div>
                 <div className={styles.balance}>
-                    Balance: ${user?.balance.toFixed(2) || '0.00'}
+                    {user?.balance.toFixed(2) || '0.00'}
                 </div>
                 <Link to="/notifications" className={styles.notificationBell}>
                     <Bell size={20} />

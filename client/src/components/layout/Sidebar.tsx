@@ -35,8 +35,13 @@ const Sidebar: React.FC = () => {
 
     return (
         <>
+            {/* Mobile overlay - позволяет закрыть сайдбар нажатием вне его области */}
             {isSidebarOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+                <div
+                    className={styles.mobileOverlay}
+                    onClick={() => setSidebarOpen(false)}
+                    aria-label="Close sidebar"
+                />
             )}
 
             <div className={`${styles.sidebarContainer} ${isSidebarOpen ? styles.open : ''}`}>

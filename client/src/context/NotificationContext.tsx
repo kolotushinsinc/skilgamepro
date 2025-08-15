@@ -64,17 +64,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
                 setUnreadCount(totalUnread);
             }
             
-            // Temporary: Set a test unread count to verify the badge display
-            // Remove this after testing
-            if (totalUnread === 0) {
-                console.log('NotificationContext - No unread notifications, setting test count of 3');
-                setUnreadCount(3);
-            }
         } catch (error) {
             console.error("Failed to refresh unread count", error);
-            // Temporary: Set test unread count on error to verify badge display
-            console.log('NotificationContext - Error occurred, setting test count of 5');
-            setUnreadCount(5);
+            setUnreadCount(0);
         }
     }, [isAuthenticated]);
 

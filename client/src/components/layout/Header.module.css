@@ -2,9 +2,9 @@
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 22, 41, 0.95) 100%);
     backdrop-filter: blur(20px);
     height: 5rem;
-    padding: 0 2rem;
-    margin: 1rem;
-    border-radius: 24px;
+    padding: 0 1rem;
+    margin: 0.5rem;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -12,9 +12,28 @@
         0 8px 32px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     position: relative;
-    z-index: 40;
+    z-index: 20;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .header {
+        padding: 0 1.5rem;
+        margin: 0.75rem;
+        border-radius: 22px;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .header {
+        padding: 0 2rem;
+        margin: 1rem;
+        border-radius: 24px;
+        z-index: 40;
+    }
 }
 
 .header::before {
@@ -52,8 +71,8 @@
     backdrop-filter: blur(10px);
     border: none;
     cursor: pointer;
-    padding: 1rem;
-    border-radius: 16px;
+    padding: 0.75rem;
+    border-radius: 12px;
     color: #cbd5e1;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -64,6 +83,24 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .menuButton {
+        padding: 0.875rem;
+        border-radius: 14px;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .menuButton {
+        padding: 1rem;
+        border-radius: 16px;
+    }
 }
 
 .menuButton::before {
@@ -95,24 +132,65 @@
 .rightSection {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.5rem;
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .rightSection {
+        gap: 1rem;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .rightSection {
+        gap: 1.5rem;
+    }
 }
 
 .onlineIndicator {
-    display: flex;
+    display: none;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(10px);
-    padding: 0.75rem 1.25rem;
-    border-radius: 20px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 16px;
     box-shadow:
         0 4px 16px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: #cbd5e1;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Show on larger mobile devices */
+@media (min-width: 480px) {
+    .onlineIndicator {
+        display: flex;
+    }
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .onlineIndicator {
+        gap: 0.625rem;
+        padding: 0.625rem 1rem;
+        border-radius: 18px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .onlineIndicator {
+        gap: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
 }
 
 .onlineDot {
@@ -139,9 +217,9 @@
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.2) 100%);
     backdrop-filter: blur(10px);
     color: #10b981;
-    padding: 0.75rem 1.5rem;
-    border-radius: 20px;
-    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
     font-weight: 700;
     box-shadow:
         0 4px 16px rgba(16, 185, 129, 0.3),
@@ -150,6 +228,41 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Hide "Balance:" text on very small screens */
+.balance::before {
+    content: '$';
+}
+
+.balance > span:first-child {
+    display: none;
+}
+
+/* Show full text on larger screens */
+@media (min-width: 480px) {
+    .balance::before {
+        content: 'Balance: $';
+    }
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .balance {
+        padding: 0.625rem 1.125rem;
+        border-radius: 18px;
+        font-size: 0.875rem;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .balance {
+        padding: 0.75rem 1.5rem;
+        border-radius: 20px;
+        font-size: 0.95rem;
+    }
 }
 
 .balance::before {
@@ -181,10 +294,10 @@
     background: rgba(30, 41, 59, 0.6);
     backdrop-filter: blur(10px);
     color: #fbbf24;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     text-decoration: none;
-    padding: 1rem;
-    border-radius: 16px;
+    padding: 0.75rem;
+    border-radius: 12px;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
@@ -194,6 +307,26 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     overflow: visible;
     z-index: 10;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .notificationBell {
+        padding: 0.875rem;
+        border-radius: 14px;
+        font-size: 1.375rem;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .notificationBell {
+        padding: 1rem;
+        border-radius: 16px;
+        font-size: 1.5rem;
+    }
 }
 
 .notificationBell::before {
@@ -223,16 +356,16 @@
 
 .notificationCount {
     position: absolute;
-    top: -12px;
-    right: -12px;
+    top: -8px;
+    right: -8px;
     background: linear-gradient(135deg, #ef4444, #dc2626);
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: white;
     box-shadow:
@@ -241,6 +374,27 @@
     animation: pulse-notification 2s ease-in-out infinite;
     z-index: 20;
     border: 2px solid rgba(15, 23, 42, 0.8);
+}
+
+/* Tablet and Desktop styles */
+@media (min-width: 768px) {
+    .notificationCount {
+        top: -10px;
+        right: -10px;
+        width: 22px;
+        height: 22px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .notificationCount {
+        top: -12px;
+        right: -12px;
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    }
 }
 
 @keyframes pulse-notification {
