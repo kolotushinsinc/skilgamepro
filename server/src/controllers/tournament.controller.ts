@@ -24,8 +24,47 @@ export const getActiveTournamentsController = async (req: Request, res: Response
 
 export const getAllTournamentsController = async (req: Request, res: Response) => {
     try {
-        const tournaments = await getAllTournaments();
-        res.json(tournaments);
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 12;
+        const status = req.query.status as string;
+        const gameType = req.query.gameType as string;
+        
+        // Build filter query
+        const filter: any = {};
+        if (status && status !== 'all') {
+            filter.status = status.toUpperCase();
+        }
+        if (gameType && gameType !== 'all') {
+            filter.gameType = gameType;
+        }
+        
+        const skip = (page - 1) * limit;
+        
+        // Get tournaments with pagination
+        const [tournaments, total] = await Promise.all([
+            Tournament.find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate('players._id', 'username avatar'),
+            Tournament.countDocuments(filter)
+        ]);
+        
+        const totalPages = Math.ceil(total / limit);
+        const hasNext = page < totalPages;
+        const hasPrev = page > 1;
+        
+        res.json({
+            tournaments,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNext,
+                hasPrev
+            }
+        });
     } catch (error) {
         console.error('Error fetching all tournaments:', error);
         res.status(500).json({ message: 'Error fetching all tournaments list' });

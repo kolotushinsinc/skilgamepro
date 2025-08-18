@@ -1,5 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import styles from './ChessBoard.module.css';
+import { useMoveTimer } from '../../hooks/useMoveTimer';
+import MoveTimer from './MoveTimer';
+import TimeoutWarningModal from '../modals/TimeoutWarningModal';
+import { useSocket } from '../../context/SocketContext';
 
 // Types for chess
 type PieceType = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
@@ -178,6 +182,11 @@ interface ChessBoardProps {
     isMyTurn: boolean;
     isGameFinished: boolean;
     myPlayerIndex: 0 | 1;
+    onTimeout?: () => void; // Called when player times out
+    currentPlayerId?: string; // Current player's ID for timer synchronization
+    myPlayerId?: string; // My player ID
+    hasOpponent?: boolean; // Whether there are 2 players in the game
+    onGameTimeout?: (data: any) => void; // Handle server timeout event
 }
 
 function isKingInCheck(board: ChessBoard, color: PieceColor): boolean {
@@ -230,12 +239,17 @@ const PIECE_SYMBOLS: Record<PieceColor, Record<PieceType, string>> = {
     }
 };
 
-const ChessBoard: React.FC<ChessBoardProps> = ({ 
-    gameState, 
-    onMove, 
-    isMyTurn, 
-    isGameFinished, 
-    myPlayerIndex 
+const ChessBoard: React.FC<ChessBoardProps> = ({
+    gameState,
+    onMove,
+    isMyTurn,
+    isGameFinished,
+    myPlayerIndex,
+    onTimeout,
+    currentPlayerId,
+    myPlayerId,
+    hasOpponent,
+    onGameTimeout
 }) => {
     const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
     const [possibleMoves, setPossibleMoves] = useState<Position[]>([]);
@@ -245,21 +259,57 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         from: Position;
         mousePos: { x: number; y: number };
     } | null>(null);
+    const [showWarningModal, setShowWarningModal] = useState(false);
+    const { socket } = useSocket();
 
     const myColor: PieceColor = myPlayerIndex === 0 ? 'white' : 'black';
     const isInCheck = isKingInCheck(gameState.board, myColor);
     const opponentColor: PieceColor = myColor === 'white' ? 'black' : 'white';
     const isOpponentInCheck = isKingInCheck(gameState.board, opponentColor);
 
-    console.log('[ChessBoard] Render:', { 
-        isMyTurn, 
-        isGameFinished, 
-        myPlayerIndex, 
+    console.log('[ChessBoard] Render:', {
+        isMyTurn,
+        isGameFinished,
+        myPlayerIndex,
         currentPlayer: gameState.currentPlayer,
         boardSize: gameState.board?.length
     });
 
     const isFlipped = myPlayerIndex === 1;
+
+    const handleTimeout = useCallback(() => {
+        setShowWarningModal(false);
+        onTimeout?.();
+    }, [onTimeout]);
+
+    const handleWarning = useCallback(() => {
+        console.log('[Timer] Client triggered warning - showing modal at exactly 10 seconds');
+        setShowWarningModal(true);
+        // Timer will be paused by the modal component
+    }, []);
+
+    const handleMakeMove = useCallback(() => {
+        setShowWarningModal(false);
+        // Timer will resume automatically when modal closes
+    }, []);
+
+    // Game is considered started when there are 2 players and game is not finished
+    const isGameStarted = !isGameFinished && gameState.board && gameState.board.length > 0 && (hasOpponent || false);
+
+    const timer = useMoveTimer({
+        totalTime: 30,
+        warningTime: 20,
+        isMyTurn,
+        isGameFinished,
+        isGameStarted,
+        hasOpponent: hasOpponent || false,
+        onTimeout: handleTimeout,
+        onWarning: handleWarning
+    });
+
+    const handleModalClose = useCallback(() => {
+        // Don't allow closing modal during warning period
+    }, []);
 
     const getPossibleMovesForPiece = useCallback((from: Position): Position[] => {
         const piece = gameState.board[from.row][from.col];
@@ -309,6 +359,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                 onMove(move);
                 setSelectedSquare(null);
                 setPossibleMoves([]);
+                timer.resetTimer(); // Reset timer after move
             } else {
                 selectPiece(row, col);
             }
@@ -435,6 +486,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                         setPromotionMove(move);
                     } else {
                         onMove(move);
+                        timer.resetTimer(); // Reset timer after move
                     }
                 }
             }
@@ -488,6 +540,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                         setPromotionMove(move);
                     } else {
                         onMove(move);
+                        timer.resetTimer(); // Reset timer after move
                     }
                 }
             }
@@ -511,6 +564,68 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
             };
         }
     }, [draggedPiece, onMouseMove, onMouseUp, onTouchMove, onTouchEnd]);
+
+    // Socket event handlers for server-side timer synchronization
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleMoveTimerStart = (data: { timeLimit: number; currentPlayerId: string; startTime: number }) => {
+            if (data.currentPlayerId === myPlayerId) {
+                // Server started timer for my turn, sync with server time
+                console.log('[Timer] Server timer started for my turn, syncing...', data);
+                timer.syncWithServer(data.startTime, data.timeLimit);
+            }
+        };
+
+        const handleMoveTimerWarning = (data: { timeRemaining: number; currentPlayerId: string }) => {
+            if (data.currentPlayerId === myPlayerId) {
+                // Server warning received - but modal will be shown by client timer at exactly 10 seconds
+                console.log('[Timer] Server timer warning received - client timer will handle modal display');
+                timer.showWarning();
+                // Modal will be shown by client timer when timeLeft === 10
+            }
+        };
+
+        const handleMoveTimerTimeout = (data: { timedOutPlayerId: string }) => {
+            if (data.timedOutPlayerId === myPlayerId) {
+                // I timed out on server
+                console.log('[Timer] Server timeout - I timed out');
+                setShowWarningModal(false);
+                onTimeout?.();
+            } else {
+                // Opponent timed out
+                console.log('[Timer] Server timeout - opponent timed out');
+            }
+        };
+
+        const handleGameTimeout = (data: {
+            timedOutPlayerId: string;
+            timedOutPlayerName: string;
+            winnerId: string;
+            winnerName: string;
+            message: string;
+        }) => {
+            console.log('[Timer] Game timeout event:', data);
+            setShowWarningModal(false);
+            
+            // Call parent handler to show proper game result modal
+            if (onGameTimeout) {
+                onGameTimeout(data);
+            }
+        };
+
+        socket.on('moveTimerStart', handleMoveTimerStart);
+        socket.on('moveTimerWarning', handleMoveTimerWarning);
+        socket.on('moveTimerTimeout', handleMoveTimerTimeout);
+        socket.on('gameTimeout', handleGameTimeout);
+
+        return () => {
+            socket.off('moveTimerStart', handleMoveTimerStart);
+            socket.off('moveTimerWarning', handleMoveTimerWarning);
+            socket.off('moveTimerTimeout', handleMoveTimerTimeout);
+            socket.off('gameTimeout', handleGameTimeout);
+        };
+    }, [socket, timer, myPlayerId, onTimeout]);
 
     const handlePromotion = useCallback((pieceType: PieceType) => {
         if (promotionMove) {
@@ -616,19 +731,31 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
 
     return (
         <div className={styles.chessBoard}>
-            <div className={styles.playerInfo}>
-                <div className={styles.playerInfoItem}>
-                    <span className={`${styles.colorIndicator} ${styles.whiteIndicator}`}></span>
-                    White (moves first) - {myPlayerIndex === 0 ? 'You' : 'Opponent'}
-                </div>
-                <div className={styles.playerInfoItem}>
-                    <span className={`${styles.colorIndicator} ${styles.blackIndicator}`}></span>
-                    Black - {myPlayerIndex === 1 ? 'You' : 'Opponent'}
-                </div>
-                {gameState.moveCount !== undefined && (
-                    <div className={styles.moveCounter}>
-                        Move: {Math.floor(gameState.moveCount / 2) + 1}
+            <div className={styles.gameHeader}>
+                <div className={styles.playerInfo}>
+                    <div className={styles.playerInfoItem}>
+                        <span className={`${styles.colorIndicator} ${styles.whiteIndicator}`}></span>
+                        White (moves first) - {myPlayerIndex === 0 ? 'You' : 'Opponent'}
                     </div>
+                    <div className={styles.playerInfoItem}>
+                        <span className={`${styles.colorIndicator} ${styles.blackIndicator}`}></span>
+                        Black - {myPlayerIndex === 1 ? 'You' : 'Opponent'}
+                    </div>
+                    {gameState.moveCount !== undefined && (
+                        <div className={styles.moveCounter}>
+                            Move: {Math.floor(gameState.moveCount / 2) + 1}
+                        </div>
+                    )}
+                </div>
+                
+                {isMyTurn && !isGameFinished && (
+                    <MoveTimer
+                        timeLeft={timer.timeLeft}
+                        isWarning={timer.isWarning}
+                        isActive={timer.isActive}
+                        progress={timer.progress}
+                        className={styles.gameTimer}
+                    />
                 )}
             </div>
 
@@ -733,6 +860,13 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                     {PIECE_SYMBOLS[draggedPiece.piece.color][draggedPiece.piece.type]}
                 </div>
             )}
+
+            <TimeoutWarningModal
+                isOpen={showWarningModal}
+                timeLeft={timer.isWarning ? timer.timeLeft : 10}
+                onClose={handleModalClose}
+                onMakeMove={handleMakeMove}
+            />
         </div>
     );
 };

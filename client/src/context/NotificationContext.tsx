@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useSocket } from './SocketContext';
-import { getMyNotifications, markNotificationsAsRead, INotification, IPaginationInfo } from '../services/notificationService';
+import { getMyNotifications, markNotificationsAsRead, getUnreadCount, INotification, IPaginationInfo } from '../services/notificationService';
 import { useAuth } from './AuthContext';
 
 interface NotificationContextType {
@@ -46,24 +46,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         if (!isAuthenticated) return;
         
         try {
-            // Fetch first page to get total unread count
-            const response = await getMyNotifications(1, 10);
-            console.log('NotificationContext - fetchResponse:', response);
-            
-            const totalUnread = response.notifications.filter(n => !n.isRead).length;
-            console.log('NotificationContext - totalUnread from first page:', totalUnread);
-            
-            // If there are more pages, we need to get a rough estimate
-            if (response.pagination.totalPages > 1) {
-                // This is an approximation - in a real app you might want a separate endpoint for unread count
-                const estimatedUnread = Math.floor((totalUnread / response.notifications.length) * response.pagination.totalItems);
-                console.log('NotificationContext - estimated unread (multiple pages):', estimatedUnread);
-                setUnreadCount(estimatedUnread);
-            } else {
-                console.log('NotificationContext - setting unread count:', totalUnread);
-                setUnreadCount(totalUnread);
-            }
-            
+            const response = await getUnreadCount();
+            console.log('NotificationContext - unread count:', response.unreadCount);
+            setUnreadCount(response.unreadCount);
         } catch (error) {
             console.error("Failed to refresh unread count", error);
             setUnreadCount(0);

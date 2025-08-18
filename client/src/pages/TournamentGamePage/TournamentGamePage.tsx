@@ -327,6 +327,27 @@ const TournamentGamePage: React.FC = () => {
         socket.emit('tournamentMove', { matchId: currentMatchId, move });
     };
 
+    const handleGameTimeout = (data: any) => {
+        console.log('[TournamentGame] Game timeout received:', data);
+        
+        // Simulate game end with proper winner/loser for timeout
+        const timeoutResult: TournamentGameResult = {
+            matchId: currentMatchId || '',
+            winner: data.winnerId === user?._id ? undefined : gameData?.players.find(p => p._id === data.winnerId),
+            isDraw: false
+        };
+        
+        // If I timed out, opponent wins
+        if (data.timedOutPlayerId === user?._id) {
+            timeoutResult.winner = gameData?.players.find(p => p._id !== user?._id);
+        }
+        
+        // Call the existing game end handler to show proper modal
+        setTimeout(() => {
+            handleGameEnd(timeoutResult);
+        }, 100);
+    };
+
     const handleTicTacToeMove = (cellIndex: number) => {
         if (!socket || !currentMatchId) {
             console.log('[TournamentGame] Cannot make move - missing socket or matchId:', { socket: !!socket, currentMatchId });
@@ -401,6 +422,9 @@ const TournamentGamePage: React.FC = () => {
                         onMove={handleTicTacToeMove}
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameResult}
+                        hasOpponent={true} // Tournament always has 2 players
+                        myPlayerId={myPlayerId}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             
@@ -412,6 +436,9 @@ const TournamentGamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameResult}
                         myPlayerIndex={myPlayerIndex}
+                        hasOpponent={true} // Tournament always has 2 players
+                        myPlayerId={myPlayerId}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             
@@ -423,6 +450,9 @@ const TournamentGamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameResult}
                         myPlayerIndex={myPlayerIndex}
+                        hasOpponent={true} // Tournament always has 2 players
+                        myPlayerId={myPlayerId}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             

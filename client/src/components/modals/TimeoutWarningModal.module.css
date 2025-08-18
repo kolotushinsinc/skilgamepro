@@ -1,0 +1,355 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: overlayFadeIn 0.3s ease-out;
+}
+
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px);
+    }
+}
+
+.modal {
+    position: relative;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+    border-radius: 24px;
+    padding: 3rem;
+    min-width: 400px;
+    max-width: 90vw;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal.warning {
+    border: 2px solid rgba(245, 158, 11, 0.6);
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(245, 158, 11, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.modal.urgent {
+    border: 2px solid rgba(249, 115, 22, 0.7);
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 50px rgba(249, 115, 22, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), urgentShake 0.5s ease-in-out infinite;
+}
+
+.modal.critical {
+    border: 2px solid rgba(239, 68, 68, 0.8);
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(239, 68, 68, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), criticalPulse 0.3s ease-in-out infinite;
+}
+
+@keyframes urgentShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+@keyframes criticalPulse {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.5),
+            0 0 60px rgba(239, 68, 68, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    50% { 
+        transform: scale(1.02);
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.6),
+            0 0 80px rgba(239, 68, 68, 0.7),
+            0 0 0 1px rgba(255, 255, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+}
+
+.modalContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.iconContainer {
+    position: relative;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.warningIcon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: iconBounce 2s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes iconBounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.countdownRing {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.progressCircle {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progressBackground {
+    fill: none;
+    stroke: rgba(71, 85, 105, 0.3);
+    stroke-width: 4;
+}
+
+.progressBar {
+    fill: none;
+    stroke: #ef4444;
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
+}
+
+.countdownNumber {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ef4444;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    animation: numberPulse 1s ease-in-out infinite;
+}
+
+@keyframes numberPulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+.messageContainer {
+    width: 100%;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 1rem 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ef4444 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.message {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0 0 1rem 0;
+    line-height: 1.4;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.pulseEffect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 24px;
+    background: radial-gradient(circle at center, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
+    animation: pulseGlow 2s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.02);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modal {
+        padding: 2rem;
+        min-width: 300px;
+        margin: 1rem;
+    }
+    
+    .warningIcon {
+        font-size: 3rem;
+    }
+    
+    .countdownRing {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .countdownNumber {
+        font-size: 1.75rem;
+    }
+    
+    .title {
+        font-size: 1.75rem;
+    }
+    
+    .message {
+        font-size: 1.1rem;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal {
+        padding: 1.5rem;
+        min-width: 280px;
+    }
+    
+    .warningIcon {
+        font-size: 2.5rem;
+    }
+    
+    .countdownRing {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .countdownNumber {
+        font-size: 1.5rem;
+    }
+    
+    .title {
+        font-size: 1.5rem;
+    }
+    
+    .message {
+        font-size: 1rem;
+    }
+    
+    .subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .makeMoveButton {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+/* Button styles */
+.actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.makeMoveButton {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    min-width: 120px;
+    z-index: 3;
+    position: relative;
+}
+
+.makeMoveButton:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.makeMoveButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}

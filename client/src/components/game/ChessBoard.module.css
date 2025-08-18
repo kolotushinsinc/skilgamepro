@@ -5,6 +5,20 @@
     font-family: Arial, sans-serif;
 }
 
+.gameHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.gameTimer {
+    flex-shrink: 0;
+}
+
 .playerInfo {
     margin-bottom: 10px;
     text-align: center;

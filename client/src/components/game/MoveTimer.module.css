@@ -1,0 +1,200 @@
+.timer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(71, 85, 105, 0.3);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+.timer.normal {
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(59, 130, 246, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.timer.warning {
+    border-color: rgba(239, 68, 68, 0.8);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 30px rgba(239, 68, 68, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: warningPulse 1s ease-in-out infinite;
+}
+
+.timer.inactive {
+    opacity: 0.6;
+    border-color: rgba(107, 114, 128, 0.5);
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@keyframes warningPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            0 0 30px rgba(239, 68, 68, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.4),
+            0 0 40px rgba(239, 68, 68, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+}
+
+.timerContent {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.timeDisplay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.timeNumber {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    font-family: 'Courier New', monospace;
+}
+
+.timeLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.progressContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.progressRing {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progressBackground {
+    fill: none;
+    stroke: rgba(51, 65, 85, 0.3);
+    stroke-width: 2;
+}
+
+.progressBar {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke 0.3s ease;
+}
+
+.warningPulse {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-radius: 50%;
+    font-size: 1rem;
+    box-shadow: 
+        0 4px 16px rgba(239, 68, 68, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: warningBounce 0.5s ease-in-out infinite alternate;
+    z-index: 3;
+}
+
+@keyframes warningBounce {
+    0% {
+        transform: scale(1) translateY(0);
+    }
+    100% {
+        transform: scale(1.1) translateY(-2px);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .timer {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .timeNumber {
+        font-size: 1.75rem;
+    }
+    
+    .timeLabel {
+        font-size: 0.7rem;
+    }
+    
+    .warningPulse {
+        width: 24px;
+        height: 24px;
+        top: -12px;
+        right: -12px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .timer {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .timeNumber {
+        font-size: 1.5rem;
+    }
+    
+    .timeLabel {
+        font-size: 0.65rem;
+    }
+    
+    .warningPulse {
+        width: 20px;
+        height: 20px;
+        top: -10px;
+        right: -10px;
+        font-size: 0.75rem;
+    }
+}

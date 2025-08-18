@@ -69,3 +69,17 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+export const getUnreadCount = async (req: Request, res: Response) => {
+    try {
+        const unreadCount = await Notification.countDocuments({
+            user: req.user!._id,
+            isRead: false
+        });
+        
+        res.json({ unreadCount });
+    } catch (error) {
+        console.error('Error fetching unread count:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};

@@ -41,6 +41,10 @@ export interface Room {
     gameState: GameState;
     botJoinTimer?: NodeJS.Timeout;
     disconnectTimer?: NodeJS.Timeout;
+    // Move timer properties
+    moveTimer?: NodeJS.Timeout;
+    turnStartTime?: number;
+    moveTimeLimit?: number; // in milliseconds, default 30 seconds
     // Private room properties
     isPrivate?: boolean;
     invitationToken?: string;
@@ -113,7 +117,157 @@ export const gameLogics: Record<Room['gameType'], IGameLogic> = {
 };
 
 const BOT_WAIT_TIME = 15000;
+const MOVE_TIME_LIMIT = 30000; // 30 seconds
+const TIMER_WARNING_TIME = 20000; // Show warning at 20 seconds (10 seconds remaining)
 export const botUsernames = ["Michael", "Sarah", "David", "Jessica", "Robert", "Emily"];
+
+// Timer management functions
+function startMoveTimer(io: Server, room: Room): void {
+    // Clear any existing timer
+    if (room.moveTimer) {
+        console.log('[Timer] Clearing existing timer before starting new one');
+        clearTimeout(room.moveTimer);
+        room.moveTimer = undefined;
+    }
+
+    // Only start timer when there are 2 players (opponent found)
+    if (room.players.length < 2) {
+        console.log('[Timer] Not starting timer - waiting for opponent, players:', room.players.length);
+        return;
+    }
+
+    // Check if game is properly initialized
+    if (!room.gameState || !room.gameState.turn) {
+        console.log('[Timer] Not starting timer - game not initialized, gameState:', !!room.gameState, 'turn:', room.gameState?.turn);
+        return;
+    }
+
+    // Check if game is already finished
+    if (room.gameState.isGameFinished) {
+        console.log('[Timer] Not starting timer - game already finished');
+        return;
+    }
+
+    // Don't start timer for bot players
+    // @ts-ignore
+    const currentPlayer = room.players.find(p => p.user._id.toString() === room.gameState.turn);
+    if (currentPlayer && isBot(currentPlayer)) {
+        console.log('[Timer] Not starting timer - current player is bot:', currentPlayer.user.username);
+        return;
+    }
+
+    console.log(`[Timer] Starting move timer for player: ${room.gameState.turn} in room: ${room.id}, timeout in ${MOVE_TIME_LIMIT}ms`);
+
+    room.turnStartTime = Date.now();
+    room.moveTimeLimit = MOVE_TIME_LIMIT;
+
+    // Send timer start event to clients
+    io.to(room.id).emit('moveTimerStart', {
+        timeLimit: MOVE_TIME_LIMIT,
+        currentPlayerId: room.gameState.turn,
+        startTime: room.turnStartTime
+    });
+
+    // Set warning timer (at 20 seconds - 10 seconds remaining)
+    const warningTimer = setTimeout(() => {
+        const currentRoom = rooms[room.id];
+        if (currentRoom && currentRoom.gameState && currentRoom.gameState.turn === room.gameState.turn && !currentRoom.gameState.isGameFinished) {
+            console.log(`[Timer] Sending warning for player: ${room.gameState.turn} in room: ${room.id}`);
+            io.to(room.id).emit('moveTimerWarning', {
+                timeRemaining: MOVE_TIME_LIMIT - TIMER_WARNING_TIME,
+                currentPlayerId: room.gameState.turn
+            });
+        }
+    }, TIMER_WARNING_TIME);
+
+    // Set timeout timer (at 30 seconds)
+    room.moveTimer = setTimeout(() => {
+        console.log(`[Timer] Timer expired for room: ${room.id}, calling handleMoveTimeout`);
+        handleMoveTimeout(io, room.id);
+    }, MOVE_TIME_LIMIT);
+    
+    console.log(`[Timer] Timer set successfully for room: ${room.id}, timer ID exists:`, !!room.moveTimer);
+}
+
+function stopMoveTimer(room: Room): void {
+    console.log(`[Timer] Stopping move timer for room: ${room.id}, timer exists:`, !!room.moveTimer);
+    if (room.moveTimer) {
+        clearTimeout(room.moveTimer);
+        room.moveTimer = undefined;
+        console.log(`[Timer] Timer cleared successfully for room: ${room.id}`);
+    }
+    room.turnStartTime = undefined;
+}
+
+function handleMoveTimeout(io: Server, roomId: string): void {
+    console.log(`[MoveTimer] handleMoveTimeout called for room: ${roomId}`);
+    
+    const room = rooms[roomId];
+    if (!room) {
+        console.log(`[MoveTimer] Room ${roomId} not found, timeout cancelled`);
+        return;
+    }
+
+    // Double check that timer is still valid and game isn't finished
+    if (room.gameState.isGameFinished) {
+        console.log(`[MoveTimer] Game already finished in room ${roomId}, timeout cancelled`);
+        return;
+    }
+
+    if (!room.gameState.turn) {
+        console.log(`[MoveTimer] No current player turn in room ${roomId}, timeout cancelled`);
+        return;
+    }
+
+    console.log(`[MoveTimer] Processing timeout in room ${roomId} for player ${room.gameState.turn}`);
+
+    // Clear timer
+    stopMoveTimer(room);
+
+    // Find the player who timed out and the winner
+    // @ts-ignore
+    const timedOutPlayer = room.players.find(p => p.user._id.toString() === room.gameState.turn);
+    // @ts-ignore
+    const winnerPlayer = room.players.find(p => p.user._id.toString() !== room.gameState.turn);
+
+    if (!timedOutPlayer) {
+        console.log(`[MoveTimer] Timed out player not found in room ${roomId} for ID: ${room.gameState.turn}`);
+        return;
+    }
+
+    if (!winnerPlayer) {
+        console.log(`[MoveTimer] Winner player not found in room ${roomId}`);
+        return;
+    }
+
+    console.log(`[MoveTimer] Player ${timedOutPlayer.user.username} (${timedOutPlayer.user._id}) timed out, ${winnerPlayer.user.username} (${winnerPlayer.user._id}) wins`);
+    
+    // Mark game as finished to prevent further moves
+    room.gameState.isGameFinished = true;
+    console.log(`[MoveTimer] Game marked as finished in room ${roomId}`);
+    
+    // Send timeout notification with clear message
+    const timeoutEvent = {
+        timedOutPlayerId: room.gameState.turn,
+        timedOutPlayerName: timedOutPlayer.user.username,
+        // @ts-ignore
+        winnerId: winnerPlayer.user._id.toString(),
+        winnerName: winnerPlayer.user.username,
+        message: `${timedOutPlayer.user.username} превысил время хода (30 сек). ${winnerPlayer.user.username} побеждает!`,
+        reason: 'timeout'
+    };
+    
+    console.log(`[MoveTimer] Emitting gameTimeout event:`, timeoutEvent);
+    io.to(roomId).emit('gameTimeout', timeoutEvent);
+
+    // End the game with the winner
+    // @ts-ignore
+    console.log(`[MoveTimer] Calling endGame for room ${roomId} with winner: ${winnerPlayer.user._id.toString()}`);
+    // @ts-ignore
+    endGame(io, room, winnerPlayer.user._id.toString(), false);
+    
+    console.log(`[MoveTimer] Timeout handling completed for room ${roomId}`);
+}
 
 function isBot(player: Player): boolean {
     if (!player || !player.user || !player.user._id) return false;
@@ -135,8 +289,29 @@ function broadcastLobbyState(io: Server, gameType: Room['gameType']) {
 }
 
 function getPublicRoomState(room: Room) {
-    const { botJoinTimer, disconnectTimer, ...publicState } = room;
-    return publicState;
+    // Создаем безопасную копию без циклических ссылок
+    return {
+        id: room.id,
+        gameType: room.gameType,
+        bet: room.bet,
+        players: room.players.map(player => ({
+            socketId: player.socketId,
+            user: {
+                _id: player.user._id,
+                username: player.user.username,
+                avatar: player.user.avatar,
+                balance: player.user.balance
+            }
+        })),
+        gameState: room.gameState ? JSON.parse(JSON.stringify(room.gameState)) : null,
+        turnStartTime: room.turnStartTime,
+        moveTimeLimit: room.moveTimeLimit,
+        isPrivate: room.isPrivate,
+        invitationToken: room.invitationToken,
+        allowBots: room.allowBots,
+        hostUserId: room.hostUserId,
+        expiresAt: room.expiresAt
+    };
 }
 
 function formatGameNameForDB(gameType: string): 'Checkers' | 'Chess' | 'Backgammon' | 'Tic-Tac-Toe' | 'Durak' | 'Domino' | 'Dice' | 'Bingo' {
@@ -154,16 +329,39 @@ function formatGameNameForDB(gameType: string): 'Checkers' | 'Chess' | 'Backgamm
 }
 
 async function endGame(io: Server, room: Room, winnerId?: string, isDraw: boolean = false) {
-    console.log(`[EndGame] Room: ${room.id}, Winner: ${winnerId}, Draw: ${isDraw}`);
+    console.log(`[EndGame] Starting endGame for room: ${room.id}, Winner: ${winnerId}, Draw: ${isDraw}`);
     
-    if (!room) return;
-    if (room.disconnectTimer) clearTimeout(room.disconnectTimer);
-    if (room.botJoinTimer) clearTimeout(room.botJoinTimer);
+    if (!room) {
+        console.log(`[EndGame] Room not found, cannot end game`);
+        return;
+    }
+    
+    // Mark game as finished immediately to prevent race conditions
+    if (room.gameState) {
+        room.gameState.isGameFinished = true;
+        console.log(`[EndGame] Game marked as finished for room: ${room.id}`);
+    }
+    
+    if (room.disconnectTimer) {
+        console.log(`[EndGame] Clearing disconnect timer for room: ${room.id}`);
+        clearTimeout(room.disconnectTimer);
+    }
+    
+    if (room.botJoinTimer) {
+        console.log(`[EndGame] Clearing bot join timer for room: ${room.id}`);
+        clearTimeout(room.botJoinTimer);
+    }
+    
+    // Stop move timer
+    console.log(`[EndGame] Stopping move timer for room: ${room.id}`);
+    stopMoveTimer(room);
     
     // @ts-ignore
     const winner = room.players.find(p => p.user._id.toString() === winnerId);
     // @ts-ignore
     const loser = room.players.find(p => p.user._id.toString() !== winnerId);
+
+    console.log(`[EndGame] Found players - Winner: ${winner?.user.username}, Loser: ${loser?.user.username}`);
 
     const gameNameForDB = formatGameNameForDB(room.gameType);
 
@@ -241,9 +439,12 @@ async function endGame(io: Server, room: Room, winnerId?: string, isDraw: boolea
         io.to(room.id).emit('gameEnd', { winner, isDraw: false });
     }
     
+    console.log(`[EndGame] Game completed successfully, cleaning up room: ${room.id}`);
     const gameType = room.gameType;
     delete rooms[room.id];
+    console.log(`[EndGame] Room ${room.id} deleted from rooms object`);
     broadcastLobbyState(io, gameType);
+    console.log(`[EndGame] Lobby state updated for gameType: ${gameType}`);
 }
 
 async function processBotMoveInRegularGame(
@@ -361,6 +562,14 @@ async function processBotMoveInRegularGame(
         if (currentRoom) {
             console.log('[Bot] Emitting game update');
             io.to(roomId).emit('gameUpdate', getPublicRoomState(currentRoom));
+            
+            // ВАЖНО: После хода бота запускать таймер для следующего игрока-человека
+            // @ts-ignore
+            const nextPlayer = currentRoom.players.find(p => p.user._id.toString() === currentRoom.gameState.turn);
+            if (nextPlayer && !isBot(nextPlayer)) {
+                console.log(`[Bot] Starting timer for next human player after bot move: ${nextPlayer.user.username}`);
+                startMoveTimer(io, currentRoom);
+            }
         }
     } catch (error) {
         console.error(`[Bot] Error in regular game bot move:`, error);
@@ -554,6 +763,13 @@ export const initializeSocket = (io: Server) => {
                     room.gameState = gameLogic.createInitialState(room.players);
                     io.to(roomId).emit('gameStart', getPublicRoomState(room));
                     
+                    // Start move timer if human player goes first
+                    // @ts-ignore
+                    const firstPlayer = room.players.find(p => p.user._id.toString() === room.gameState.turn);
+                    if (firstPlayer && !isBot(firstPlayer)) {
+                        startMoveTimer(io, room);
+                    }
+                    
                     // Check if bot should start first in domino, dice, or bingo
                     if (room.gameType === 'domino' || room.gameType === 'dice' || room.gameType === 'bingo') {
                         const botPlayer = room.players.find(p => isBot(p));
@@ -675,6 +891,13 @@ export const initializeSocket = (io: Server) => {
             // Update game state for 2 players
             room.gameState = gameLogic.createInitialState(room.players);
             io.to(room.id).emit('gameStart', getPublicRoomState(room));
+            
+            // Start move timer for the first player
+            // @ts-ignore
+            const firstPlayer = room.players.find(p => p.user._id.toString() === room.gameState.turn);
+            if (firstPlayer && !isBot(firstPlayer)) {
+                startMoveTimer(io, room);
+            }
 
             console.log(`User ${currentUser.username} joined private room ${room.id} using token ${token}`);
         });
@@ -740,6 +963,13 @@ export const initializeSocket = (io: Server) => {
                         currentRoom.gameState = gameLogic.createInitialState(currentRoom.players);
                         io.to(roomId).emit('gameStart', getPublicRoomState(currentRoom));
                         
+                        // Start move timer if human player goes first
+                        // @ts-ignore
+                        const firstPlayer = currentRoom.players.find(p => p.user._id.toString() === currentRoom.gameState.turn);
+                        if (firstPlayer && !isBot(firstPlayer)) {
+                            startMoveTimer(io, currentRoom);
+                        }
+                        
                         // Check if bot should start first in domino, dice, or bingo
                         if (currentRoom.gameType === 'domino' || currentRoom.gameType === 'dice' || currentRoom.gameType === 'bingo') {
                             const botPlayer = currentRoom.players.find(p => isBot(p));
@@ -760,6 +990,13 @@ export const initializeSocket = (io: Server) => {
                 room.gameState = gameLogic.createInitialState(room.players);
                 io.to(roomId).emit('gameStart', getPublicRoomState(room));
                 
+                // Start move timer for the first player
+                // @ts-ignore
+                const firstPlayer = room.players.find(p => p.user._id.toString() === room.gameState.turn);
+                if (firstPlayer && !isBot(firstPlayer)) {
+                    startMoveTimer(io, room);
+                }
+                
                 // Check if bot should start first in domino, dice, or bingo
                 if (room.gameType === 'domino' || room.gameType === 'dice' || room.gameType === 'bingo') {
                     const botPlayer = room.players.find(p => isBot(p));
@@ -779,6 +1016,8 @@ export const initializeSocket = (io: Server) => {
             // @ts-ignore
             const currentPlayerId = initialUser._id.toString();
 
+            console.log(`[PlayerMove] Player ${currentPlayerId} making move in room ${roomId}`);
+
             if (!room) {
                 return socket.emit('error', { message: 'Room not found' });
             }
@@ -787,6 +1026,9 @@ export const initializeSocket = (io: Server) => {
             }
             if (room.gameState.turn !== currentPlayerId) {
                 return socket.emit('error', { message: 'Not your turn' });
+            }
+            if (room.gameState.isGameFinished) {
+                return socket.emit('error', { message: 'Game is already finished' });
             }
 
             const gameLogic = gameLogics[room.gameType];
@@ -797,8 +1039,13 @@ export const initializeSocket = (io: Server) => {
 
             room.gameState = result.newState;
             
+            // Stop current move timer
+            console.log(`[PlayerMove] Stopping timer after move by player ${currentPlayerId}`);
+            stopMoveTimer(room);
+            
             const gameResult = gameLogic.checkGameEnd(room.gameState, room.players);
             if (gameResult.isGameOver) {
+                console.log(`[PlayerMove] Game over detected, ending game with winner: ${gameResult.winnerId}`);
                 return endGame(io, room, gameResult.winnerId, gameResult.isDraw);
             }
             
@@ -806,10 +1053,20 @@ export const initializeSocket = (io: Server) => {
             
             // @ts-ignore
             const nextPlayer = room.players.find(p => p.user._id.toString() === room.gameState.turn);
+            console.log(`[PlayerMove] Next player: ${nextPlayer?.user.username} (${room.gameState.turn}), isBot: ${nextPlayer ? isBot(nextPlayer) : 'undefined'}`);
+            
+            // ВАЖНО: Запускать таймер для КАЖДОГО следующего хода, если это человек
+            if (nextPlayer && !isBot(nextPlayer)) {
+                console.log(`[PlayerMove] Starting timer for next human player: ${nextPlayer.user.username}`);
+                startMoveTimer(io, room);
+            }
+            
+            // Schedule bot move if it's a bot's turn
             const shouldScheduleBotMove = nextPlayer && isBot(nextPlayer) &&
                 ('turnShouldSwitch' in result ? result.turnShouldSwitch : true);
                 
             if (shouldScheduleBotMove) {
+                console.log(`[PlayerMove] Scheduling bot move for: ${nextPlayer.user.username}`);
                 setTimeout(() => {
                     processBotMoveInRegularGame(io, roomId, nextPlayer, gameLogic);
                 }, 1200);

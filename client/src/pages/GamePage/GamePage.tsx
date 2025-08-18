@@ -107,37 +107,7 @@ const GamePage: React.FC = () => {
             setRoomState(state);
         };
 
-        const onGameEnd = async ({ winner, isDraw }: { winner: Player | null, isDraw: boolean }) => {
-            console.log('Game ended:', { winner, isDraw });
-            
-            let result: 'win' | 'lose' | 'draw';
-            let opponentName = '';
-            
-            if (isDraw) {
-                result = 'draw';
-                setGameMessage('🤝 Match ended in a draw!');
-            } else if (winner?.user.username === user?.username) {
-                result = 'win';
-                setGameMessage('🎉 Victory! You won the match!');
-                opponentName = roomState?.players.find(p => p.user._id !== user?._id)?.user.username || '';
-            } else {
-                result = 'lose';
-                setGameMessage(`😔 Defeat! Winner: ${winner?.user.username || 'Unknown'}`);
-                opponentName = winner?.user.username || 'Unknown';
-            }
-
-            setGameResultModal({
-                isOpen: true,
-                result,
-                opponentName
-            });
-
-            try {
-                await refreshUser();
-            } catch (error) {
-                console.error("Failed to update profile after game", error);
-            }
-        };
+        const onGameEnd = handleGameEnd;
 
         const onError = ({ message }: { message: string }) => {
             console.error('Game error:', message);
@@ -223,6 +193,57 @@ const GamePage: React.FC = () => {
         }
     };
 
+    const handleGameTimeout = (data: any) => {
+        console.log('[GamePage] Game timeout received:', data);
+        
+        // Simulate game end with proper winner/loser
+        const isIWinner = data.winnerId === user?._id;
+        const winnerPlayer = roomState?.players.find(p => p.user._id === data.winnerId);
+        
+        // Create a fake game end event to trigger the proper modal
+        const gameEndData = {
+            winner: winnerPlayer || null,
+            isDraw: false
+        };
+        
+        // Call the existing game end handler to show proper modal
+        setTimeout(() => {
+            handleGameEnd(gameEndData);
+        }, 100);
+    };
+
+    const handleGameEnd = async ({ winner, isDraw }: { winner: any | null, isDraw: boolean }) => {
+        console.log('Game ended:', { winner, isDraw });
+        
+        let result: 'win' | 'lose' | 'draw';
+        let opponentName = '';
+        
+        if (isDraw) {
+            result = 'draw';
+            setGameMessage('🤝 Match ended in a draw!');
+        } else if (winner?.user?._id === user?._id || winner?._id === user?._id) {
+            result = 'win';
+            setGameMessage('🎉 Victory! You won the match!');
+            opponentName = roomState?.players.find(p => p.user._id !== user?._id)?.user.username || '';
+        } else {
+            result = 'lose';
+            setGameMessage(`😔 Defeat! Winner: ${winner?.user?.username || winner?.username || 'Unknown'}`);
+            opponentName = winner?.user?.username || winner?.username || 'Unknown';
+        }
+
+        setGameResultModal({
+            isOpen: true,
+            result,
+            opponentName
+        });
+
+        try {
+            await refreshUser();
+        } catch (error) {
+            console.error("Failed to update profile after game", error);
+        }
+    };
+
     const closeErrorModal = () => {
         setErrorModal({ isOpen: false, message: '' });
     };
@@ -267,11 +288,14 @@ const GamePage: React.FC = () => {
         switch (gameType) {
             case 'tic-tac-toe':
                 return (
-                    <TicTacToeBoard 
-                        board={roomState.gameState.board} 
-                        onMove={(cellIndex) => handleMove({ cellIndex })} 
-                        isMyTurn={roomState.gameState.turn === user?._id} 
-                        isGameFinished={!!gameMessage} 
+                    <TicTacToeBoard
+                        board={roomState.gameState.board}
+                        onMove={(cellIndex) => handleMove({ cellIndex })}
+                        isMyTurn={roomState.gameState.turn === user?._id}
+                        isGameFinished={!!gameMessage}
+                        hasOpponent={roomState.players.length >= 2}
+                        myPlayerId={user?._id}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             case 'checkers':
@@ -289,17 +313,23 @@ const GamePage: React.FC = () => {
                         isMyTurn={roomState.gameState.turn === user?._id}
                         isGameFinished={!!gameMessage}
                         myPlayerIndex={myPlayerIndex as 0 | 1}
+                        hasOpponent={roomState.players.length >= 2}
+                        myPlayerId={user?._id}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             case 'chess':
                 return (
-                    <ChessBoard 
+                    <ChessBoard
                         // @ts-ignore
-                        gameState={roomState.gameState} 
-                        onMove={(move) => handleMove(move)} 
-                        isMyTurn={isMyTurn} 
-                        isGameFinished={!!gameMessage} 
-                        myPlayerIndex={myPlayerIndex as 0 | 1} 
+                        gameState={roomState.gameState}
+                        onMove={(move) => handleMove(move)}
+                        isMyTurn={isMyTurn}
+                        isGameFinished={!!gameMessage}
+                        myPlayerIndex={myPlayerIndex as 0 | 1}
+                        hasOpponent={roomState.players.length >= 2}
+                        myPlayerId={user?._id}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             case 'backgammon':

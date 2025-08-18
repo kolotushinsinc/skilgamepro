@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Tournament, tournamentService } from '../../services/tournamentService';
+import { Tournament, tournamentService, TournamentPagination } from '../../services/tournamentService';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import CustomSelect from '../../components/ui/CustomSelect';
@@ -10,14 +10,20 @@ import styles from './TournamentsListPage.module.css';
 const TournamentsListPage: React.FC = () => {
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'waiting' | 'active' | 'finished' | 'cancelled'>('waiting');
     const [gameTypeFilter, setGameTypeFilter] = useState<'all' | 'tic-tac-toe' | 'checkers' | 'chess' | 'backgammon' | 'durak' | 'domino' | 'dice' | 'bingo'>('all');
     const [currentTime, setCurrentTime] = useState(Date.now());
+    const [pagination, setPagination] = useState<TournamentPagination | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     
     const { user } = useAuth();
     const { socket } = useSocket();
     const navigate = useNavigate();
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     const statusText = {
         WAITING: 'Waiting',
@@ -89,8 +95,8 @@ const TournamentsListPage: React.FC = () => {
     ];
 
     useEffect(() => {
-        loadTournaments();
-    }, []);
+        loadTournaments(true);
+    }, [filter, gameTypeFilter]);
 
     useEffect(() => {
         if (socket) {
@@ -117,18 +123,73 @@ const TournamentsListPage: React.FC = () => {
         return () => clearInterval(timer);
     }, []);
 
-    const loadTournaments = async () => {
+    const loadTournaments = async (reset: boolean = false) => {
         try {
-            setLoading(true);
-            const data = await tournamentService.getAllTournaments();
-            setTournaments(data);
+            if (reset) {
+                setLoading(true);
+                setCurrentPage(1);
+                setHasMore(true);
+            } else {
+                setLoadingMore(true);
+            }
+            
+            const pageToLoad = reset ? 1 : currentPage;
+            const response = await tournamentService.getAllTournaments(
+                pageToLoad, 
+                12, 
+                filter === 'all' ? undefined : filter,
+                gameTypeFilter === 'all' ? undefined : gameTypeFilter
+            );
+            
+            if (reset) {
+                setTournaments(response.tournaments);
+            } else {
+                setTournaments(prev => [...prev, ...response.tournaments]);
+            }
+            
+            setPagination(response.pagination);
+            setHasMore(response.pagination.hasNext);
+            setCurrentPage(prev => prev + 1);
             setError(null);
         } catch (err: any) {
             setError(err.message);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
         }
     };
+
+    const loadMoreTournaments = useCallback(() => {
+        if (!loadingMore && hasMore && pagination?.hasNext) {
+            loadTournaments(false);
+        }
+    }, [loadingMore, hasMore, pagination?.hasNext]);
+
+    // Intersection Observer for infinite scroll
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadMoreTournaments();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [loadMoreTournaments]);
 
     const handleTournamentUpdate = (updatedTournament: Tournament) => {
         setTournaments(prev => {
@@ -152,7 +213,7 @@ const TournamentsListPage: React.FC = () => {
         try {
             const socketId = socket?.id;
             await tournamentService.registerInTournament(tournamentId, socketId);
-            await loadTournaments();
+            await loadTournaments(true);
         } catch (err: any) {
             // Если ошибка связана с регистрацией в другом турнире, показываем подробное сообщение
             if (err.message.includes('уже зарегистрированы в турнире')) {
@@ -170,21 +231,11 @@ const TournamentsListPage: React.FC = () => {
     const handleUnregister = async (tournamentId: string) => {
         try {
             await tournamentService.unregisterFromTournament(tournamentId);
-            await loadTournaments();
+            await loadTournaments(true);
         } catch (err: any) {
             alert(err.message);
         }
     };
-
-    const filteredTournaments = tournaments.filter(tournament => {
-        if (filter !== 'all' && tournament.status.toLowerCase() !== filter) {
-            return false;
-        }
-        if (gameTypeFilter !== 'all' && tournament.gameType !== gameTypeFilter) {
-            return false;
-        }
-        return true;
-    });
 
     const getTimeUntilStart = (tournament: Tournament): string => {
         const timeLeft = tournamentService.getTimeUntilStart(tournament);
@@ -220,7 +271,7 @@ const TournamentsListPage: React.FC = () => {
             <div className={styles.container}>
                 <div className={styles.error}>
                     Error: {error}
-                    <button onClick={loadTournaments} className={styles.retryButton}>
+                    <button onClick={() => loadTournaments(true)} className={styles.retryButton}>
                         Try again
                     </button>
                 </div>
@@ -233,7 +284,7 @@ const TournamentsListPage: React.FC = () => {
             <div className={styles.header}>
                 <h1>Tournaments</h1>
                 <button
-                    onClick={loadTournaments}
+                    onClick={() => loadTournaments(true)}
                     className={styles.refreshButton}
                     disabled={loading}
                 >
@@ -263,130 +314,149 @@ const TournamentsListPage: React.FC = () => {
                 </div>
             </div>
 
-            {filteredTournaments.length === 0 ? (
+            {tournaments.length === 0 && !loading ? (
                 <div className={styles.emptyState}>
                     <h3>No tournaments found</h3>
                     <p>Try changing filters or create a new tournament</p>
                 </div>
             ) : (
-                <div className={styles.tournamentsList}>
-                    {filteredTournaments.map(tournament => (
-                        <div
-                            key={tournament._id}
-                            className={styles.tournamentCard}
-                            style={{
-                                backgroundImage: `url(${gameTypeImages[tournament.gameType]})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                backgroundRepeat: 'no-repeat'
-                            }}
-                        >
-                            <div className={styles.cardOverlay}></div>
-                            <div className={styles.tournamentHeader}>
-                                <h3 className={styles.tournamentName}>
-                                    <span className={styles.gameIcon}>{gameTypeIcons[tournament.gameType]}</span>
-                                    {tournament.name}
-                                </h3>
-                                <span className={`${styles.status} ${styles[tournament.status.toLowerCase()]}`}>
-                                    {statusText[tournament.status]}
-                                </span>
-                            </div>
-
-                            <div className={styles.tournamentInfo}>
-                                <div className={styles.infoRow}>
-                                    <span className={styles.label}>Game:</span>
-                                    <span>
+                <>
+                    <div className={styles.tournamentsList}>
+                        {tournaments.map(tournament => (
+                            <div
+                                key={tournament._id}
+                                className={styles.tournamentCard}
+                                style={{
+                                    backgroundImage: `url(${gameTypeImages[tournament.gameType]})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat'
+                                }}
+                            >
+                                <div className={styles.cardOverlay}></div>
+                                <div className={styles.tournamentHeader}>
+                                    <h3 className={styles.tournamentName}>
                                         <span className={styles.gameIcon}>{gameTypeIcons[tournament.gameType]}</span>
-                                        {gameTypeText[tournament.gameType]}
+                                        {tournament.name}
+                                    </h3>
+                                    <span className={`${styles.status} ${styles[tournament.status.toLowerCase()]}`}>
+                                        {statusText[tournament.status]}
                                     </span>
                                 </div>
-                                <div className={styles.infoRow}>
-                                    <span className={styles.label}>Entry Fee:</span>
-                                    <span>{tournament.entryFee} coins</span>
-                                </div>
-                                <div className={styles.infoRow}>
-                                    <span className={styles.label}>Prize Pool:</span>
-                                    <span>{tournament.prizePool} coins</span>
-                                </div>
-                                <div className={styles.infoRow}>
-                                    <span className={styles.label}>Players:</span>
-                                    <span>
-                                        {tournament.players.length}/{tournament.maxPlayers}
-                                        <div className={styles.progressBar}>
-                                            <div 
-                                                className={styles.progressFill}
-                                                style={{ 
-                                                    width: `${tournamentService.getFilledPercentage(tournament)}%` 
-                                                }}
-                                            />
-                                        </div>
-                                    </span>
-                                </div>
-                            </div>
 
-                            {tournamentService.isStartingSoon(tournament) && (
-                                <div className={styles.startTimer}>
-                                    ⏰ {getTimeUntilStart(tournament)}
+                                <div className={styles.tournamentInfo}>
+                                    <div className={styles.infoRow}>
+                                        <span className={styles.label}>Game:</span>
+                                        <span>
+                                            <span className={styles.gameIcon}>{gameTypeIcons[tournament.gameType]}</span>
+                                            {gameTypeText[tournament.gameType]}
+                                        </span>
+                                    </div>
+                                    <div className={styles.infoRow}>
+                                        <span className={styles.label}>Entry Fee:</span>
+                                        <span>{tournament.entryFee} coins</span>
+                                    </div>
+                                    <div className={styles.infoRow}>
+                                        <span className={styles.label}>Prize Pool:</span>
+                                        <span>{tournament.prizePool} coins</span>
+                                    </div>
+                                    <div className={styles.infoRow}>
+                                        <span className={styles.label}>Players:</span>
+                                        <span>
+                                            {tournament.players.length}/{tournament.maxPlayers}
+                                            <div className={styles.progressBar}>
+                                                <div 
+                                                    className={styles.progressFill}
+                                                    style={{ 
+                                                        width: `${tournamentService.getFilledPercentage(tournament)}%` 
+                                                    }}
+                                                />
+                                            </div>
+                                        </span>
+                                    </div>
                                 </div>
-                            )}
 
-                            <div className={styles.tournamentActions}>
-                                {tournament.status === 'WAITING' && (
-                                    <>
-                                        {isPlayerRegistered(tournament) ? (
-                                            <button 
-                                                onClick={() => handleUnregister(tournament._id)}
-                                                className={styles.unregisterButton}
-                                            >
-                                                Cancel registration
-                                            </button>
-                                        ) : canPlayerRegister(tournament) ? (
-                                            <button 
-                                                onClick={() => handleRegister(tournament._id)}
-                                                className={styles.registerButton}
-                                            >
-                                                Register
-                                            </button>
-                                        ) : (
-                                            <button 
-                                                disabled 
-                                                className={styles.disabledButton}
-                                            >
-                                                {tournament.players.length >= tournament.maxPlayers
-                                                    ? 'Tournament full'
-                                                    : 'Insufficient funds'
-                                                }
-                                            </button>
-                                        )}
-                                    </>
+                                {tournamentService.isStartingSoon(tournament) && (
+                                    <div className={styles.startTimer}>
+                                        ⏰ {getTimeUntilStart(tournament)}
+                                    </div>
                                 )}
 
-                                <button 
-                                    onClick={() => navigate(`/tournament/${tournament._id}`)}
-                                    className={styles.viewButton}
-                                >
-                                    Details
-                                </button>
-                            </div>
+                                <div className={styles.tournamentActions}>
+                                    {tournament.status === 'WAITING' && (
+                                        <>
+                                            {isPlayerRegistered(tournament) ? (
+                                                <button 
+                                                    onClick={() => handleUnregister(tournament._id)}
+                                                    className={styles.unregisterButton}
+                                                >
+                                                    Cancel registration
+                                                </button>
+                                            ) : canPlayerRegister(tournament) ? (
+                                                <button 
+                                                    onClick={() => handleRegister(tournament._id)}
+                                                    className={styles.registerButton}
+                                                >
+                                                    Register
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    disabled 
+                                                    className={styles.disabledButton}
+                                                >
+                                                    {tournament.players.length >= tournament.maxPlayers
+                                                        ? 'Tournament full'
+                                                        : 'Insufficient funds'
+                                                    }
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
 
-                            {tournament.players.length > 0 && (
-                                <div className={styles.playersList}>
-                                    <h4>Participants:</h4>
-                                    <div className={styles.players}>
-                                        {tournament.players.map((player, index) => (
-                                            <span
-                                                key={`${player._id}-${index}`}
-                                                className={`${styles.player} ${player.isBot ? styles.bot : ''}`}
-                                            >
-                                                {player.username}
-                                            </span>
-                                        ))}
+                                    <button 
+                                        onClick={() => navigate(`/tournament/${tournament._id}`)}
+                                        className={styles.viewButton}
+                                    >
+                                        Details
+                                    </button>
+                                </div>
+
+                                {tournament.players.length > 0 && (
+                                    <div className={styles.playersList}>
+                                        <h4>Participants:</h4>
+                                        <div className={styles.players}>
+                                            {tournament.players.map((player, index) => (
+                                                <span
+                                                    key={`${player._id}-${index}`}
+                                                    className={`${styles.player} ${player.isBot ? styles.bot : ''}`}
+                                                >
+                                                    {player.username}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Load more trigger element */}
+                    {hasMore && (
+                        <div ref={loadMoreRef} className={styles.loadMoreTrigger}>
+                            {loadingMore && (
+                                <div className={styles.loadingMore}>
+                                    <LoadingSpinner text="Loading more tournaments..." />
                                 </div>
                             )}
                         </div>
-                    ))}
-                </div>
+                    )}
+
+                    {!hasMore && tournaments.length > 0 && (
+                        <div className={styles.endMessage}>
+                            <p>You've reached the end of the tournament list</p>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

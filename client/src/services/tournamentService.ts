@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sklgmsapi.koltech.dev';
-// const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+// const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sklgmsapi.koltech.dev';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 export interface TournamentPlayer {
     _id: string;
@@ -66,6 +66,20 @@ export interface TournamentStats {
     };
 }
 
+export interface TournamentPagination {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
+export interface TournamentsResponse {
+    tournaments: Tournament[];
+    pagination: TournamentPagination;
+}
+
 export interface TournamentHistory {
     tournaments: Tournament[];
     pagination: {
@@ -107,10 +121,27 @@ class TournamentService {
         }
     }
 
-    async getAllTournaments(): Promise<Tournament[]> {
+    async getAllTournaments(
+        page: number = 1,
+        limit: number = 12,
+        status?: string,
+        gameType?: string
+    ): Promise<TournamentsResponse> {
         try {
             this.updateToken();
-            const response = await axios.get(`${API_BASE_URL}/api/tournaments/all`, this.getAuthHeaders());
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: limit.toString(),
+            });
+            
+            if (status && status !== 'all') {
+                params.append('status', status);
+            }
+            if (gameType && gameType !== 'all') {
+                params.append('gameType', gameType);
+            }
+            
+            const response = await axios.get(`${API_BASE_URL}/api/tournaments/all?${params}`, this.getAuthHeaders());
             return response.data;
         } catch (error) {
             console.error('Error fetching all tournaments:', error);
