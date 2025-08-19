@@ -5,6 +5,7 @@ import { Crown, Menu, X, ChevronDown, Gamepad2 } from 'lucide-react';
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isGamesDropdownOpen, setIsGamesDropdownOpen] = React.useState(false);
+  const [isMobileGamesOpen, setIsMobileGamesOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -116,22 +117,33 @@ const Header: React.FC = () => {
           <div className="md:hidden py-4 border-t border-gray-800">
             <div className="flex flex-col gap-4">
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-gray-400 text-sm font-semibold mb-3">
-                  <Gamepad2 className="w-4 h-4" />
-                  Games
-                </div>
-                <div className="space-y-1 pl-4">
-                  {games.map((game) => (
-                    <Link
-                      key={game.id}
-                      to={`/${game.id}`}
-                      className="block w-full px-3 py-2 text-left text-gray-300 hover:text-yellow-500 hover:bg-gray-700/50 rounded-lg transition-all duration-200"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {game.name}
-                    </Link>
-                  ))}
-                </div>
+                <button
+                  onClick={() => setIsMobileGamesOpen(!isMobileGamesOpen)}
+                  className="flex items-center justify-between w-full text-gray-400 text-sm font-semibold mb-3 hover:text-yellow-500 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Gamepad2 className="w-4 h-4" />
+                    Games
+                  </div>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isMobileGamesOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isMobileGamesOpen && (
+                  <div className="space-y-1 pl-4">
+                    {games.map((game) => (
+                      <Link
+                        key={game.id}
+                        to={`/${game.id}`}
+                        className="block w-full px-3 py-2 text-left text-gray-300 hover:text-yellow-500 hover:bg-gray-700/50 rounded-lg transition-all duration-200"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsMobileGamesOpen(false);
+                        }}
+                      >
+                        {game.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <Link to="/faq" className="text-gray-300 hover:text-yellow-500 transition-colors" onClick={() => setIsMenuOpen(false)}>

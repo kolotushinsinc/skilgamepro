@@ -12,18 +12,18 @@ const TicTacToePage: React.FC = () => {
   return (
     <>
       <Header />
-      <div className="pt-16 min-h-screen flex flex-col bg-gray-900 text-gray-300">
+      <div className="pt-16 min-h-screen flex flex-col bg-gray-900 text-gray-300 overflow-x-hidden">
         {/* Hero Section */}
-        <section className="relative py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden">
+        <section className="relative py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden w-full">
           <FloatingParticles
             count={25}
             colors={['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444']}
             className="opacity-30"
           />
           
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-20 w-64 h-64 bg-blue-400 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute inset-0 opacity-20 overflow-hidden">
+            <div className="absolute top-10 left-4 sm:top-20 sm:left-20 w-32 h-32 sm:w-64 sm:h-64 bg-blue-400 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-10 right-4 sm:bottom-20 sm:right-20 w-48 h-48 sm:w-96 sm:h-96 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
           </div>
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <FadeInOnScroll direction="down" duration={800}>

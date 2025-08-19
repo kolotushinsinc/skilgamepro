@@ -465,6 +465,9 @@ const TournamentGamePage: React.FC = () => {
                         isGameFinished={!!gameResult}
                         myPlayerIndex={myPlayerIndex}
                         onRollDice={handleRollDice}
+                        hasOpponent={true} // Tournament always has 2 players
+                        myPlayerId={myPlayerId}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             
@@ -476,6 +479,9 @@ const TournamentGamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameResult}
                         myPlayerIndex={myPlayerIndex}
+                        hasOpponent={true} // Tournament always has 2 players
+                        myPlayerId={myPlayerId}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             
@@ -487,6 +493,9 @@ const TournamentGamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameResult}
                         myPlayerIndex={myPlayerIndex}
+                        hasOpponent={true} // Tournament always has 2 players
+                        myPlayerId={myPlayerId}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             
@@ -498,6 +507,9 @@ const TournamentGamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameResult}
                         myPlayerIndex={myPlayerIndex}
+                        hasOpponent={true} // Tournament always has 2 players
+                        myPlayerId={myPlayerId}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             
@@ -509,6 +521,9 @@ const TournamentGamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameResult}
                         myPlayerIndex={myPlayerIndex}
+                        hasOpponent={true} // Tournament always has 2 players
+                        myPlayerId={myPlayerId}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             

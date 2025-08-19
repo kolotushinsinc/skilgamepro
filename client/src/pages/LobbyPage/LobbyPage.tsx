@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import InsufficientFundsModal from '../../components/modals/InsufficientFundsModal';
 import {
     ArrowLeft,
     Plus,
@@ -74,6 +75,7 @@ const LobbyPage: React.FC = () => {
     const [error, setError] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [showPrivateModal, setShowPrivateModal] = useState(false);
+    const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
     const [privateRoomData, setPrivateRoomData] = useState<{
         invitationToken: string;
         invitationUrl: string;
@@ -88,7 +90,14 @@ const LobbyPage: React.FC = () => {
         const onRoomsList = (availableRooms: RoomInfo[]) => setRooms(availableRooms);
         const onGameStart = (room: GameRoom) => navigate(`/game/${room.gameType}/${room.id}`);
         const onError = ({ message }: { message: string }) => {
-            setError(message);
+            // Check if the error is about insufficient funds
+            if (message.toLowerCase().includes('insufficient funds') ||
+                message.toLowerCase().includes('not enough balance') ||
+                message.toLowerCase().includes('недостаточно средств')) {
+                setShowInsufficientFundsModal(true);
+            } else {
+                setError(message);
+            }
             setIsCreating(false);
         };
         const onPrivateRoomCreated = (data: any) => {
@@ -156,6 +165,10 @@ const LobbyPage: React.FC = () => {
             navigate(`/game/${privateRoomData.room.gameType}/${privateRoomData.room.id}`);
         }
         closePrivateModal();
+    };
+
+    const closeInsufficientFundsModal = () => {
+        setShowInsufficientFundsModal(false);
     };
 
     if (!user || !gameType) {
@@ -397,6 +410,14 @@ const LobbyPage: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* Insufficient Funds Modal */}
+            <InsufficientFundsModal
+                isOpen={showInsufficientFundsModal}
+                onClose={closeInsufficientFundsModal}
+                requiredAmount={bet}
+                currentBalance={user?.balance || 0}
+            />
         </div>
     );
 };

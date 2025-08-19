@@ -11,24 +11,53 @@ interface UIContextType {
 const UIContext = createContext<UIContextType | undefined>(undefined);
 
 export const UIProvider = ({ children }: { children: ReactNode }) => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
-        try {
-            const item = window.localStorage.getItem('sidebarOpen');
-            return item ? JSON.parse(item) : true;
-        } catch (error) {
-            console.error(error);
-            return true;
-        }
-    });
+    // Для мобильных ВСЕГДА закрыто при входе
+    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
     const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
+    // Инициализация только для десктопа
     useEffect(() => {
-        try {
-            window.localStorage.setItem('sidebarOpen', JSON.stringify(isSidebarOpen));
-        } catch (error) {
-            console.error("Failed to save sidebar state:", error);
+        const isMobile = window.innerWidth < 1024;
+        
+        if (isMobile) {
+            // Мобильные: принудительно закрыто
+            setIsSidebarOpen(false);
+        } else {
+            // Десктоп: загружаем из localStorage или открываем по умолчанию
+            try {
+                const saved = window.localStorage.getItem('sidebarOpen');
+                setIsSidebarOpen(saved ? JSON.parse(saved) : true);
+            } catch {
+                setIsSidebarOpen(true);
+            }
         }
+    }, []);
+
+    useEffect(() => {
+        const isMobile = window.innerWidth < 1024;
+        
+        if (!isMobile) {
+            // Сохраняем состояние только для десктопа
+            try {
+                window.localStorage.setItem('sidebarOpen', JSON.stringify(isSidebarOpen));
+            } catch (error) {
+                console.error("Failed to save sidebar state:", error);
+            }
+        }
+    }, [isSidebarOpen]);
+
+    // Закрываем при переходе на мобильное разрешение
+    useEffect(() => {
+        const handleResize = () => {
+            const isMobile = window.innerWidth < 1024;
+            if (isMobile && isSidebarOpen) {
+                setIsSidebarOpen(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, [isSidebarOpen]);
     
     const toggleSidebar = useCallback(() => {

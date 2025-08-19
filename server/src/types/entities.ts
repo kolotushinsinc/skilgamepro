@@ -1,6 +1,6 @@
 export interface IGameRecord {
   _id: string;
-  gameName: 'Checkers' | 'Chess' | 'Backgammon' | 'Tic-Tac-Toe';
+  gameName: 'Checkers' | 'Chess' | 'Backgammon' | 'Tic-Tac-Toe' | 'Durak' | 'Domino' | 'Bingo' | 'Dice';
   status: 'WON' | 'LOST' | 'DRAW';
   amountChanged: number;
   opponent: string;

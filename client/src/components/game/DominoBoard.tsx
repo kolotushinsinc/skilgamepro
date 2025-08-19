@@ -1,7 +1,11 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import styles from './DominoBoard.module.css';
 import { Domino, PlacedDomino, DominoGameState } from '../../types/entities';
+import { useMoveTimer } from '../../hooks/useMoveTimer';
+import MoveTimer from './MoveTimer';
+import TimeoutWarningModal from '../modals/TimeoutWarningModal';
+import { useSocket } from '../../context/SocketContext';
 
 export interface DominoMove {
     type: 'PLAY' | 'DRAW' | 'PASS';
@@ -15,6 +19,11 @@ interface DominoBoardProps {
     isMyTurn: boolean;
     isGameFinished: boolean;
     myPlayerIndex: 0 | 1;
+    onTimeout?: () => void; // Called when player times out
+    currentPlayerId?: string; // Current player's ID for timer synchronization
+    myPlayerId?: string; // My player ID
+    hasOpponent?: boolean; // Whether there are 2 players in the game
+    onGameTimeout?: (data: any) => void; // Handle server timeout event
 }
 
 const DominoBoard: React.FC<DominoBoardProps> = ({
@@ -22,7 +31,12 @@ const DominoBoard: React.FC<DominoBoardProps> = ({
     onMove,
     isMyTurn,
     isGameFinished,
-    myPlayerIndex
+    myPlayerIndex,
+    onTimeout,
+    currentPlayerId,
+    myPlayerId,
+    hasOpponent,
+    onGameTimeout
 }) => {
     const [selectedDomino, setSelectedDomino] = useState<Domino | null>(null);
     const [draggedDomino, setDraggedDomino] = useState<{
@@ -30,6 +44,8 @@ const DominoBoard: React.FC<DominoBoardProps> = ({
         mousePos: { x: number; y: number };
     } | null>(null);
     const [hoveredSide, setHoveredSide] = useState<'left' | 'right' | null>(null);
+    const [showWarningModal, setShowWarningModal] = useState(false);
+    const { socket } = useSocket();
 
     console.log('[DominoBoard] Render:', {
         isMyTurn,
@@ -54,6 +70,102 @@ const DominoBoard: React.FC<DominoBoardProps> = ({
     const myHand = gameState.players[myPlayerIndex]?.hand || [];
     const opponentHand = gameState.players[myPlayerIndex === 0 ? 1 : 0]?.hand || [];
     const isMyTurnToPlay = myPlayerIndex === gameState.currentPlayerIndex;
+
+    const handleTimeout = useCallback(() => {
+        setShowWarningModal(false);
+        onTimeout?.();
+    }, [onTimeout]);
+
+    const handleWarning = useCallback(() => {
+        console.log('[Timer] Client triggered warning - showing modal at exactly 10 seconds');
+        setShowWarningModal(true);
+        // Timer will be paused by the modal component
+    }, []);
+
+    const handleMakeMove = useCallback(() => {
+        setShowWarningModal(false);
+        // Timer will resume automatically when modal closes
+    }, []);
+
+    // Game is considered started when there are 2 players and game is not finished
+    const isGameStarted = !isGameFinished && gameState && gameState.players && gameState.players.length >= 2 && (hasOpponent || false);
+
+    const timer = useMoveTimer({
+        totalTime: 30,
+        warningTime: 20,
+        isMyTurn,
+        isGameFinished,
+        isGameStarted,
+        hasOpponent: hasOpponent || false,
+        onTimeout: handleTimeout,
+        onWarning: handleWarning
+    });
+
+    const handleModalClose = useCallback(() => {
+        // Don't allow closing modal during warning period
+    }, []);
+
+    // Socket event handlers for server-side timer synchronization
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleMoveTimerStart = (data: { timeLimit: number; currentPlayerId: string; startTime: number }) => {
+            if (data.currentPlayerId === myPlayerId) {
+                // Server started timer for my turn, sync with server time
+                console.log('[Timer] Server timer started for my turn, syncing...', data);
+                timer.syncWithServer(data.startTime, data.timeLimit);
+            }
+        };
+
+        const handleMoveTimerWarning = (data: { timeRemaining: number; currentPlayerId: string }) => {
+            if (data.currentPlayerId === myPlayerId) {
+                // Server warning received - but modal will be shown by client timer at exactly 10 seconds
+                console.log('[Timer] Server timer warning received - client timer will handle modal display');
+                timer.showWarning();
+                // Modal will be shown by client timer when timeLeft === 10
+            }
+        };
+
+        const handleMoveTimerTimeout = (data: { timedOutPlayerId: string }) => {
+            if (data.timedOutPlayerId === myPlayerId) {
+                // I timed out on server
+                console.log('[Timer] Server timeout - I timed out');
+                setShowWarningModal(false);
+                onTimeout?.();
+            } else {
+                // Opponent timed out
+                console.log('[Timer] Server timeout - opponent timed out');
+            }
+        };
+
+        const handleGameTimeout = (data: {
+            timedOutPlayerId: string;
+            timedOutPlayerName: string;
+            winnerId: string;
+            winnerName: string;
+            message: string;
+        }) => {
+            console.log('[Timer] Game timeout event:', data);
+            setShowWarningModal(false);
+            
+            // Call parent handler to show proper game result modal
+            if (onGameTimeout) {
+                onGameTimeout(data);
+            }
+        };
+
+        socket.on('moveTimerStart', handleMoveTimerStart);
+        socket.on('moveTimerWarning', handleMoveTimerWarning);
+        socket.on('moveTimerTimeout', handleMoveTimerTimeout);
+        socket.on('gameTimeout', handleGameTimeout);
+
+        return () => {
+            socket.off('moveTimerStart', handleMoveTimerStart);
+            socket.off('moveTimerWarning', handleMoveTimerWarning);
+            socket.off('moveTimerTimeout', handleMoveTimerTimeout);
+            socket.off('gameTimeout', handleGameTimeout);
+        };
+    }, [socket, timer, myPlayerId, onTimeout]);
 
     // Helper functions
     const canPlayDomino = useCallback((domino: Domino): { canPlay: boolean; sides: ('left' | 'right')[] } => {
@@ -141,16 +253,19 @@ const DominoBoard: React.FC<DominoBoardProps> = ({
             side
         });
         setSelectedDomino(null);
+        timer.resetTimer(); // Reset timer after move
     }, [canPlayDomino, onMove]);
 
     const handleDraw = useCallback(() => {
         onMove({ type: 'DRAW' });
         setSelectedDomino(null);
+        timer.resetTimer(); // Reset timer after move
     }, [onMove]);
 
     const handlePass = useCallback(() => {
         onMove({ type: 'PASS' });
         setSelectedDomino(null);
+        timer.resetTimer(); // Reset timer after move
     }, [onMove]);
 
     const handleSideClick = useCallback((side: 'left' | 'right') => {
@@ -434,6 +549,16 @@ const DominoBoard: React.FC<DominoBoardProps> = ({
                 <div className={styles.boneyardInfo}>
                     <div className={styles.boneyardCount}>{gameState.boneyard.length}</div>
                     <div className={styles.boneyardLabel}>Boneyard</div>
+                    
+                    {isMyTurn && !isGameFinished && (
+                        <MoveTimer
+                            timeLeft={timer.timeLeft}
+                            isWarning={timer.isWarning}
+                            isActive={timer.isActive}
+                            progress={timer.progress}
+                            className={styles.gameTimer}
+                        />
+                    )}
                 </div>
 
                 <div className={styles.playerInfo}>
@@ -562,6 +687,13 @@ const DominoBoard: React.FC<DominoBoardProps> = ({
                     </div>
                 </div>
             )}
+
+            <TimeoutWarningModal
+                isOpen={showWarningModal}
+                timeLeft={timer.isWarning ? timer.timeLeft : 10}
+                onClose={handleModalClose}
+                onMakeMove={handleMakeMove}
+            />
         </div>
     );
 };

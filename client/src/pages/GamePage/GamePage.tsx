@@ -13,6 +13,7 @@ import DiceBoard from '../../components/game/DiceBoard';
 import BingoBoard from '../../components/game/BingoBoard';
 import ErrorModal from '../../components/modals/ErrorModal';
 import GameResultModal from '../../components/modals/GameResultModal';
+import SurrenderConfirmModal from '../../components/modals/SurrenderConfirmModal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { Chess } from 'chess.js';
 import styles from './GamePage.module.css';
@@ -80,6 +81,7 @@ const GamePage: React.FC = () => {
         opponentName: ''
     });
     const [showInvitationLink, setShowInvitationLink] = useState(false);
+    const [surrenderModal, setSurrenderModal] = useState({ isOpen: false });
     const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -175,6 +177,18 @@ const GamePage: React.FC = () => {
     }, [gameMessage, navigate, gameType]);
 
     const handleLeaveGame = () => {
+        // If waiting for opponent, leave immediately without confirmation
+        const isWaitingForOpponent = roomState && roomState.players.length < 2;
+        
+        if (isWaitingForOpponent) {
+            handleActualLeave();
+        } else {
+            // Show surrender confirmation modal
+            setSurrenderModal({ isOpen: true });
+        }
+    };
+
+    const handleActualLeave = () => {
         if (socket && roomId) {
             socket.emit('leaveGame', roomId);
         }
@@ -185,6 +199,10 @@ const GamePage: React.FC = () => {
         } else {
             navigate(`/lobby/${gameType}`);
         }
+    };
+
+    const closeSurrenderModal = () => {
+        setSurrenderModal({ isOpen: false });
     };
 
     const handleMove = (moveData: any) => {
@@ -342,6 +360,9 @@ const GamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameMessage}
                         myPlayerIndex={myPlayerIndex as 0 | 1}
+                        hasOpponent={roomState.players.length >= 2}
+                        myPlayerId={user?._id}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             case 'durak':
@@ -358,6 +379,9 @@ const GamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameMessage}
                         myPlayerIndex={myPlayerIndex as 0 | 1}
+                        hasOpponent={roomState.players.length >= 2}
+                        myPlayerId={user?._id}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             case 'domino':
@@ -374,6 +398,9 @@ const GamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameMessage}
                         myPlayerIndex={myPlayerIndex as 0 | 1}
+                        hasOpponent={roomState.players.length >= 2}
+                        myPlayerId={user?._id}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             case 'dice':
@@ -390,6 +417,9 @@ const GamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameMessage}
                         myPlayerIndex={myPlayerIndex as 0 | 1}
+                        hasOpponent={roomState.players.length >= 2}
+                        myPlayerId={user?._id}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             case 'bingo':
@@ -406,6 +436,9 @@ const GamePage: React.FC = () => {
                         isMyTurn={isMyTurn}
                         isGameFinished={!!gameMessage}
                         myPlayerIndex={myPlayerIndex as 0 | 1}
+                        hasOpponent={roomState.players.length >= 2}
+                        myPlayerId={user?._id}
+                        onGameTimeout={handleGameTimeout}
                     />
                 );
             default:
@@ -572,6 +605,12 @@ const GamePage: React.FC = () => {
                 onClose={closeGameResultModal}
                 onBackToLobby={handleBackToLobby}
                 countdown={redirectCountdown}
+            />
+
+            <SurrenderConfirmModal
+                isOpen={surrenderModal.isOpen}
+                onClose={closeSurrenderModal}
+                onConfirm={handleActualLeave}
             />
         </div>
     );

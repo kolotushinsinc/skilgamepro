@@ -1,5 +1,9 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import styles from './BackgammonBoard.module.css';
+import { useMoveTimer } from '../../hooks/useMoveTimer';
+import MoveTimer from './MoveTimer';
+import TimeoutWarningModal from '../modals/TimeoutWarningModal';
+import { useSocket } from '../../context/SocketContext';
 
 // Types for backgammon
 type PlayerColor = 'white' | 'black';
@@ -40,6 +44,11 @@ interface BackgammonBoardProps {
     isMyTurn: boolean;
     isGameFinished: boolean;
     myPlayerIndex: 0 | 1;
+    onTimeout?: () => void; // Called when player times out
+    currentPlayerId?: string; // Current player's ID for timer synchronization
+    myPlayerId?: string; // My player ID
+    hasOpponent?: boolean; // Whether there are 2 players in the game
+    onGameTimeout?: (data: any) => void; // Handle server timeout event
 }
 
 const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
@@ -48,12 +57,19 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
     onRollDice,
     isMyTurn,
     isGameFinished,
-    myPlayerIndex
+    myPlayerIndex,
+    onTimeout,
+    currentPlayerId,
+    myPlayerId,
+    hasOpponent,
+    onGameTimeout
 }) => {
     const [selectedPoint, setSelectedPoint] = useState<number | null>(null);
     const [possibleMoves, setPossibleMoves] = useState<number[]>([]);
     const [isRollingDice, setIsRollingDice] = useState(false);
     const [movingPiece, setMovingPiece] = useState<{from: number, to: number} | null>(null);
+    const [showWarningModal, setShowWarningModal] = useState(false);
+    const { socket } = useSocket();
 
     console.log('[BackgammonBoard] Render:', {
         isMyTurn,
@@ -65,6 +81,102 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
     });
 
     const myColor: PlayerColor = myPlayerIndex === 0 ? 'white' : 'black';
+
+    const handleTimeout = useCallback(() => {
+        setShowWarningModal(false);
+        onTimeout?.();
+    }, [onTimeout]);
+
+    const handleWarning = useCallback(() => {
+        console.log('[Timer] Client triggered warning - showing modal at exactly 10 seconds');
+        setShowWarningModal(true);
+        // Timer will be paused by the modal component
+    }, []);
+
+    const handleMakeMove = useCallback(() => {
+        setShowWarningModal(false);
+        // Timer will resume automatically when modal closes
+    }, []);
+
+    // Game is considered started when there are 2 players and game is not finished
+    const isGameStarted = !isGameFinished && gameState && (hasOpponent || false);
+
+    const timer = useMoveTimer({
+        totalTime: 30,
+        warningTime: 20,
+        isMyTurn,
+        isGameFinished,
+        isGameStarted,
+        hasOpponent: hasOpponent || false,
+        onTimeout: handleTimeout,
+        onWarning: handleWarning
+    });
+
+    const handleModalClose = useCallback(() => {
+        // Don't allow closing modal during warning period
+    }, []);
+
+    // Socket event handlers for server-side timer synchronization
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleMoveTimerStart = (data: { timeLimit: number; currentPlayerId: string; startTime: number }) => {
+            if (data.currentPlayerId === myPlayerId) {
+                // Server started timer for my turn, sync with server time
+                console.log('[Timer] Server timer started for my turn, syncing...', data);
+                timer.syncWithServer(data.startTime, data.timeLimit);
+            }
+        };
+
+        const handleMoveTimerWarning = (data: { timeRemaining: number; currentPlayerId: string }) => {
+            if (data.currentPlayerId === myPlayerId) {
+                // Server warning received - but modal will be shown by client timer at exactly 10 seconds
+                console.log('[Timer] Server timer warning received - client timer will handle modal display');
+                timer.showWarning();
+                // Modal will be shown by client timer when timeLeft === 10
+            }
+        };
+
+        const handleMoveTimerTimeout = (data: { timedOutPlayerId: string }) => {
+            if (data.timedOutPlayerId === myPlayerId) {
+                // I timed out on server
+                console.log('[Timer] Server timeout - I timed out');
+                setShowWarningModal(false);
+                onTimeout?.();
+            } else {
+                // Opponent timed out
+                console.log('[Timer] Server timeout - opponent timed out');
+            }
+        };
+
+        const handleGameTimeout = (data: {
+            timedOutPlayerId: string;
+            timedOutPlayerName: string;
+            winnerId: string;
+            winnerName: string;
+            message: string;
+        }) => {
+            console.log('[Timer] Game timeout event:', data);
+            setShowWarningModal(false);
+            
+            // Call parent handler to show proper game result modal
+            if (onGameTimeout) {
+                onGameTimeout(data);
+            }
+        };
+
+        socket.on('moveTimerStart', handleMoveTimerStart);
+        socket.on('moveTimerWarning', handleMoveTimerWarning);
+        socket.on('moveTimerTimeout', handleMoveTimerTimeout);
+        socket.on('gameTimeout', handleGameTimeout);
+
+        return () => {
+            socket.off('moveTimerStart', handleMoveTimerStart);
+            socket.off('moveTimerWarning', handleMoveTimerWarning);
+            socket.off('moveTimerTimeout', handleMoveTimerTimeout);
+            socket.off('gameTimeout', handleGameTimeout);
+        };
+    }, [socket, timer, myPlayerId, onTimeout]);
 
     const getPossibleMovesForPoint = useCallback((from: number): number[] => {
         if (!gameState.diceRoll || !isMyTurn || gameState.turnPhase !== 'MOVING') {
@@ -239,6 +351,7 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
             onMove(move);
             setSelectedPoint(null);
             setPossibleMoves([]);
+            timer.resetTimer(); // Reset timer after move
         }, 250);
     }, [onMove, animateMove]);
 
@@ -344,6 +457,16 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                         </button>
                     )}
                     {renderDice()}
+                    
+                    {isMyTurn && !isGameFinished && (
+                        <MoveTimer
+                            timeLeft={timer.timeLeft}
+                            isWarning={timer.isWarning}
+                            isActive={timer.isActive}
+                            progress={timer.progress}
+                            className={styles.gameTimer}
+                        />
+                    )}
                 </div>
 
                 <div className={styles.playerInfo}>
@@ -442,6 +565,13 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                     <strong>Move History:</strong> {gameState.moveHistory.length} moves
                 </div>
             )}
+
+            <TimeoutWarningModal
+                isOpen={showWarningModal}
+                timeLeft={timer.isWarning ? timer.timeLeft : 10}
+                onClose={handleModalClose}
+                onMakeMove={handleMakeMove}
+            />
         </div>
     );
 };

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import CustomSelect from '../../components/ui/CustomSelect';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import InsufficientFundsModal from '../../components/modals/InsufficientFundsModal';
 import styles from './TournamentsListPage.module.css';
 
 const TournamentsListPage: React.FC = () => {
@@ -18,6 +19,8 @@ const TournamentsListPage: React.FC = () => {
     const [pagination, setPagination] = useState<TournamentPagination | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
+    const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
     
     const { user } = useAuth();
     const { socket } = useSocket();
@@ -222,6 +225,13 @@ const TournamentsListPage: React.FC = () => {
                     // Можно добавить навигацию к списку турниров игрока, если такая страница есть
                     console.log('Пользователь хочет отменить регистрацию в другом турнире');
                 }
+            } else if (err.message.toLowerCase().includes('insufficient funds') ||
+                       err.message.toLowerCase().includes('not enough balance') ||
+                       err.message.toLowerCase().includes('недостаточно средств')) {
+                // Найдем турнир для отображения в модальном окне
+                const tournament = tournaments.find(t => t._id === tournamentId);
+                setSelectedTournament(tournament || null);
+                setShowInsufficientFundsModal(true);
             } else {
                 alert(err.message);
             }
@@ -258,6 +268,11 @@ const TournamentsListPage: React.FC = () => {
 
     const canPlayerRegister = (tournament: Tournament): boolean => {
         return user ? tournamentService.canPlayerRegister(tournament, user._id) : false;
+    };
+
+    const closeInsufficientFundsModal = () => {
+        setShowInsufficientFundsModal(false);
+        setSelectedTournament(null);
     };
 
     if (loading) {
@@ -458,6 +473,14 @@ const TournamentsListPage: React.FC = () => {
                     )}
                 </>
             )}
+
+            {/* Insufficient Funds Modal */}
+            <InsufficientFundsModal
+                isOpen={showInsufficientFundsModal}
+                onClose={closeInsufficientFundsModal}
+                requiredAmount={selectedTournament?.entryFee || 0}
+                currentBalance={user?.balance || 0}
+            />
         </div>
     );
 };

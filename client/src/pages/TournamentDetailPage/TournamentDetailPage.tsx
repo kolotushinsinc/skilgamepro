@@ -4,6 +4,7 @@ import { Tournament, TournamentMatch, tournamentService } from '../../services/t
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import InsufficientFundsModal from '../../components/modals/InsufficientFundsModal';
 import styles from './TournamentDetailPage.module.css';
 
 const TournamentDetailPage: React.FC = () => {
@@ -12,6 +13,7 @@ const TournamentDetailPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [timeUntilStart, setTimeUntilStart] = useState<number>(0);
+    const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
     
     const { user } = useAuth();
     const { socket } = useSocket();
@@ -137,7 +139,13 @@ const TournamentDetailPage: React.FC = () => {
             await tournamentService.registerInTournament(tournamentId, socketId);
             await loadTournament();
         } catch (err: any) {
-            alert(err.message);
+            if (err.message.toLowerCase().includes('insufficient funds') ||
+                err.message.toLowerCase().includes('not enough balance') ||
+                err.message.toLowerCase().includes('недостаточно средств')) {
+                setShowInsufficientFundsModal(true);
+            } else {
+                alert(err.message);
+            }
         }
     };
 
@@ -266,6 +274,10 @@ const TournamentDetailPage: React.FC = () => {
 
     const getPlayerPrizePlace = (): number | null => {
         return user && tournament ? tournamentService.getPlayerPrizePlace(tournament, user._id) : null;
+    };
+
+    const closeInsufficientFundsModal = () => {
+        setShowInsufficientFundsModal(false);
     };
 
     if (loading) {
@@ -459,6 +471,14 @@ const TournamentDetailPage: React.FC = () => {
                 <h3>Tournament Bracket</h3>
                 {renderBracket()}
             </div>
+
+            {/* Insufficient Funds Modal */}
+            <InsufficientFundsModal
+                isOpen={showInsufficientFundsModal}
+                onClose={closeInsufficientFundsModal}
+                requiredAmount={tournament?.entryFee || 0}
+                currentBalance={user?.balance || 0}
+            />
         </div>
     );
 };
