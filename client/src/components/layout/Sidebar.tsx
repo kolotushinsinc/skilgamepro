@@ -44,8 +44,8 @@ const Sidebar: React.FC = () => {
                 />
             )}
 
-            <div className={`${styles.sidebarContainer} ${isSidebarOpen ? styles.open : ''}`}>
-                    <Link to="/" onClick={handleLinkClick} className={styles.logoArea}>
+            <div className={`${styles.sidebarContainer} ${isSidebarOpen ? styles.open : ''}`} data-testid="sidebar">
+                    <Link to="/" onClick={handleLinkClick} className={styles.logoArea} data-testid="logo-link">
                         <div className={styles.logoIconContainer}><Crown /></div>
                         <div className={styles.logoText}>
                             <h1>Skill Game</h1>
@@ -53,7 +53,7 @@ const Sidebar: React.FC = () => {
                         </div>
                     </Link>
 
-                <nav className={styles.nav}>
+                <nav className={styles.nav} data-testid="navigation">
                     {menuItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -61,6 +61,7 @@ const Sidebar: React.FC = () => {
                             end={item.path === '/'}
                             onClick={handleLinkClick}
                             className={getNavLinkClass}
+                            data-testid={`nav-${item.label.toLowerCase()}`}
                         >
                             <item.icon />
                             <span>{item.label}</span>
@@ -71,6 +72,7 @@ const Sidebar: React.FC = () => {
                             to="/admin"
                             onClick={handleLinkClick}
                             className={getNavLinkClass}
+                            data-testid="nav-admin"
                         >
                             <ShieldCheck />
                             <span>Admin tools(demo)</span>
@@ -78,15 +80,15 @@ const Sidebar: React.FC = () => {
                     )}
                 </nav>
 
-                <div className={styles.profileSection}>
-                     <div className={styles.profileInfo}>
-                        <div className={styles.avatar}>{initials}</div>
+                <div className={styles.profileSection} data-testid="profile-section">
+                     <div className={styles.profileInfo} data-testid="profile-info">
+                        <div className={styles.avatar} data-testid="user-avatar">{initials}</div>
                         <div>
-                            <p className={styles.username}>{user?.username || 'Gamer'}</p>
-                            <p className={styles.userStatus}>{user?.role === 'ADMIN' ? 'Admin' : 'Gamer'}</p>
+                            <p className={styles.username} data-testid="username">{user?.username || 'Gamer'}</p>
+                            <p className={styles.userStatus} data-testid="user-status">{user?.role === 'ADMIN' ? 'Admin' : 'Gamer'}</p>
                         </div>
                     </div>
-                     <button onClick={handleLogoutClick} className={`${styles.navLink} w-full mt-4`}>
+                     <button onClick={handleLogoutClick} className={`${styles.navLink} w-full mt-4`} data-testid="logout-button">
                         <LogOut />
                         <span>Log out</span>
                     </button>

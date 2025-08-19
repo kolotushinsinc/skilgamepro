@@ -1,0 +1,166 @@
+.tutorialHighlight {
+  position: relative !important;
+  z-index: 9998 !important;
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2) !important;
+  transition: all 0.3s ease !important;
+  filter: none !important; /* Ensure no blur is applied to the highlighted element */
+  backdrop-filter: none !important; /* Override any backdrop filters */
+}
+
+.tutorialHighlight::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border: 2px solid rgba(59, 130, 246, 0.6);
+  border-radius: 8px;
+  pointer-events: none;
+  animation: tutorialPulse 2s infinite;
+  z-index: -1;
+}
+
+@keyframes tutorialPulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Debug info styles */
+.debugInfo {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 10002;
+  max-width: 200px;
+  word-break: break-word;
+}
+
+.debugInfo div {
+  margin: 2px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tutorialHighlight {
+    outline-offset: 1px !important;
+  }
+
+  .tutorialHighlight::before {
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 6px;
+  }
+
+  .debugInfo {
+    top: 5px;
+    right: 5px;
+    font-size: 10px;
+    padding: 6px 8px;
+    max-width: 150px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .tutorialHighlight {
+    outline: 3px solid #0066cc !important;
+    box-shadow: 0 0 0 6px rgba(0, 102, 204, 0.3) !important;
+  }
+
+  .tutorialHighlight::before {
+    border: 3px solid #0066cc;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .tutorialHighlight {
+    transition: none !important;
+  }
+
+  .tutorialHighlight::before {
+    animation: none !important;
+  }
+}
+
+/* Special handling for different element types */
+.tutorialHighlight[role="button"],
+.tutorialHighlight.button,
+.tutorialHighlight input[type="button"],
+.tutorialHighlight input[type="submit"] {
+  outline-offset: 3px !important;
+}
+
+.tutorialHighlight input,
+.tutorialHighlight textarea,
+.tutorialHighlight select {
+  outline-offset: 1px !important;
+}
+
+.tutorialHighlight.card,
+.tutorialHighlight[class*="card"] {
+  outline-offset: 4px !important;
+}
+
+/* Ensure highlighted elements stay above other content */
+.tutorialHighlight * {
+  z-index: inherit !important;
+  filter: none !important; /* Ensure children don't get blurred */
+  backdrop-filter: none !important;
+}
+
+/* Handle elements that might have overflow hidden */
+.tutorialHighlight[style*="overflow: hidden"] {
+  overflow: visible !important;
+}
+
+/* Style for tutorial target elements in different states */
+.tutorialHighlight:hover {
+  outline-color: #1d4ed8 !important;
+  box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.3) !important;
+}
+
+.tutorialHighlight:focus,
+.tutorialHighlight:focus-within {
+  outline-color: #1e40af !important;
+  box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.4) !important;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .tutorialHighlight {
+    outline-color: #60a5fa !important;
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.2) !important;
+  }
+
+  .tutorialHighlight::before {
+    border-color: rgba(96, 165, 250, 0.6);
+  }
+
+  .debugInfo {
+    background: rgba(255, 255, 255, 0.9);
+    color: black;
+  }
+}

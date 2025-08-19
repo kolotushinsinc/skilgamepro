@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { TutorialProvider } from './context/TutorialContext';
 import { Toaster } from 'react-hot-toast';
 import { NotificationHandler } from './components/NotificationHandler/NotificationHandler';
 import TournamentExitManager from './components/tournament/TournamentExitManager';
 import TournamentNotificationHandler from './components/tournament/TournamentNotificationHandler';
 import SupportChat from './components/SupportChat/SupportChat';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import TutorialManager from './components/tutorial/TutorialManager';
 
 import MainLayout from './components/layout/MainLayout';
 
@@ -29,19 +31,30 @@ const GameAwareApp: React.FC = () => {
         {isAuthenticated && <NotificationHandler />}
         {isAuthenticated && <TournamentNotificationHandler />}
         
-        <Routes>
-            {isAuthenticated ? (
-                 <Route path="/*" element={<MainLayout />} />
-            ) : (
-                <>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route path="/reset-password" element={<ResetPasswordPage />} />
-                    <Route path="*" element={<Navigate to="/login" replace />} />
-                </>
+        {isAuthenticated ? (
+          <TutorialProvider>
+            <Routes>
+              <Route path="/*" element={<MainLayout />} />
+            </Routes>
+            
+            {/* Tutorial System - hidden during games */}
+            {!isInGame && (
+              <TutorialManager
+                autoStart={true}
+                enableKeyboardNavigation={true}
+                debugMode={process.env.NODE_ENV === 'development'}
+              />
             )}
-        </Routes>
+          </TutorialProvider>
+        ) : (
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        )}
         
         {/* Support Chat - скрывается во время игры */}
         {!isInGame && <SupportChat />}

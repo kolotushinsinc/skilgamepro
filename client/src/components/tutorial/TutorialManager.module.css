@@ -1,0 +1,420 @@
+.tutorialManager {
+  position: relative;
+  z-index: 9999;
+}
+
+/* Loading Indicator */
+.loadingIndicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  z-index: 10002;
+  backdrop-filter: blur(4px);
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.loadingContent span {
+  font-weight: 500;
+}
+
+.loadingContent small {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.skipWaitButton {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.skipWaitButton:hover {
+  background: #dc2626;
+}
+
+.skipWaitButton:focus {
+  outline: 2px solid #fca5a5;
+  outline-offset: 2px;
+}
+
+.retryInfo {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Action Helper */
+.actionHelper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10003;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.actionButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow:
+    0 4px 15px 0 rgba(102, 126, 234, 0.4),
+    0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 25px 0 rgba(102, 126, 234, 0.5),
+    0 4px 8px 0 rgba(0, 0, 0, 0.15);
+}
+
+.actionButton:active {
+  transform: translateY(0);
+}
+
+.actionButton:focus {
+  outline: 2px solid #a5b4fc;
+  outline-offset: 2px;
+}
+
+.actionButton::before {
+  content: '👆';
+  font-size: 16px;
+}
+
+/* Debug Panel */
+.debugPanel {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 12px;
+  max-width: 300px;
+  z-index: 10002;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.debugPanel h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #3b82f6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 8px;
+}
+
+.debugPanel div {
+  margin: 4px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.debugPanel div:before {
+  content: attr(data-label);
+  color: #9ca3af;
+  margin-right: 8px;
+}
+
+/* Status Indicator */
+.statusIndicator {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 8px;
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 12px 20px;
+  z-index: 10002;
+  min-width: 280px;
+  animation: slideInTop 0.3s ease-out;
+}
+
+@keyframes slideInTop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.tutorialInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tutorialName {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.stepProgress {
+  font-size: 12px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.progressBar {
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .loadingIndicator {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+  }
+
+  .debugPanel {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    max-width: none;
+    padding: 12px;
+    font-size: 11px;
+  }
+
+  .debugPanel h4 {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .statusIndicator {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    min-width: auto;
+    padding: 10px 16px;
+  }
+
+  .tutorialName {
+    font-size: 13px;
+  }
+
+  .stepProgress {
+    font-size: 11px;
+    padding: 1px 6px;
+  }
+
+  .actionHelper {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .actionButton {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .loadingContent {
+    gap: 6px;
+  }
+
+  .skipWaitButton {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .loadingIndicator {
+    top: 5px;
+    right: 5px;
+    left: 5px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .statusIndicator {
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    padding: 8px 12px;
+  }
+
+  .debugPanel {
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    padding: 10px;
+  }
+
+  .actionHelper {
+    bottom: 60px;
+    right: 5px;
+    left: 5px;
+  }
+
+  .actionButton {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 12px;
+    justify-content: center;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .statusIndicator {
+    background: #1f2937;
+    border: 1px solid #374151;
+  }
+
+  .tutorialName {
+    color: #f9fafb;
+  }
+
+  .stepProgress {
+    background: #374151;
+    color: #d1d5db;
+  }
+
+  .progressBar {
+    background: #374151;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .loadingIndicator {
+    background: #000;
+    border: 2px solid #fff;
+  }
+
+  .statusIndicator {
+    border: 2px solid #000;
+  }
+
+  .debugPanel {
+    background: #000;
+    border: 2px solid #fff;
+  }
+
+  .progressFill {
+    background: #0066cc;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .loadingIndicator,
+  .statusIndicator {
+    animation: none;
+  }
+
+  .spinner {
+    animation: none;
+  }
+
+  .progressFill {
+    transition: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.loadingIndicator:focus-within,
+.statusIndicator:focus-within,
+.debugPanel:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .tutorialManager,
+  .loadingIndicator,
+  .statusIndicator,
+  .debugPanel {
+    display: none !important;
+  }
+}

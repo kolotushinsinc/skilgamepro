@@ -411,3 +411,21 @@
             inset 0 1px 0 rgba(255, 255, 255, 0.3);
     }
 }
+
+.tutorialButton {
+    margin-right: 0.5rem;
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .tutorialButton {
+        margin-right: 0.75rem;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .tutorialButton {
+        margin-right: 1rem;
+    }
+}

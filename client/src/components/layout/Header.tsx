@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { useUI } from '../../context/UIContext';
 import { useSocket } from '../../context/SocketContext';
+import TutorialButton from '../tutorial/TutorialButton';
 import styles from './Header.module.css';
 import { Menu, Bell } from 'lucide-react';
 
@@ -44,23 +45,23 @@ const Header: React.FC = () => {
     }, [socket, user, refreshUser]);
 
     return (
-        <header className={styles.header}>
-            <button onClick={toggleSidebar} className={styles.menuButton}>
+        <header className={styles.header} data-testid="header">
+            <button onClick={toggleSidebar} className={styles.menuButton} data-testid="menu-button">
                 <Menu />
             </button>
             
-            <div className={styles.rightSection}>
-                <div className={styles.onlineIndicator}>
+            <div className={styles.rightSection} data-testid="header-right-section">
+                <div className={styles.onlineIndicator} data-testid="online-indicator">
                     <div className={styles.onlineDot}></div>
                     <span className="text-sm font-medium">Online</span>
                 </div>
-                <div className={styles.balance}>
+                <div className={styles.balance} data-testid="balance-display">
                     {user?.balance.toFixed(2) || '0.00'}
                 </div>
-                <Link to="/notifications" className={styles.notificationBell}>
+                <Link to="/notifications" className={styles.notificationBell} data-testid="notifications-button">
                     <Bell size={20} />
                     {unreadCount > 0 && (
-                        <span className={styles.notificationCount}>
+                        <span className={styles.notificationCount} data-testid="notification-count">
                             {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                     )}
