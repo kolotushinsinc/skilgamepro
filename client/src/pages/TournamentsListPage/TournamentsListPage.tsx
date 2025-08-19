@@ -329,6 +329,69 @@ const TournamentsListPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Tournament Requirements Section */}
+            <div className={`${styles["tournament-requirements"]} tournament-requirements`} data-testid="tournament-requirements">
+                <h4>📋 Tournament Entry Requirements</h4>
+                <div className={styles["requirement-item"]}>
+                    <span className={styles["requirement-icon"]}>💰</span>
+                    <div className={styles["requirement-content"]}>
+                        <span className={styles["requirement-label"]}>Minimum Balance:</span>
+                        <span className={styles["requirement-value"]}>Varies by tournament entry fee</span>
+                    </div>
+                </div>
+                <div className={styles["requirement-item"]}>
+                    <span className={styles["requirement-icon"]}>✅</span>
+                    <div className={styles["requirement-content"]}>
+                        <span className={styles["requirement-label"]}>Account Status:</span>
+                        <span className={styles["requirement-value"]}>Active and verified</span>
+                    </div>
+                </div>
+                <div className={styles["requirement-item"]}>
+                    <span className={styles["requirement-icon"]}>🎯</span>
+                    <div className={styles["requirement-content"]}>
+                        <span className={styles["requirement-label"]}>Registration:</span>
+                        <span className={styles["requirement-value"]}>Required before tournament start</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tournament Schedule Section */}
+            <div className={`${styles["tournament-schedule"]} tournament-schedule`} data-testid="tournament-schedule">
+                <h4>📅 Tournament Schedule</h4>
+                <div className={styles["schedule-content"]}>
+                    <p className={styles["schedule-description"]}>
+                        Tournaments start automatically when the minimum number of players register or at the scheduled start time.
+                    </p>
+                    <div className={styles["schedule-note"]}>
+                        <span className={styles["schedule-icon"]}>ℹ️</span>
+                        <span>Check individual tournament cards for specific start times and registration deadlines.</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Prize Structure Section */}
+            <div className={`${styles["prize-structure"]} prize-structure`} data-testid="prize-structure">
+                <h4>🏆 Prize Structure Information</h4>
+                <p className={styles["prize-description"]}>
+                    Prize pools are distributed based on tournament performance:
+                </p>
+                <div className={styles["prize-tier"]}>
+                    <span className={styles["prize-medal"]}>🥇</span>
+                    <span className={styles["prize-position"]}>1st Place:</span>
+                    <span className={styles["prize-amount"]}>60% of prize pool</span>
+                </div>
+                <div className={styles["prize-tier"]}>
+                    <span className={styles["prize-medal"]}>🥈</span>
+                    <span className={styles["prize-position"]}>2nd Place:</span>
+                    <span className={styles["prize-amount"]}>30% of prize pool</span>
+                </div>
+                <div className={styles["prize-tier"]}>
+                    <span className={styles["prize-medal"]}>🥉</span>
+                    <span className={styles["prize-position"]}>3rd Place:</span>
+                    <span className={styles["prize-amount"]}>10% of prize pool</span>
+                </div>
+            </div>
+
             {tournaments.length === 0 && !loading ? (
                 <div className={styles.emptyState}>
                     <h3>No tournaments found</h3>

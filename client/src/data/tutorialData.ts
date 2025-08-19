@@ -595,7 +595,7 @@ export const tutorialData: Tutorial[] = [
         title: 'Game Title & Icon',
         content: 'The game title tells you exactly what you\'ll be playing. The icon gives you a quick visual reference for the game type.',
         displayMode: 'tooltip',
-        targetSelector: '.game-card:first-child .game-title, .game-card:first-child .game-name, .game-card:first-child h3',
+        targetSelector: '[data-testid="game-card"]:first-child [data-testid="game-title"], .game-card:first-child .game-title, .game-card:first-child h3',
         position: 'top',
         highlightElement: true,
         navigateTo: '/games',
@@ -651,17 +651,6 @@ export const tutorialData: Tutorial[] = [
         content: 'Click this to refresh the games list and see the latest available games. New games are added frequently!',
         displayMode: 'tooltip',
         targetSelector: '.refresh-button, [data-testid="refresh-games"], .reload-button',
-        position: 'bottom',
-        highlightElement: true,
-        navigateTo: '/games',
-        waitForElement: true
-      },
-      {
-        id: 'create_game_button',
-        title: 'Create Your Own Game',
-        content: 'Advanced Feature: You can create your own game with custom settings! Set the entry fee, player limit, and rules. Other players can then join your game.',
-        displayMode: 'tooltip',
-        targetSelector: '.create-game, [data-testid="create-game"], .new-game-button',
         position: 'bottom',
         highlightElement: true,
         navigateTo: '/games',
@@ -955,6 +944,328 @@ export const tutorialData: Tutorial[] = [
             type: 'experience',
             value: 50,
             description: 'Tutorial completion bonus'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'profile_page_complete_guide',
+    title: 'Complete Profile Page Mastery',
+    description: 'Comprehensive exploration of every profile page element and function',
+    category: 'profile',
+    priority: 4,
+    triggerCondition: 'page_visit',
+    requiredPath: '/profile',
+    rewardBadge: 'profile_expert',
+    steps: [
+      {
+        id: 'profile_page_introduction',
+        title: 'Welcome to Your Profile Center!',
+        content: 'Your Profile page is your personal control center where you can manage every aspect of your account. From updating personal information to viewing detailed gaming statistics - everything is organized into convenient tabs. Let\'s explore each section step by step.',
+        displayMode: 'modal',
+        position: 'center',
+        navigateTo: '/profile'
+      },
+      {
+        id: 'profile_page_header_overview',
+        title: 'Profile Page Header',
+        content: 'This header shows you\'re in your Profile Settings area. Here you can manage your account preferences and all personal information.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="profile-page-header"]',
+        position: 'bottom',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'profile_title_explanation',
+        title: 'Profile Settings Title',
+        content: 'The main title confirms you\'re in the Profile Settings section where you have complete control over your account.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="profile-title"]',
+        position: 'bottom',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'tabs_navigation_system',
+        title: 'Profile Navigation Tabs',
+        content: 'These five tabs organize all your profile functions: Profile info, Security settings, Wallet management, Game history, and Transaction records. Each tab contains specific tools and information.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="tabs-list"]',
+        position: 'bottom',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'profile_tab_exploration',
+        title: 'Profile Information Tab',
+        content: 'Let\'s start with the Profile tab - your personal information hub. Click here to see your avatar, username, email, balance, and membership details.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="tab-profile"]',
+        position: 'bottom',
+        highlightElement: true,
+        action: 'click',
+        nextOnAction: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'avatar_container_explanation',
+        title: 'Avatar Management',
+        content: 'This is your profile avatar area. You can upload a custom image to personalize your account and make yourself recognizable to other players.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="avatar-container"]',
+        position: 'right',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'avatar_edit_functionality',
+        title: 'Avatar Upload Button',
+        content: 'Click this edit button (✏️) to upload a new avatar image. Choose a clear, appropriate image that represents your gaming personality.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="avatar-edit-button"]',
+        position: 'right',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'profile_username_display',
+        title: 'Your Gaming Username',
+        content: 'This displays your current username - how other players will identify you in games and tournaments. This is your gaming identity on the platform.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="profile-username"]',
+        position: 'left',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'profile_email_information',
+        title: 'Account Email Address',
+        content: 'Your registered email address for account communications, security notifications, and password recovery. Keep this updated for account security.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="profile-email-item"]',
+        position: 'left',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'profile_balance_display',
+        title: 'Current Account Balance',
+        content: 'Your available balance for playing games and tournaments. This amount updates in real-time as you play, win, or make deposits/withdrawals.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="profile-balance-item"]',
+        position: 'left',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'profile_member_since',
+        title: 'Membership Information',
+        content: 'Shows when you joined the platform. This information helps establish your experience level and standing in the community.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="profile-member-since-item"]',
+        position: 'left',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'security_tab_navigation',
+        title: 'Security Settings Tab',
+        content: 'Now let\'s explore the Security tab - your account protection center. Click here to access password changes and identity verification features.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="tab-security"]',
+        position: 'bottom',
+        highlightElement: true,
+        action: 'click',
+        nextOnAction: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'password_change_section',
+        title: 'Password Change Form',
+        content: 'This form allows you to update your account password. Regular password changes enhance your account security. Always use strong, unique passwords.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="password-change-section"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'current_password_input',
+        title: 'Current Password Field',
+        content: 'Enter your existing password here for verification. This security measure ensures only you can change your password.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="current-password-input"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'new_password_input',
+        title: 'New Password Field',
+        content: 'Enter your new password here. Use a strong password with at least 6 characters, including uppercase, lowercase, numbers, and symbols.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="new-password-input"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'save_password_button',
+        title: 'Save Password Button',
+        content: 'Click this button to save your new password. The change takes effect immediately and you\'ll need to use the new password for future logins.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="save-password-button"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'kyc_verification_section',
+        title: 'Identity Verification (KYC)',
+        content: 'KYC (Know Your Customer) verification is required for withdrawals and high-stakes gaming. Upload identity documents here to verify your account.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="kyc-verification-section"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'wallet_tab_navigation',
+        title: 'Wallet Management Tab',
+        content: 'The Wallet tab is your financial control center. Click here to manage deposits, withdrawals, and view your balance details.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="tab-wallet"]',
+        position: 'bottom',
+        highlightElement: true,
+        action: 'click',
+        nextOnAction: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'balance_display_section',
+        title: 'Balance Information Display',
+        content: 'This section shows your current balance prominently and provides context about managing your funds through secure payment systems.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="balance-display"]',
+        position: 'bottom',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'deposit_button_explanation',
+        title: 'Deposit Funds Button',
+        content: 'Click this button to add money to your account. Deposits are instant and secure, allowing you to start playing immediately.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="deposit-button"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'withdraw_button_explanation',
+        title: 'Withdraw Funds Button',
+        content: 'Use this button to withdraw your winnings. Note: Identity verification (KYC) is required before your first withdrawal.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="withdraw-button"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'payment_history_section',
+        title: 'Payment History Overview',
+        content: 'This section shows your recent payment activities including deposits, withdrawals, and their status. Keep track of all your financial transactions here.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="payment-history-section"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'games_tab_navigation',
+        title: 'Game History Tab',
+        content: 'The Games tab contains your complete gaming history. Click here to review your past games, wins, losses, and performance statistics.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="tab-games"]',
+        position: 'bottom',
+        highlightElement: true,
+        action: 'click',
+        nextOnAction: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'game_history_table',
+        title: 'Game History Table',
+        content: 'This table displays all your played games with details: game name, result (Won/Lost/Draw), balance change, and date. Use this to track your gaming performance.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="games-table-container"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'game_history_details',
+        title: 'Game Record Information',
+        content: 'Each row shows: Game type you played, your result, how much your balance changed, and when the game occurred. Green amounts show winnings, red shows losses.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="game-history-row"]:first-child',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile',
+        waitForElement: true
+      },
+      {
+        id: 'transactions_tab_navigation',
+        title: 'Transaction History Tab',
+        content: 'The final tab shows all your financial transactions. Click here to view deposits, withdrawals, game fees, and winnings in detail.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="tab-transactions"]',
+        position: 'bottom',
+        highlightElement: true,
+        action: 'click',
+        nextOnAction: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'transaction_history_table',
+        title: 'Transaction History Table',
+        content: 'This table shows all financial activities: transaction type (deposit/withdrawal/game), status, amount, and date. Perfect for tracking your money flow.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="transactions-table-container"]',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile'
+      },
+      {
+        id: 'transaction_record_details',
+        title: 'Transaction Record Information',
+        content: 'Each transaction shows: Type (deposit, withdrawal, game fee, winnings), current status, exact amount, and timestamp. Use this for financial tracking and tax records.',
+        displayMode: 'tooltip',
+        targetSelector: '[data-testid="transaction-history-row"]:first-child',
+        position: 'top',
+        highlightElement: true,
+        navigateTo: '/profile',
+        waitForElement: true
+      },
+      {
+        id: 'profile_mastery_complete',
+        title: 'Profile Page Mastery Achieved!',
+        content: '🎉 **Congratulations!** You now understand every element of your profile page:\n\n✅ **Profile Tab**: Avatar upload, personal information display\n✅ **Security Tab**: Password changes, KYC verification\n✅ **Wallet Tab**: Balance management, deposit/withdraw functions\n✅ **Games Tab**: Complete gaming history and performance tracking\n✅ **Transactions Tab**: Financial activity monitoring\n\n**Your profile is now your command center for account management!** Use these tools regularly to maintain security, track performance, and manage your funds effectively.',
+        displayMode: 'modal',
+        position: 'center',
+        navigateTo: '/profile',
+        rewards: [
+          {
+            type: 'badge',
+            value: 'profile_master',
+            description: 'Profile Management Expert'
+          },
+          {
+            type: 'experience',
+            value: 60,
+            description: 'Complete profile exploration bonus'
           }
         ]
       }

@@ -97,6 +97,68 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+.searchContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.searchBar {
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem 1.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: white;
+    font-size: 1rem;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.searchBar:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow:
+        0 8px 24px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.searchBar::placeholder {
+    color: #94a3b8;
+}
+
+.refreshButton {
+    background: rgba(71, 85, 105, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.refreshButton:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 24px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
 .filtersContainer {
     display: flex;
     justify-content: center;
@@ -116,7 +178,8 @@
 .filterGroup {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .filterGroup span {
@@ -191,6 +254,35 @@
 
 .filterButton.active::before {
     opacity: 1;
+}
+
+.sortDropdown {
+    background: rgba(71, 85, 105, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #cbd5e1;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.sortDropdown:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow:
+        0 8px 24px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.sortDropdown option {
+    background: #1e293b;
+    color: #cbd5e1;
 }
 
 .gameGrid {
@@ -353,10 +445,11 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.cardStats {
+.cardInfo {
     margin: 1.5rem 0;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 0.75rem;
     background: rgba(71, 85, 105, 0.4);
     backdrop-filter: blur(10px);
     border-radius: 16px;
@@ -366,35 +459,51 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.statItem {
-    text-align: center;
-    position: relative;
+.gameInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.statItem:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: -12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1px;
-    height: 60%;
-    background: rgba(255, 255, 255, 0.2);
+.gameInfo:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
-.statItem p:first-child {
+.gameInfo .label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.gameInfo .value,
+.gameInfo .fee,
+.gameInfo .prize,
+.gameInfo .participants {
     font-weight: 700;
     color: white;
-    margin: 0;
     font-size: 0.9rem;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.statItem p:last-child {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    margin: 0.25rem 0 0 0;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+/* Tutorial target classes */
+.entry-fee,
+.prize-pool,
+.players {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.entry-fee:last-child,
+.prize-pool:last-child,
+.players:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
 .cardButton {
@@ -510,23 +619,81 @@
         font-size: 0.8rem;
     }
     
-    .cardStats {
+    .cardInfo {
         padding: 1rem;
+        gap: 0.5rem;
+    }
+    
+    .gameInfo {
+        padding: 0.25rem 0;
+    }
+}
+
+/* Pagination styles */
+.paginationContainer {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    padding: 1rem;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.pageButton {
+    background: rgba(71, 85, 105, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.pageButton:not(:disabled):hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 24px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.pageButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pageInfo {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+    .pagination {
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.5rem;
+        padding: 1rem;
     }
     
-    .statItem:not(:last-child)::after {
-        display: none;
-    }
-    
-    .statItem {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 0.75rem;
-    }
-    
-    .statItem:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
+    .pageButton {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
     }
 }

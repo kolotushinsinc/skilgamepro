@@ -465,37 +465,37 @@ const ProfilePage: React.FC = () => {
             switch (activeTab) {
                 case 'profile':
                     return (
-                        <div className={styles.tabContent}>
-                            <div className={styles.profileHeader}>
-                                <div className={styles.avatarContainer}>
+                        <div className={styles.tabContent} data-testid="profile-tab-content">
+                            <div className={styles.profileHeader} data-testid="profile-header-section">
+                                <div className={styles.avatarContainer} data-testid="avatar-container">
                                     {avatarPreview ? (
-                                        <img src={avatarPreview} alt="Preview" className={styles.profileAvatarImg} />
+                                        <img src={avatarPreview} alt="Preview" className={styles.profileAvatarImg} data-testid="avatar-preview" />
                                     ) : (
                                         <Avatar size="large" />
                                     )}
-                                    <label htmlFor="avatarInput" className={styles.avatarEditButton}>✏️</label>
-                                    <input id="avatarInput" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                                    <label htmlFor="avatarInput" className={styles.avatarEditButton} data-testid="avatar-edit-button">✏️</label>
+                                    <input id="avatarInput" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} data-testid="avatar-upload-input" />
                                 </div>
-                                <div className={styles.profileInfo}>
-                                    <h2>{user.username}</h2>
+                                <div className={styles.profileInfo} data-testid="profile-info-section">
+                                    <h2 data-testid="profile-username">{user.username}</h2>
                                     {avatarFile && (
-                                        <div className={styles.avatarActions}>
-                                            <button onClick={handleAvatarUpload} className={`${styles.btn} ${styles.btnPrimary}`}>Save</button>
-                                            <button onClick={() => { setAvatarFile(null); setAvatarPreview(null); }} className={`${styles.btn} ${styles.btnSecondary}`}>Cancel</button>
+                                        <div className={styles.avatarActions} data-testid="avatar-actions">
+                                            <button onClick={handleAvatarUpload} className={`${styles.btn} ${styles.btnPrimary}`} data-testid="avatar-save-button">Save</button>
+                                            <button onClick={() => { setAvatarFile(null); setAvatarPreview(null); }} className={`${styles.btn} ${styles.btnSecondary}`} data-testid="avatar-cancel-button">Cancel</button>
                                         </div>
                                     )}
-                                    <div className={styles.profileDetails}>
-                                        <div className={styles.profileItem}>
+                                    <div className={styles.profileDetails} data-testid="profile-details">
+                                        <div className={styles.profileItem} data-testid="profile-email-item">
                                             <span className={styles.profileLabel}>Email:</span>
-                                            <span>{user.email}</span>
+                                            <span data-testid="profile-email-value">{user.email}</span>
                                         </div>
-                                        <div className={styles.profileItem}>
+                                        <div className={styles.profileItem} data-testid="profile-balance-item">
                                             <span className={styles.profileLabel}>Balance:</span>
-                                            <span className={styles.balanceHighlight}>${user.balance.toFixed(2)}</span>
+                                            <span className={styles.balanceHighlight} data-testid="profile-balance-value">${user.balance.toFixed(2)}</span>
                                         </div>
-                                        <div className={styles.profileItem}>
+                                        <div className={styles.profileItem} data-testid="profile-member-since-item">
                                             <span className={styles.profileLabel}>Member since:</span>
-                                            <span>{new Date().toLocaleDateString()}</span>
+                                            <span data-testid="profile-member-since-value">{new Date().toLocaleDateString()}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -505,27 +505,27 @@ const ProfilePage: React.FC = () => {
                 
                 case 'security':
                     return (
-                        <div className={styles.tabContent}>
-                            <div className={styles.securitySection}>
-                                <h4>🔐 Change Password</h4>
-                                <form onSubmit={handlePasswordChange}>
-                                    <div className={styles.formGrid}>
-                                        <div className={styles.formGroup}>
-                                            <label className={styles.formLabel}>Current Password</label>
-                                            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className={styles.formInput} placeholder="Current Password" required />
+                        <div className={styles.tabContent} data-testid="security-tab-content">
+                            <div className={styles.securitySection} data-testid="password-change-section">
+                                <h4 data-testid="password-change-title">🔐 Change Password</h4>
+                                <form onSubmit={handlePasswordChange} data-testid="password-change-form">
+                                    <div className={styles.formGrid} data-testid="password-form-grid">
+                                        <div className={styles.formGroup} data-testid="current-password-group">
+                                            <label className={styles.formLabel} data-testid="current-password-label">Current Password</label>
+                                            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className={styles.formInput} placeholder="Current Password" required data-testid="current-password-input" />
                                         </div>
-                                        <div className={styles.formGroup}>
-                                            <label className={styles.formLabel}>New Password</label>
-                                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={styles.formInput} placeholder="New Password" required />
+                                        <div className={styles.formGroup} data-testid="new-password-group">
+                                            <label className={styles.formLabel} data-testid="new-password-label">New Password</label>
+                                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={styles.formInput} placeholder="New Password" required data-testid="new-password-input" />
                                         </div>
                                     </div>
-                                    <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Save Password</button>
-                                    {passwordMessage.text && <div className={`${styles.alert} ${passwordMessage.type === 'error' ? styles.alertError : styles.alertSuccess}`}><p>{passwordMessage.text}</p></div>}
+                                    <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`} data-testid="save-password-button">Save Password</button>
+                                    {passwordMessage.text && <div className={`${styles.alert} ${passwordMessage.type === 'error' ? styles.alertError : styles.alertSuccess}`} data-testid="password-message"><p>{passwordMessage.text}</p></div>}
                                 </form>
                             </div>
                             
-                            <div className={styles.kycSection}>
-                                <h4>🛡️ Identity Verification (KYC)</h4>
+                            <div className={styles.kycSection} data-testid="kyc-verification-section">
+                                <h4 data-testid="kyc-section-title">🛡️ Identity Verification (KYC)</h4>
                                 <KYCStatus user={user} onVerifyClick={() => setIsKycModalOpen(true)} />
                             </div>
                         </div>
@@ -533,28 +533,28 @@ const ProfilePage: React.FC = () => {
                 
                 case 'wallet':
                     return (
-                        <div className={styles.tabContent}>
-                            <div className={styles.walletSection}>
-                                <div className={styles.balanceActions}>
-                                    <div className={styles.balanceInfo}>
-                                        <div className={styles.balanceDisplay}>
-                                            <span className={styles.balanceLabel}>Current Balance</span>
-                                            <span className={styles.balanceAmount}>${user.balance.toFixed(2)}</span>
+                        <div className={styles.tabContent} data-testid="wallet-tab-content">
+                            <div className={styles.walletSection} data-testid="wallet-section">
+                                <div className={styles.balanceActions} data-testid="balance-actions">
+                                    <div className={styles.balanceInfo} data-testid="balance-info">
+                                        <div className={styles.balanceDisplay} data-testid="balance-display">
+                                            <span className={styles.balanceLabel} data-testid="balance-label">Current Balance</span>
+                                            <span className={styles.balanceAmount} data-testid="balance-amount">${user.balance.toFixed(2)}</span>
                                         </div>
-                                        <p className={styles.balanceSubtext}>Manage your account funds using our secure payment gateway</p>
+                                        <p className={styles.balanceSubtext} data-testid="balance-subtext">Manage your account funds using our secure payment gateway</p>
                                     </div>
-                                    <div className={styles.balanceButtons}>
-                                        <button onClick={handleDepositClick} className={`${styles.btn} ${styles.btnSuccess}`}>
+                                    <div className={styles.balanceButtons} data-testid="balance-buttons">
+                                        <button onClick={handleDepositClick} className={`${styles.btn} ${styles.btnSuccess}`} data-testid="deposit-button">
                                             💰 Deposit Funds
                                         </button>
-                                        <button onClick={handleWithdrawClick} className={`${styles.btn} ${styles.btnSecondary}`}>
+                                        <button onClick={handleWithdrawClick} className={`${styles.btn} ${styles.btnSecondary}`} data-testid="withdraw-button">
                                             💸 Withdraw Funds
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div className={styles.historySection}>
+                            <div className={styles.historySection} data-testid="payment-history-section">
                                 <PaymentHistory />
                             </div>
                         </div>
@@ -562,29 +562,29 @@ const ProfilePage: React.FC = () => {
                 
                 case 'games':
                     return (
-                        <div className={styles.tabContent}>
-                            <div className={styles.historySection}>
-                                <h4>🎮 Game History</h4>
+                        <div className={styles.tabContent} data-testid="games-tab-content">
+                            <div className={styles.historySection} data-testid="game-history-section">
+                                <h4 data-testid="game-history-title">🎮 Game History</h4>
                                 {loadingGames ? (
-                                    <div className={styles.loadingState}>
+                                    <div className={styles.loadingState} data-testid="games-loading-state">
                                         <LoadingSpinner text="Loading game history..." />
                                     </div>
                                 ) : (
                                     <>
-                                        <div className={styles.tableContainer}>
+                                        <div className={styles.tableContainer} data-testid="games-table-container">
                                             <HistoryTable headers={['Game', 'Result', 'Balance Change', 'Date']}>
                                                 {gameHistory.map(game => (
-                                                    <tr key={game._id}>
-                                                        <td>{game.gameName}</td>
-                                                        <td>
+                                                    <tr key={game._id} data-testid="game-history-row">
+                                                        <td data-testid="game-name">{game.gameName}</td>
+                                                        <td data-testid="game-result">
                                                             <span className={`${styles.badge} ${game.status === 'WON' ? styles.badgeGreen : game.status === 'LOST' ? styles.badgeRed : styles.badgeYellow}`}>
                                                                 {statusTranslations[game.status]}
                                                             </span>
                                                         </td>
-                                                        <td className={game.amountChanged >= 0 ? styles.amountPositive : styles.amountNegative}>
+                                                        <td className={game.amountChanged >= 0 ? styles.amountPositive : styles.amountNegative} data-testid="balance-change">
                                                             {game.amountChanged >= 0 ? '+' : ''}${game.amountChanged.toFixed(2)}
                                                         </td>
-                                                        <td>{new Date(game.createdAt).toLocaleString()}</td>
+                                                        <td data-testid="game-date">{new Date(game.createdAt).toLocaleString()}</td>
                                                     </tr>
                                                 ))}
                                             </HistoryTable>
@@ -603,23 +603,23 @@ const ProfilePage: React.FC = () => {
                 
                 case 'transactions':
                     return (
-                        <div className={styles.tabContent}>
-                            <div className={styles.historySection}>
-                                <h4>📈 Transaction History</h4>
+                        <div className={styles.tabContent} data-testid="transactions-tab-content">
+                            <div className={styles.historySection} data-testid="transaction-history-section">
+                                <h4 data-testid="transaction-history-title">📈 Transaction History</h4>
                                 {loadingTransactions ? (
-                                    <div className={styles.loadingState}>
+                                    <div className={styles.loadingState} data-testid="transactions-loading-state">
                                         <LoadingSpinner text="Loading transaction history..." />
                                     </div>
                                 ) : (
                                     <>
-                                        <div className={styles.tableContainer}>
+                                        <div className={styles.tableContainer} data-testid="transactions-table-container">
                                             <HistoryTable headers={['Type', 'Status', 'Amount', 'Date']}>
                                                 {transactionHistory.map(tx => (
-                                                    <tr key={tx._id}>
-                                                        <td>{typeTranslations[tx.type] || tx.type}</td>
-                                                        <td>{tx.status}</td>
-                                                        <td>${tx.amount.toFixed(2)}</td>
-                                                        <td>{new Date(tx.createdAt).toLocaleString()}</td>
+                                                    <tr key={tx._id} data-testid="transaction-history-row">
+                                                        <td data-testid="transaction-type">{typeTranslations[tx.type] || tx.type}</td>
+                                                        <td data-testid="transaction-status">{tx.status}</td>
+                                                        <td data-testid="transaction-amount">${tx.amount.toFixed(2)}</td>
+                                                        <td data-testid="transaction-date">{new Date(tx.createdAt).toLocaleString()}</td>
                                                     </tr>
                                                 ))}
                                             </HistoryTable>
@@ -644,13 +644,13 @@ const ProfilePage: React.FC = () => {
         return (
             <>
                 <div className={styles.container}>
-                    <div className={styles.header}>
-                        <h1>Profile Settings</h1>
-                        <p>Manage your account preferences and information</p>
+                    <div className={styles.header} data-testid="profile-page-header">
+                        <h1 data-testid="profile-title">Profile Settings</h1>
+                        <p data-testid="profile-subtitle">Manage your account preferences and information</p>
                     </div>
                     
-                    <div className={styles.tabsContainer}>
-                        <div className={styles.tabsList}>
+                    <div className={styles.tabsContainer} data-testid="tabs-container">
+                        <div className={styles.tabsList} data-testid="tabs-list">
                             {tabs.map(tab => (
                                 <button
                                     key={tab.id}
@@ -659,6 +659,8 @@ const ProfilePage: React.FC = () => {
                                         localStorage.setItem('profileActiveTab', tab.id);
                                     }}
                                     className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
+                                    data-testid={`tab-${tab.id}`}
+                                    data-tab={tab.id}
                                 >
                                     <span className={styles.tabIcon}>{tab.icon}</span>
                                     <span className={styles.tabLabel}>{tab.label}</span>
@@ -666,7 +668,7 @@ const ProfilePage: React.FC = () => {
                             ))}
                         </div>
                         
-                        <div className={styles.tabPanel}>
+                        <div className={styles.tabPanel} data-testid="tab-panel">
                             {renderTabContent()}
                         </div>
                     </div>

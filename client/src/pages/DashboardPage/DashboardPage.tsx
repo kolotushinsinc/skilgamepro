@@ -105,7 +105,7 @@ const DashboardPage: React.FC = () => {
                     <h1>Dashboard</h1>
                     <p>Welcome back, {user?.username}! Ready for your next game?</p>
                 </div>
-                <div className={styles.ratingWidget}>
+                <div className={styles.ratingWidget} data-testid="current-rank">
                     <div className={styles.ratingWidgetText}>
                         <p>Current Rank</p>
                         <p>Master</p>
@@ -114,7 +114,7 @@ const DashboardPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className={styles.statsGrid}>
+            <div className={styles.statsGrid} data-testid="stats-grid">
                 {statsCards.map((stat, index) => (
                     <div key={index} className={styles.statCard}>
                         <div className={styles.statCardInfo}>
@@ -129,10 +129,10 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className={styles.layoutGrid}>
-                <div className={styles.contentBox}>
+                <div className={styles.contentBox} data-testid="recent-games-section">
                     <div className={styles.boxHeader}>
                         <h2>Recent Games</h2>
-                        <Link to="/profile">View All</Link>
+                        <Link to="/profile" data-testid="view-all-games">View All</Link>
                     </div>
                     <div className={styles.itemList}>
                         {recentGames.length > 0 ? (
@@ -162,15 +162,15 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className={styles.contentBox}>
+                <div className={styles.contentBox} data-testid="tournaments-section">
                     <div className={styles.boxHeader}>
                         <h2>Upcoming Tournaments</h2>
-                        <Link to="/tournaments">View All</Link>
+                        <Link to="/tournaments" data-testid="view-all-tournaments">View All</Link>
                     </div>
                     <div className={styles.itemList}>
                         {upcomingTournaments.length > 0 ? (
                             upcomingTournaments.map((tournament) => (
-                                <Link key={tournament._id} to={`/tournaments/${tournament._id}`} className={styles.tournamentItem}>
+                                <Link key={tournament._id} to={`/tournaments/${tournament._id}`} className={styles.tournamentItem} data-testid="tournament-card">
                                     <div className={styles.tournamentItemHeader}>
                                         <h3>{tournament.name}</h3>
                                         <span>${tournament.prizePool}</span>
