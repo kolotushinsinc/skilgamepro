@@ -4,6 +4,7 @@ import styles from './TournamentsPage.module.css';
 import { Edit, Trash2, PlusCircle, Trophy, Users, DollarSign, Calendar, Crown, Target, Gamepad2, Clock } from 'lucide-react';
 
 import EditTournamentModal from '../../components/modals/EditTournamentModal';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const CreateTournamentForm: React.FC<{ onFinish: () => void }> = ({ onFinish }) => {
@@ -152,7 +153,9 @@ const TournamentsPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingTournament, setEditingTournament] = useState<ITournament | null>(null);
-    const [showCreateForm, setShowCreateForm] = useState(false);    
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+    const [tournamentToDelete, setTournamentToDelete] = useState<ITournament | null>(null);
 
     const fetchTournaments = useCallback(async () => {
         try {
@@ -190,15 +193,27 @@ const TournamentsPage: React.FC = () => {
         }
     };
 
-    const handleDeleteTournament = async (tournamentId: string) => {
-        if (window.confirm('Are you sure you want to delete this tournament?')) {
+    const handleDeleteTournament = (tournament: ITournament) => {
+        setTournamentToDelete(tournament);
+        setIsConfirmDeleteOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (tournamentToDelete) {
             try {
-                await deleteAdminTournament(tournamentId);
+                await deleteAdminTournament(tournamentToDelete._id);
                 fetchTournaments();
             } catch (error) {
                 alert('Failed to delete tournament.');
             }
         }
+        setIsConfirmDeleteOpen(false);
+        setTournamentToDelete(null);
+    };
+
+    const handleCancelDelete = () => {
+        setIsConfirmDeleteOpen(false);
+        setTournamentToDelete(null);
     };
 
     const handleCreationFinish = () => {
@@ -366,7 +381,7 @@ const TournamentsPage: React.FC = () => {
                                     </button>
                                     <button
                                         className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                                        onClick={() => handleDeleteTournament(tournament._id)}
+                                        onClick={() => handleDeleteTournament(tournament)}
                                         title="Delete Tournament"
                                     >
                                         <Trash2 size={16} />
@@ -399,6 +414,17 @@ const TournamentsPage: React.FC = () => {
                 tournament={editingTournament}
                 onClose={handleCloseEditModal}
                 onSave={handleSaveTournament}
+            />
+            
+            <ConfirmationModal
+                isOpen={isConfirmDeleteOpen}
+                onClose={handleCancelDelete}
+                onConfirm={handleConfirmDelete}
+                title="Delete Tournament"
+                message={`Are you sure you want to delete the tournament "${tournamentToDelete?.name}"? This action cannot be undone and all participants will be notified.`}
+                confirmText="Delete Tournament"
+                cancelText="Cancel"
+                type="danger"
             />
         </>
     );

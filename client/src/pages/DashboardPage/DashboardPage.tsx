@@ -170,7 +170,7 @@ const DashboardPage: React.FC = () => {
                     <div className={styles.itemList}>
                         {upcomingTournaments.length > 0 ? (
                             upcomingTournaments.map((tournament) => (
-                                <Link key={tournament._id} to={`/tournaments/${tournament._id}`} className={styles.tournamentItem} data-testid="tournament-card">
+                                <Link key={tournament._id} to={`/tournament/${tournament._id}`} className={styles.tournamentItem} data-testid="tournament-card">
                                     <div className={styles.tournamentItemHeader}>
                                         <h3>{tournament.name}</h3>
                                         <span>${tournament.prizePool}</span>

@@ -1,0 +1,303 @@
+/* ErrorDisplay - Reusable error component */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  max-width: 500px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.compact {
+  padding: 24px 20px;
+  max-width: 400px;
+}
+
+.compact .iconContainer {
+  margin-bottom: 16px;
+}
+
+.compact .title {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.compact .message {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* Icon Container */
+.iconContainer {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.errorIcon {
+  color: #ef4444;
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.3));
+  animation: pulse 2s infinite;
+}
+
+/* Type-specific styling */
+.typeError .errorIcon {
+  color: #ef4444;
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.3));
+}
+
+.typeWarning .errorIcon {
+  color: #f59e0b;
+  filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.3));
+}
+
+.typeNetwork .errorIcon {
+  color: #3b82f6;
+  filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+}
+
+.typeNotFound .errorIcon {
+  color: #8b5cf6;
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.3));
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Content */
+.content {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.message {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #b0b0b0;
+  margin: 0 0 20px 0;
+  max-width: 400px;
+}
+
+/* Actions */
+.actionsContainer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.buttonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent);
+  transition: left 0.6s ease;
+}
+
+.actionButton:hover::before {
+  left: 100%;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  color: #ffffff;
+  box-shadow: 
+    0 4px 12px rgba(102, 126, 234, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.primaryButton:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  box-shadow: 
+    0 6px 20px rgba(102, 126, 234, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  transform: translateY(-2px);
+}
+
+.secondaryButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e0e0e0;
+}
+
+.secondaryButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Type-specific border colors */
+.typeError {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.typeWarning {
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.typeNetwork {
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.typeNotFound {
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 32px 20px;
+    margin: 0 16px;
+  }
+
+  .compact {
+    padding: 20px 16px;
+    margin: 0 12px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .message {
+    font-size: 15px;
+  }
+
+  .actionsContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .actionButton {
+    width: 100%;
+    max-width: 240px;
+    padding: 14px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 24px 16px;
+  }
+
+  .compact {
+    padding: 16px 12px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .message {
+    font-size: 14px;
+  }
+
+  .actionButton {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .container {
+    background: #000000;
+    border: 2px solid #ffffff;
+  }
+
+  .title,
+  .message {
+    color: #ffffff;
+  }
+
+  .actionButton {
+    border: 2px solid #ffffff;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .errorIcon,
+  .actionButton {
+    animation: none;
+  }
+
+  .actionButton:hover {
+    transform: none;
+  }
+
+  .actionButton::before {
+    transition: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.actionButton:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+.actionButton:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.actionButton:focus-visible {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}

@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import { initializeSocket, rooms, gameLogics } from './socket';
 import { setSocketData } from './controllers/admin.controller';
 import tournamentScheduler from './services/tournamentScheduler.service';
+import gameLobbyScheduler from './services/gameLobbyScheduler.service';
 
 connectDB();
 
@@ -25,10 +26,13 @@ setSocketData(rooms, gameLogics);
 
 app.set('io', io);
 
-// Запускаем планировщик турниров после инициализации
+// Запускаем планировщики после инициализации
 setTimeout(() => {
     console.log('🎯 Starting tournament scheduler...');
     tournamentScheduler.start();
+    
+    console.log('🎮 Starting game lobby scheduler...');
+    gameLobbyScheduler.start();
 }, 5000); // Задержка для полной инициализации системы
 
 server.listen(PORT, () => console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`));

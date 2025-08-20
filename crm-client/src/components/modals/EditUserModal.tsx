@@ -47,12 +47,12 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div className={styles.header}>
-                    <h2>Редактировать пользователя</h2>
+                    <h2>Edit User</h2>
                     <button onClick={onClose} className={styles.closeButton}><X /></button>
                 </div>
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Имя пользователя</label>
+                        <label className={styles.formLabel}>Username</label>
                         <input name="username" value={formData.username || ''} onChange={handleChange} className={styles.formInput} />
                     </div>
                      <div className={styles.formGroup}>
@@ -60,19 +60,19 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, isOpen, onClose, on
                         <input name="email" type="email" value={formData.email || ''} onChange={handleChange} className={styles.formInput} />
                     </div>
                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Баланс</label>
+                        <label className={styles.formLabel}>Balance</label>
                         <input name="balance" type="number" value={formData.balance || 0} onChange={handleChange} className={styles.formInput} />
                     </div>
                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Роль</label>
+                        <label className={styles.formLabel}>Role</label>
                         <select name="role" value={formData.role || 'USER'} onChange={handleChange} className={styles.formSelect}>
                             <option value="USER">USER</option>
                             <option value="ADMIN">ADMIN</option>
                         </select>
                     </div>
                     <div className={styles.formActions}>
-                        <button type="button" onClick={onClose} className={`${styles.btn} ${styles.btnSecondary}`}>Отмена</button>
-                        <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Сохранить</button>
+                        <button type="button" onClick={onClose} className={`${styles.btn} ${styles.btnSecondary}`}>Cancel</button>
+                        <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Save</button>
                     </div>
                 </form>
             </div>

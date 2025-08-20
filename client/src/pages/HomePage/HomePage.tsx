@@ -56,19 +56,97 @@ const GameCard: React.FC<{ game: typeof gamesData[0] }> = ({ game }) => (
 );
 
 const HomePage: React.FC = () => {
+    const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState(() => {
         const saved = localStorage.getItem('gamesCategory');
         return saved || 'All games';
     });
+    const [feeFilter, setFeeFilter] = useState('Free');
+    const [difficultyFilter, setDifficultyFilter] = useState('Medium');
+    const [sortBy, setSortBy] = useState('Prize Pool');
 
     const filteredGames = useMemo(() => {
-        if (categoryFilter === 'All games') return gamesData;
-        return gamesData.filter(game => game.category === categoryFilter);
-    }, [categoryFilter]);
+        let filtered = [...gamesData];
+
+        // Search filter
+        if (searchQuery.trim()) {
+            filtered = filtered.filter(game =>
+                game.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                game.category.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        // Category filter
+        if (categoryFilter !== 'All games') {
+            filtered = filtered.filter(game => game.category === categoryFilter);
+        }
+
+        // Fee filter (all games are free for now, but structure for future)
+        if (feeFilter === 'Free') {
+            // All current games are free
+        } else if (feeFilter === '$1-10') {
+            // filtered = filtered.filter(game => game.entryFee >= 1 && game.entryFee <= 10);
+        } else if (feeFilter === '$11+') {
+            // filtered = filtered.filter(game => game.entryFee >= 11);
+        }
+
+        // Player filter - all current games are 1v1, no filtering needed
+
+        // Difficulty filter
+        if (difficultyFilter !== 'Medium') {
+            const difficultyMap: Record<string, string[]> = {
+                'Easy': ['Easy', 'Easily'],
+                'Medium': ['Average'],
+                'Hard': ['Difficult', 'Advanced']
+            };
+            
+            const allowedDifficulties = difficultyMap[difficultyFilter] || [];
+            filtered = filtered.filter(game =>
+                allowedDifficulties.includes(game.difficulty) ||
+                allowedDifficulties.includes(game.tag)
+            );
+        }
+
+        // Sorting
+        switch (sortBy) {
+            case 'Prize Pool':
+                // Currently all have $0 prize pool
+                break;
+            case 'Entry Fee':
+                // Currently all are free
+                break;
+            case 'Players':
+                // All are 2 players currently
+                break;
+            case 'Difficulty':
+                filtered.sort((a, b) => {
+                    const difficultyOrder = ['Easy', 'Easily', 'Average', 'Advanced', 'Difficult'];
+                    const aOrder = difficultyOrder.indexOf(a.difficulty) + difficultyOrder.indexOf(a.tag);
+                    const bOrder = difficultyOrder.indexOf(b.difficulty) + difficultyOrder.indexOf(b.tag);
+                    return aOrder - bOrder;
+                });
+                break;
+            default:
+                // Sort by rating as fallback
+                filtered.sort((a, b) => b.rating - a.rating);
+        }
+
+        return filtered;
+    }, [searchQuery, categoryFilter, feeFilter, difficultyFilter, sortBy]);
 
     const handleCategoryChange = (category: string) => {
         setCategoryFilter(category);
         localStorage.setItem('gamesCategory', category);
+    };
+
+    const handleRefresh = () => {
+        // Reset all filters to default
+        setSearchQuery('');
+        setCategoryFilter('All games');
+        setFeeFilter('Free');
+        setDifficultyFilter('Medium');
+        setSortBy('Prize Pool');
+        localStorage.removeItem('gamesCategory');
     };
 
     return (
@@ -82,10 +160,16 @@ const HomePage: React.FC = () => {
                 <input
                     type="search"
                     placeholder="Search games..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className={styles.searchBar}
                     data-testid="search-input"
                 />
-                <button className={styles.refreshButton} data-testid="refresh-games">
+                <button
+                    onClick={handleRefresh}
+                    className={styles.refreshButton}
+                    data-testid="refresh-games"
+                >
                     🔄 Refresh
                 </button>
             </div>
@@ -118,37 +202,73 @@ const HomePage: React.FC = () => {
                 <div className={styles.filterGroup} data-testid="fee-filter">
                     <span>Entry Fee:</span>
                     <div className={styles.filterButtons}>
-                        <button className={`${styles.filterButton} ${styles.active}`}>Free</button>
-                        <button className={styles.filterButton}>$1-10</button>
-                        <button className={styles.filterButton}>$11+</button>
+                        <button
+                            onClick={() => setFeeFilter('Free')}
+                            className={`${styles.filterButton} ${feeFilter === 'Free' ? styles.active : ''}`}
+                        >
+                            Free
+                        </button>
+                        <button
+                            onClick={() => setFeeFilter('$1-10')}
+                            className={`${styles.filterButton} ${feeFilter === '$1-10' ? styles.active : ''}`}
+                        >
+                            $1-10
+                        </button>
+                        <button
+                            onClick={() => setFeeFilter('$11+')}
+                            className={`${styles.filterButton} ${feeFilter === '$11+' ? styles.active : ''}`}
+                        >
+                            $11+
+                        </button>
                     </div>
                 </div>
                 
                 <div className={styles.filterGroup} data-testid="player-filter">
                     <span>Players:</span>
                     <div className={styles.filterButtons}>
-                        <button className={`${styles.filterButton} ${styles.active}`}>1v1</button>
-                        <button className={styles.filterButton}>3-5</button>
-                        <button className={styles.filterButton}>6+</button>
+                        <button
+                            className={`${styles.filterButton} ${styles.active}`}
+                        >
+                            1v1
+                        </button>
                     </div>
                 </div>
                 
                 <div className={styles.filterGroup} data-testid="difficulty-filter">
                     <span>Difficulty:</span>
                     <div className={styles.filterButtons}>
-                        <button className={styles.filterButton}>Easy</button>
-                        <button className={`${styles.filterButton} ${styles.active}`}>Medium</button>
-                        <button className={styles.filterButton}>Hard</button>
+                        <button
+                            onClick={() => setDifficultyFilter('Easy')}
+                            className={`${styles.filterButton} ${difficultyFilter === 'Easy' ? styles.active : ''}`}
+                        >
+                            Easy
+                        </button>
+                        <button
+                            onClick={() => setDifficultyFilter('Medium')}
+                            className={`${styles.filterButton} ${difficultyFilter === 'Medium' ? styles.active : ''}`}
+                        >
+                            Medium
+                        </button>
+                        <button
+                            onClick={() => setDifficultyFilter('Hard')}
+                            className={`${styles.filterButton} ${difficultyFilter === 'Hard' ? styles.active : ''}`}
+                        >
+                            Hard
+                        </button>
                     </div>
                 </div>
                 
                 <div className={styles.filterGroup} data-testid="sort-games">
                     <span>Sort by:</span>
-                    <select className={styles.sortDropdown}>
-                        <option>Prize Pool</option>
-                        <option>Entry Fee</option>
-                        <option>Players</option>
-                        <option>Difficulty</option>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className={styles.sortDropdown}
+                    >
+                        <option value="Prize Pool">Prize Pool</option>
+                        <option value="Entry Fee">Entry Fee</option>
+                        <option value="Players">Players</option>
+                        <option value="Difficulty">Difficulty</option>
                     </select>
                 </div>
             </div>

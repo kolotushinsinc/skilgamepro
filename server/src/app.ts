@@ -11,6 +11,7 @@ import tournamentTemplateRoutes from './routes/tournamentTemplate.routes';
 import notificationRoutes from './routes/notification.routes';
 import paymentRoutes from './routes/payment.routes';
 import chatRoutes from './routes/chat.routes';
+import gameLobbySchedulerRoutes from './routes/gameLobbyScheduler.routes';
 
 dotenv.config();
 
@@ -37,5 +38,6 @@ app.use('/api/tournament-templates', tournamentTemplateRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/game-lobby-scheduler', gameLobbySchedulerRoutes);
 
 export default app;

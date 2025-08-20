@@ -20,6 +20,7 @@ import AdminPage from '../../pages/AdminPage/AdminPage';
 import AdminRoute from '../AdminRoute/AdminRoute';
 import DemoPaymentPage from '../../pages/DemoPaymentPage/DemoPaymentPage';
 import PrivateRoomPage from '../../pages/PrivateRoomPage/PrivateRoomPage';
+import NotFoundPage from '../../pages/NotFoundPage/NotFoundPage';
 
 const MainLayout: React.FC = () => {
     const { isSidebarOpen, showLogoutModal, setShowLogoutModal } = useUI();
@@ -58,7 +59,7 @@ const MainLayout: React.FC = () => {
                             <Route path="/admin" element={<AdminPage />} />
                         </Route>
 
-                        <Route path="*" element={<Navigate to="/" replace />} />
+                        <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                 </main>
             </div>

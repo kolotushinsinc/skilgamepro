@@ -301,6 +301,20 @@ const ProfilePage: React.FC = () => {
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Check if file type is allowed
+            const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                setPaymentModal({
+                    isOpen: true,
+                    status: 'error',
+                    title: 'Invalid File Type',
+                    message: 'Please select a valid image file (PNG, JPG, JPEG, or WebP).',
+                    amount: 0,
+                    operation: 'deposit'
+                });
+                return;
+            }
+            
             setAvatarFile(file);
             setAvatarPreview(URL.createObjectURL(file));
         }
@@ -474,7 +488,7 @@ const ProfilePage: React.FC = () => {
                                         <Avatar size="large" />
                                     )}
                                     <label htmlFor="avatarInput" className={styles.avatarEditButton} data-testid="avatar-edit-button">✏️</label>
-                                    <input id="avatarInput" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} data-testid="avatar-upload-input" />
+                                    <input id="avatarInput" type="file" accept=".png,.jpg,.jpeg,.webp" onChange={handleFileChange} style={{ display: 'none' }} data-testid="avatar-upload-input" />
                                 </div>
                                 <div className={styles.profileInfo} data-testid="profile-info-section">
                                     <h2 data-testid="profile-username">{user.username}</h2>

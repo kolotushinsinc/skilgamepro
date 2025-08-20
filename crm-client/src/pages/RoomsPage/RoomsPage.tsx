@@ -25,12 +25,12 @@ const RoomsPage: React.FC = () => {
     }, [fetchRooms]);
 
     const handleDeleteRoom = async (roomId: string) => {
-        if (window.confirm(`Вы уверены, что хотите закрыть комнату ${roomId}? Игроки будут уведомлены.`)) {
+        if (window.confirm(`Are you sure you want to close room ${roomId}? Players will be notified.`)) {
             try {
                 await deleteAdminRoom(roomId);
                 setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
             } catch (error) {
-                alert('Не удалось закрыть комнату.');
+                alert('Failed to close room.');
                 console.error("Failed to delete room", error);
             }
         }

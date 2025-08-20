@@ -15,6 +15,7 @@ import TournamentsPage from './pages/TournamentsPage/TournamentsPage';
 import AutoTournamentsPage from './pages/AutoTournamentsPage/AutoTournamentsPage.tsx';
 import KYCPage from './pages/KYCPage/KYCPage';
 import SupportChatPage from './pages/SupportChatPage/SupportChatPage';
+import GameLobbySchedulerPage from './pages/GameLobbySchedulerPage/GameLobbySchedulerPage';
 
 function App() {
     const { isAuthenticated, loading } = useAuth();
@@ -39,6 +40,7 @@ function App() {
                         <Route path="rooms" element={<RoomsPage />} />
                         <Route path="tournaments" element={<TournamentsPage />} />
                         <Route path="auto-tournaments" element={<AutoTournamentsPage />} />
+                        <Route path="game-lobby-scheduler" element={<GameLobbySchedulerPage />} />
                         <Route path="support-chat" element={<SupportChatPage />} />
                         <Route path="kyc" element={<KYCPage />} />
                         <Route path="create-room" element={<CreateRoomPage />} />
