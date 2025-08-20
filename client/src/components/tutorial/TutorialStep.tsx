@@ -187,20 +187,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
   }, [isActive, step.waitForElement, step.targetSelector, onElementFound]);
 
   // This component doesn't render anything visible - it's just for element detection and highlighting
-  return (
-    <>
-      {/* Debug info in development */}
-      {process.env.NODE_ENV === 'development' && isActive && (
-        <div className={styles.debugInfo}>
-          <div>Step: {step.id}</div>
-          <div>Mode: {step.displayMode}</div>
-          <div>Selector: {step.targetSelector || 'None'}</div>
-          <div>Element: {targetElement ? 'Found' : 'Not Found'}</div>
-          <div>Action: {step.action || 'None'}</div>
-        </div>
-      )}
-    </>
-  );
+  return null;
 };
 
 export default TutorialStep;

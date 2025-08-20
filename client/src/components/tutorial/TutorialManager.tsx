@@ -10,13 +10,11 @@ import styles from './TutorialManager.module.css';
 interface TutorialManagerProps {
   autoStart?: boolean;
   enableKeyboardNavigation?: boolean;
-  debugMode?: boolean;
 }
 
 const TutorialManager: React.FC<TutorialManagerProps> = ({
   autoStart = true,
-  enableKeyboardNavigation = true,
-  debugMode = false
+  enableKeyboardNavigation = true
 }) => {
   const location = useLocation();
   const {
@@ -36,6 +34,7 @@ const TutorialManager: React.FC<TutorialManagerProps> = ({
   const [isWaitingForElement, setIsWaitingForElement] = useState(false);
   const [elementSearchTimeout, setElementSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [originalSidebarState, setOriginalSidebarState] = useState<boolean | null>(null);
+  const [autoActionTimeout, setAutoActionTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const currentStep = currentTutorial?.steps[currentStepIndex];
   const isLastStep = currentStepIndex === (currentTutorial?.steps.length || 0) - 1;
@@ -111,11 +110,8 @@ const TutorialManager: React.FC<TutorialManagerProps> = ({
       
       // Set a timeout to handle cases where element is never found
       const timeout = setTimeout(() => {
-        console.warn(`Tutorial element not found after 5 seconds: ${currentStep.targetSelector}`);
-        
         // For tooltip mode, show modal fallback or skip to next step
         if (currentStep.displayMode === 'tooltip') {
-          console.warn('Element not found for tooltip, auto-advancing to next step');
           handleNext();
         }
       }, 5000); // 5 second timeout
@@ -171,6 +167,52 @@ const TutorialManager: React.FC<TutorialManagerProps> = ({
         break;
     }
   }, [currentTargetElement, currentStep, handleNext]);
+
+  // Auto-action system - automatically perform actions after 3 seconds, but only for non-navigation steps
+  useEffect(() => {
+    if (!isActive || !currentStep || !currentTargetElement) {
+      if (autoActionTimeout) {
+        clearTimeout(autoActionTimeout);
+        setAutoActionTimeout(null);
+      }
+      return;
+    }
+
+    // Check if this is a navigation step (moving between profile sections or tabs)
+    const isNavigationStep = currentStep.targetSelector && (
+      currentStep.targetSelector.includes('[data-testid="nav-') ||
+      currentStep.targetSelector.includes('profile') ||
+      currentStep.targetSelector.includes('password') ||
+      currentStep.targetSelector.includes('security') ||
+      currentStep.targetSelector.includes('avatar') ||
+      currentStep.targetSelector.includes('tab') ||
+      currentStep.targetSelector.includes('button') ||
+      currentStep.targetSelector.includes('[role="tab"]') ||
+      currentStep.content.toLowerCase().includes('click') ||
+      currentStep.content.toLowerCase().includes('navigate') ||
+      currentStep.content.toLowerCase().includes('go to') ||
+      currentStep.content.toLowerCase().includes('switch to') ||
+      currentStep.content.toLowerCase().includes('tab') ||
+      currentStep.content.toLowerCase().includes('next') ||
+      currentStep.content.toLowerCase().includes('continue')
+    );
+
+    // Only auto-perform for steps that have actions AND are not navigation steps
+    if (currentStep.action && currentStep.action !== 'none' && !isNavigationStep) {
+      const timeout = setTimeout(() => {
+        handleElementAction(currentStep.action!);
+      }, 3000); // Auto-click after 3 seconds
+      
+      setAutoActionTimeout(timeout);
+    }
+
+    return () => {
+      if (autoActionTimeout) {
+        clearTimeout(autoActionTimeout);
+        setAutoActionTimeout(null);
+      }
+    };
+  }, [isActive, currentStep, currentTargetElement, handleElementAction]);
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -228,6 +270,29 @@ const TutorialManager: React.FC<TutorialManagerProps> = ({
     }
   }, [location.pathname, isActive, currentStep]);
 
+  // Prevent horizontal scroll during tutorial
+  useEffect(() => {
+    if (isActive) {
+      // Store original values
+      const originalBodyOverflowX = document.body.style.overflowX;
+      const originalHtmlOverflowX = document.documentElement.style.overflowX;
+      
+      // Prevent horizontal scroll
+      document.body.style.overflowX = 'hidden';
+      document.documentElement.style.overflowX = 'hidden';
+      document.body.style.maxWidth = '100vw';
+      document.documentElement.style.maxWidth = '100vw';
+      
+      return () => {
+        // Restore original values
+        document.body.style.overflowX = originalBodyOverflowX;
+        document.documentElement.style.overflowX = originalHtmlOverflowX;
+        document.body.style.maxWidth = '';
+        document.documentElement.style.maxWidth = '';
+      };
+    }
+  }, [isActive]);
+
   if (!isActive || !currentStep || !currentTutorial) {
     return null;
   }
@@ -274,7 +339,7 @@ const TutorialManager: React.FC<TutorialManagerProps> = ({
             <TutorialOverlay
               step={{
                 ...currentStep,
-                content: `${currentStep.content}\n\n⚠️ The targeted element "${currentStep.targetSelector}" was not found on this page. This might be because:\n• The element doesn't exist yet\n• You're on a different page\n• The page is still loading\n\nYou can continue with the tutorial or navigate to the correct page.`,
+                content: `${currentStep.content}\n\n⚠️ This tutorial step cannot be displayed at the moment. This might be because:\n• The page is still loading\n• You're on a different page\n• The feature is not available\n\nYou can continue with the tutorial or navigate to the correct page.`,
                 displayMode: 'modal'
               }}
               currentStepIndex={currentStepIndex}
@@ -289,79 +354,41 @@ const TutorialManager: React.FC<TutorialManagerProps> = ({
         </>
       )}
 
-      {/* Loading indicator when waiting for elements */}
-      {isWaitingForElement && currentStep.displayMode === 'tooltip' && (
-        <div className={styles.loadingIndicator}>
-          <div className={styles.spinner} />
-          <div className={styles.loadingContent}>
-            <span>Looking for element: {currentStep.targetSelector}</span>
-            <small>Waiting up to 5 seconds...</small>
-            <button
-              className={styles.skipWaitButton}
-              onClick={handleNext}
-            >
-              Skip Wait & Continue
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Debug panel */}
-      {debugMode && (
-        <div className={styles.debugPanel}>
-          <h4>Tutorial Debug Info</h4>
-          <div>Tutorial: {currentTutorial.id}</div>
-          <div>Step: {currentStep.id} ({currentStepIndex + 1}/{currentTutorial.steps.length})</div>
-          <div>Display Mode: {currentStep.displayMode}</div>
-          <div>Route: {location.pathname}</div>
-          <div>Navigate To: {currentStep.navigateTo || 'None'}</div>
-          <div>Selector: {currentStep.targetSelector || 'None'}</div>
-          <div>Element: {currentTargetElement ? 'Found' : 'Not Found'}</div>
-          <div>Waiting: {isWaitingForElement ? 'Yes' : 'No'}</div>
-          <div>Action: {currentStep.action || 'None'}</div>
-          <div>Highlight: {currentStep.highlightElement ? 'Yes' : 'No'}</div>
-          <div>Wait for Element: {currentStep.waitForElement ? 'Yes' : 'No'}</div>
-          {currentStep.rewards && (
-            <div>Rewards: {currentStep.rewards.length} items</div>
-          )}
-        </div>
-      )}
-
-      {/* Tutorial status indicator (only for tooltip mode to not interfere with modal) */}
-      {currentStep.displayMode === 'tooltip' && (
-        <div className={styles.statusIndicator}>
-          <div className={styles.tutorialInfo}>
-            <span className={styles.tutorialName}>{currentTutorial.title}</span>
-            <span className={styles.stepProgress}>
-              {currentStepIndex + 1} / {currentTutorial.steps.length}
-            </span>
-          </div>
-          
-          <div className={styles.progressBar}>
-            <div 
-              className={styles.progressFill}
-              style={{ 
-                width: `${((currentStepIndex + 1) / currentTutorial.steps.length) * 100}%` 
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Element action buttons for interactive steps */}
-      {currentStep.action && 
-       currentStep.action !== 'none' && 
-       currentTargetElement && 
+      {/* Navigation action buttons - show for profile section navigation */}
+      {currentStep.action &&
+       currentStep.action !== 'none' &&
+       currentTargetElement &&
        currentStep.displayMode === 'tooltip' && (
+        // Check if this is a navigation step (tabs, buttons, profile sections)
+        currentStep.targetSelector && (
+          currentStep.targetSelector.includes('[data-testid="nav-') ||
+          currentStep.targetSelector.includes('profile') ||
+          currentStep.targetSelector.includes('password') ||
+          currentStep.targetSelector.includes('security') ||
+          currentStep.targetSelector.includes('avatar') ||
+          currentStep.targetSelector.includes('tab') ||
+          currentStep.targetSelector.includes('button') ||
+          currentStep.targetSelector.includes('[role="tab"]') ||
+          currentStep.content.toLowerCase().includes('click') ||
+          currentStep.content.toLowerCase().includes('navigate') ||
+          currentStep.content.toLowerCase().includes('go to') ||
+          currentStep.content.toLowerCase().includes('switch to') ||
+          currentStep.content.toLowerCase().includes('tab') ||
+          currentStep.content.toLowerCase().includes('next') ||
+          currentStep.content.toLowerCase().includes('continue')
+        )
+      ) && (
         <div className={styles.actionHelper}>
-          <button 
+          <button
             className={styles.actionButton}
             onClick={() => handleElementAction(currentStep.action!)}
           >
-            {currentStep.action === 'click' ? 'Click Element' : 'Hover Element'}
+            {currentStep.action === 'click' ? '👆 Click Here to Continue' : 'Hover Element'}
           </button>
         </div>
       )}
+
+
     </div>
   );
 };

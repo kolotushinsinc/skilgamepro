@@ -124,6 +124,29 @@ const TutorialTooltip: React.FC<TutorialTooltipProps> = ({
     return { position: newPosition, actualPosition: finalPosition };
   };
 
+  // Prevent horizontal scrolling during tutorial
+  useEffect(() => {
+    if (!isVisible) return;
+
+    // Store original overflow values
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyOverflowX = document.body.style.overflowX;
+    const originalHtmlOverflowX = document.documentElement.style.overflowX;
+
+    // Prevent horizontal scrolling
+    document.body.style.overflowX = 'hidden';
+    document.documentElement.style.overflowX = 'hidden';
+
+    return () => {
+      // Restore original overflow
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.overflowX = originalBodyOverflowX;
+      document.documentElement.style.overflowX = originalHtmlOverflowX;
+    };
+  }, [isVisible]);
+
   // Update position when step changes or window resizes
   useEffect(() => {
     if (!step.targetSelector || !isVisible) return;

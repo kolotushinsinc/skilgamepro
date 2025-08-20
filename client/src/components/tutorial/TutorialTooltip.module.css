@@ -291,7 +291,7 @@
 /* Mobile responsive */
 @media (max-width: 768px) {
   .tooltip {
-    max-width: calc(100vw - 32px);
+    max-width: calc(100% - 32px);
     min-width: 280px;
   }
 

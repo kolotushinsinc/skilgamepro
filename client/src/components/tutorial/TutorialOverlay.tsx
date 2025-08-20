@@ -42,12 +42,23 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
     if (isVisible) {
       document.addEventListener('keydown', handleEscape);
+      // Prevent all scrolling during tutorial
       document.body.style.overflow = 'hidden';
+      document.body.style.overflowX = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.overflowX = 'hidden';
+      document.documentElement.style.maxWidth = '100vw';
+      document.body.style.maxWidth = '100vw';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
+      document.body.style.overflowX = 'unset';
+      document.documentElement.style.overflow = 'unset';
+      document.documentElement.style.overflowX = 'unset';
+      document.documentElement.style.maxWidth = 'unset';
+      document.body.style.maxWidth = 'unset';
     };
   }, [isVisible, onClose, onNext, onPrevious]);
 
@@ -72,21 +83,9 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     >
       <div className={styles.modal}>
         <div className={styles.header}>
-          <div className={styles.progressContainer}>
-            <div className={styles.progressBar}>
-              <div 
-                className={styles.progressFill}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <div className={styles.stepCounter}>
-              Step {currentStepIndex + 1} of {totalSteps}
-            </div>
-          </div>
-          
           <h2 className={styles.title}>{step.title}</h2>
           
-          <button 
+          <button
             className={styles.closeButton}
             onClick={onClose}
             aria-label="Close tutorial"
@@ -124,6 +123,18 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         )}
 
         <div className={styles.footer}>
+          <div className={styles.progressContainer}>
+            <div className={styles.progressBar}>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className={styles.stepCounter}>
+              Step {currentStepIndex + 1} of {totalSteps}
+            </div>
+          </div>
+          
           <div className={styles.navigationButtons}>
             <button
               className={`${styles.navButton} ${styles.previousButton}`}
