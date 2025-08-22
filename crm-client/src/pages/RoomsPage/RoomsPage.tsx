@@ -1,39 +1,100 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAdminActiveRooms, deleteAdminRoom, type IActiveRoom } from '../../services/adminService';
+import { getAdminActiveRooms, deleteAdminRoom, type IActiveRoom, type IRoomsResponse, type IPaginationInfo } from '../../services/adminService';
 import styles from './RoomsPage.module.css';
-import { Trash2, RefreshCw, Home, Users, DollarSign, Gamepad2, UserCheck, Crown, Target, Trophy } from 'lucide-react';
+import { Trash2, RefreshCw, Home, Users, DollarSign, Gamepad2, UserCheck, Crown, Target, Trophy, Search, Filter } from 'lucide-react';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import Pagination from '../../components/ui/Pagination';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
 
 const RoomsPage: React.FC = () => {
     const [rooms, setRooms] = useState<IActiveRoom[]>([]);
+    const [pagination, setPagination] = useState<IPaginationInfo>({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10,
+        hasNext: false,
+        hasPrev: false
+    });
     const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState({
+        gameType: 'all',
+        search: ''
+    });
+    const [showFilters, setShowFilters] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [roomToDelete, setRoomToDelete] = useState<string | null>(null);
 
-    const fetchRooms = useCallback(async () => {
+    const fetchRooms = useCallback(async (page: number = 1) => {
         try {
             setLoading(true);
-            const data = await getAdminActiveRooms();
-            setRooms(data);
+            const query = {
+                page,
+                limit: 10,
+                ...(filters.gameType !== 'all' && { gameType: filters.gameType }),
+                ...(filters.search && { search: filters.search })
+            };
+            
+            const response: IRoomsResponse = await getAdminActiveRooms(query);
+            setRooms(response.data);
+            setPagination(response.pagination);
         } catch (error) {
             console.error("Failed to fetch active rooms", error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [filters]);
 
     useEffect(() => {
-        fetchRooms();
+        fetchRooms(1);
     }, [fetchRooms]);
 
-    const handleDeleteRoom = async (roomId: string) => {
-        if (window.confirm(`Are you sure you want to close room ${roomId}? Players will be notified.`)) {
+    const handlePageChange = (page: number) => {
+        // Scroll to top for better UX
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        fetchRooms(page);
+    };
+
+    const handleFilterChange = (newFilters: Partial<typeof filters>) => {
+        setFilters(prev => ({ ...prev, ...newFilters }));
+    };
+
+    const applyFilters = () => {
+        // Scroll to top for better UX
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        fetchRooms(1);
+    };
+
+    const clearFilters = () => {
+        setFilters({
+            gameType: 'all',
+            search: ''
+        });
+        // Scroll to top for better UX
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleDeleteRoom = (roomId: string) => {
+        setRoomToDelete(roomId);
+        setShowDeleteConfirm(true);
+    };
+
+    const handleConfirmDeleteRoom = async () => {
+        if (roomToDelete) {
             try {
-                await deleteAdminRoom(roomId);
-                setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+                await deleteAdminRoom(roomToDelete);
+                await fetchRooms(pagination.currentPage);
             } catch (error) {
-                alert('Failed to close room.');
                 console.error("Failed to delete room", error);
             }
         }
+        setShowDeleteConfirm(false);
+        setRoomToDelete(null);
+    };
+
+    const handleCancelDeleteRoom = () => {
+        setShowDeleteConfirm(false);
+        setRoomToDelete(null);
     };
 
     const getGameIcon = (gameType: string) => {
@@ -48,8 +109,8 @@ const RoomsPage: React.FC = () => {
 
     if (loading) return <div className={styles.loadingContainer}><LoadingSpinner size="large" /></div>;
 
-    // Calculate statistics
-    const totalRooms = rooms.length;
+    // Calculate statistics from pagination data and current page
+    const totalRooms = pagination.totalItems;
     const totalPlayers = rooms.reduce((sum, room) => sum + room.players.length, 0);
     const totalBets = rooms.reduce((sum, room) => sum + (room.bet * room.players.length), 0);
     const gameTypes = [...new Set(rooms.map(room => room.gameType))].length;
@@ -66,7 +127,7 @@ const RoomsPage: React.FC = () => {
                         </div>
                     </div>
                     <button
-                        onClick={fetchRooms}
+                        onClick={() => fetchRooms(pagination.currentPage)}
                         className={`${styles.refreshButton} ${loading ? styles.loading : ''}`}
                         disabled={loading}
                     >
@@ -119,8 +180,75 @@ const RoomsPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Filters Section */}
+            <div className={styles.filtersSection}>
+                <div className={styles.filtersHeader}>
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`${styles.btn} ${styles.btnSecondary} ${styles.filterToggle}`}
+                    >
+                        <Filter size={18} />
+                        <span>Filters</span>
+                        <span className={styles.filterCount}>
+                            {Object.values(filters).filter(f => f !== 'all' && f !== '').length > 0 &&
+                             `(${Object.values(filters).filter(f => f !== 'all' && f !== '').length})`}
+                        </span>
+                    </button>
+                    
+                    <div className={styles.searchContainer}>
+                        <Search size={16} className={styles.searchIcon} />
+                        <input
+                            type="text"
+                            placeholder="Search rooms or players..."
+                            value={filters.search}
+                            onChange={(e) => handleFilterChange({ search: e.target.value })}
+                            onKeyPress={(e) => e.key === 'Enter' && applyFilters()}
+                            className={styles.searchInput}
+                        />
+                    </div>
+                </div>
+                
+                {showFilters && (
+                    <div className={styles.filtersContent}>
+                        <div className={styles.filterGroup}>
+                            <label className={styles.filterLabel}>Game Type:</label>
+                            <select
+                                value={filters.gameType}
+                                onChange={(e) => handleFilterChange({ gameType: e.target.value })}
+                                className={styles.filterSelect}
+                            >
+                                <option value="all">All games</option>
+                                <option value="chess">♔ Chess</option>
+                                <option value="checkers">⚫ Checkers</option>
+                                <option value="tic-tac-toe">⭕ Tic-Tac-Toe</option>
+                                <option value="backgammon">🎲 Backgammon</option>
+                                <option value="durak">🃏 Durak</option>
+                                <option value="domino">🀰 Domino</option>
+                                <option value="dice">🎲 Dice</option>
+                                <option value="bingo">🎯 Bingo</option>
+                            </select>
+                        </div>
+                        
+                        <div className={styles.filterActions}>
+                            <button
+                                onClick={applyFilters}
+                                className={`${styles.btn} ${styles.btnPrimary}`}
+                            >
+                                Apply Filters
+                            </button>
+                            <button
+                                onClick={clearFilters}
+                                className={`${styles.btn} ${styles.btnSecondary}`}
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* Rooms Cards */}
-            {totalRooms > 0 ? (
+            {rooms.length > 0 ? (
                 <div className={styles.roomsGrid}>
                     {rooms.map(room => (
                         <div key={room.id} className={styles.roomCard}>
@@ -192,6 +320,31 @@ const RoomsPage: React.FC = () => {
                     <p>There are currently no active gaming rooms. Players will create rooms automatically when they start games.</p>
                 </div>
             )}
+
+            {/* Pagination */}
+            {rooms.length > 0 && (
+                <Pagination
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    totalItems={pagination.totalItems}
+                    itemsPerPage={pagination.itemsPerPage}
+                    hasNext={pagination.hasNext}
+                    hasPrev={pagination.hasPrev}
+                    onPageChange={handlePageChange}
+                />
+            )}
+
+            {/* Delete Room Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showDeleteConfirm}
+                onClose={handleCancelDeleteRoom}
+                onConfirm={handleConfirmDeleteRoom}
+                title="Close Room"
+                message={`Are you sure you want to close room ${roomToDelete}? Players will be notified and the room will be permanently closed.`}
+                confirmText="Close Room"
+                cancelText="Cancel"
+                type="danger"
+            />
         </div>
     );
 };

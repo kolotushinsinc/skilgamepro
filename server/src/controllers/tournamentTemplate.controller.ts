@@ -5,15 +5,57 @@ import tournamentScheduler from '../services/tournamentScheduler.service';
 // Тип для аутентифицированных запросов (user уже определен в глобальной декларации)
 type AuthenticatedRequest = Request;
 
-// Получить все шаблоны турниров
+// Получить все шаблоны турниров с пагинацией
 export const getAllTemplates = async (req: Request, res: Response) => {
     try {
-        const templates = await TournamentTemplate.find()
-            .sort({ createdAt: -1 });
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 5;
+        const status = req.query.status as string;
+        const gameType = req.query.gameType as string;
+        const search = req.query.search as string;
+        
+        // Build filter query
+        const filter: any = {};
+        if (status && status !== 'all') {
+            if (status === 'active') {
+                filter.isActive = true;
+            } else if (status === 'inactive') {
+                filter.isActive = false;
+            }
+        }
+        if (gameType && gameType !== 'all') {
+            filter.gameType = gameType;
+        }
+        if (search) {
+            filter.name = { $regex: search, $options: 'i' };
+        }
+        
+        const skip = (page - 1) * limit;
+        
+        // Get templates with pagination
+        const [templates, total] = await Promise.all([
+            TournamentTemplate.find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            TournamentTemplate.countDocuments(filter)
+        ]);
+        
+        const totalPages = Math.ceil(total / limit);
+        const hasNext = page < totalPages;
+        const hasPrev = page > 1;
 
         res.json({
             success: true,
-            data: templates
+            data: templates,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNext,
+                hasPrev
+            }
         });
     } catch (error) {
         console.error('Error getting tournament templates:', error);

@@ -1,41 +1,91 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAdminGameRecords, type IGameRecord } from '../../services/adminService';
+import { getAdminGameRecordsPaginated, type IGameRecord, type IGameRecordsQuery, type IPaginationInfo } from '../../services/adminService';
 import styles from './GamesPage.module.css';
-import { 
-    RefreshCw, 
-    Gamepad2, 
-    Trophy, 
-    X, 
+import {
+    RefreshCw,
+    Gamepad2,
+    Trophy,
+    X,
     Minus,
-    User, 
-    Calendar, 
+    User,
+    Calendar,
     DollarSign,
     Crown,
     Target,
     Users,
     TrendingUp,
-    TrendingDown
+    TrendingDown,
+    Filter,
+    Search,
+    ChevronDown
 } from 'lucide-react';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import Pagination from '../../components/ui/Pagination';
 
 const GamesPage: React.FC = () => {
     const [gameRecords, setGameRecords] = useState<IGameRecord[]>([]);
     const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState<IPaginationInfo>({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10,
+        hasNext: false,
+        hasPrev: false
+    });
+    
+    // Filter states
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState<IGameRecordsQuery>({
+        page: 1,
+        limit: 10,
+        status: 'all',
+        gameName: 'all',
+        search: ''
+    });
 
-    const fetchGameRecords = useCallback(async () => {
+    const fetchGameRecords = useCallback(async (query: IGameRecordsQuery = filters) => {
         try {
             setLoading(true);
-            const data = await getAdminGameRecords();
-            setGameRecords(data);
+            const response = await getAdminGameRecordsPaginated(query);
+            setGameRecords(response.data);
+            setPagination(response.pagination);
         } catch (error) {
             console.error("Failed to fetch game records", error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [filters]);
 
     useEffect(() => {
         fetchGameRecords();
+    }, [fetchGameRecords]);
+
+    const handlePageChange = useCallback((page: number) => {
+        window.scrollTo(0, 0);
+        const newFilters = { ...filters, page };
+        setFilters(newFilters);
+        fetchGameRecords(newFilters);
+    }, [filters, fetchGameRecords]);
+
+    const handleFilterChange = useCallback((key: string, value: string) => {
+        setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+    }, []);
+
+    const applyFilters = useCallback(() => {
+        fetchGameRecords(filters);
+    }, [filters, fetchGameRecords]);
+
+    const clearFilters = useCallback(() => {
+        const clearedFilters = {
+            page: 1,
+            limit: 10,
+            status: 'all',
+            gameName: 'all',
+            search: ''
+        };
+        setFilters(clearedFilters);
+        fetchGameRecords(clearedFilters);
     }, [fetchGameRecords]);
 
     const getStatusStyle = (status: string) => {
@@ -82,8 +132,8 @@ const GamesPage: React.FC = () => {
 
     if (loading) return <div className={styles.loadingContainer}><LoadingSpinner size="large" /></div>;
 
-    // Calculate statistics
-    const totalGames = gameRecords.length;
+    // Calculate statistics for current page
+    const totalGames = pagination.totalItems;
     const totalWins = gameRecords.filter(game => game.status === 'WON').length;
     const totalLosses = gameRecords.filter(game => game.status === 'LOST').length;
     const totalProfit = gameRecords.reduce((sum, game) => sum + game.amountChanged, 0);
@@ -99,16 +149,95 @@ const GamesPage: React.FC = () => {
                             <p className={styles.pageSubtitle}>Monitor and analyze platform game records</p>
                         </div>
                     </div>
-                    <button
-                        onClick={fetchGameRecords}
-                        className={`${styles.refreshButton} ${loading ? styles.loading : ''}`}
-                        disabled={loading}
-                    >
-                        <RefreshCw size={18} />
-                        <span>Refresh Data</span>
-                    </button>
+                    <div className={styles.headerActions}>
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={`${styles.filterToggle} ${showFilters ? styles.active : ''}`}
+                        >
+                            <Filter size={18} />
+                            <span>Filters</span>
+                            <ChevronDown size={16} className={showFilters ? styles.rotated : ''} />
+                        </button>
+                        <button
+                            onClick={() => fetchGameRecords(filters)}
+                            className={`${styles.refreshButton} ${loading ? styles.loading : ''}`}
+                            disabled={loading}
+                        >
+                            <RefreshCw size={18} />
+                            <span>Refresh</span>
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {/* Filters Section */}
+            {showFilters && (
+                <div className={styles.filtersSection}>
+                    <div className={styles.filtersGrid}>
+                        <div className={styles.filterGroup}>
+                            <label className={styles.filterLabel}>Game Status</label>
+                            <select
+                                className={styles.filterSelect}
+                                value={filters.status || 'all'}
+                                onChange={(e) => handleFilterChange('status', e.target.value)}
+                            >
+                                <option value="all">All Status</option>
+                                <option value="WON">🏆 Won</option>
+                                <option value="LOST">❌ Lost</option>
+                                <option value="DRAW">➖ Draw</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.filterGroup}>
+                            <label className={styles.filterLabel}>Game Type</label>
+                            <select
+                                className={styles.filterSelect}
+                                value={filters.gameName || 'all'}
+                                onChange={(e) => handleFilterChange('gameName', e.target.value)}
+                            >
+                                <option value="all">All Games</option>
+                                <option value="chess">♔ Chess</option>
+                                <option value="checkers">⚫ Checkers</option>
+                                <option value="tic-tac-toe">❌ Tic-Tac-Toe</option>
+                                <option value="backgammon">🎲 Backgammon</option>
+                                <option value="durak">🃏 Durak</option>
+                                <option value="domino">🀱 Domino</option>
+                                <option value="dice">🎲 Dice</option>
+                                <option value="bingo">🎱 Bingo</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.filterGroup}>
+                            <label className={styles.filterLabel}>Search</label>
+                            <div className={styles.searchInputWrapper}>
+                                <Search className={styles.searchIcon} size={16} />
+                                <input
+                                    type="text"
+                                    className={styles.searchInput}
+                                    placeholder="Search by game ID, username or opponent..."
+                                    value={filters.search || ''}
+                                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={styles.filterActions}>
+                        <button
+                            className={styles.filterButton}
+                            onClick={applyFilters}
+                        >
+                            Apply Filters
+                        </button>
+                        <button
+                            className={styles.clearButton}
+                            onClick={clearFilters}
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Statistics Cards */}
             <div className={styles.statsGrid}>
@@ -229,6 +358,21 @@ const GamesPage: React.FC = () => {
                     <Gamepad2 size={48} />
                     <h3>No games found</h3>
                     <p>There are currently no game records in the system. Game history will appear here as users play games on the platform.</p>
+                </div>
+            )}
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+                <div className={styles.paginationSection}>
+                    <Pagination
+                        currentPage={pagination.currentPage}
+                        totalPages={pagination.totalPages}
+                        totalItems={pagination.totalItems}
+                        itemsPerPage={pagination.itemsPerPage}
+                        onPageChange={handlePageChange}
+                        hasNext={pagination.hasNext}
+                        hasPrev={pagination.hasPrev}
+                    />
                 </div>
             )}
         </div>

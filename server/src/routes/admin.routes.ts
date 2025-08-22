@@ -4,6 +4,7 @@ import {
     getActiveRooms,
     deleteRoom,
     createTournament,
+    getAllAdminTournaments,
     updateTournament,
     deleteTournament,
     getAllUsers,
@@ -24,6 +25,7 @@ router.route('/create-room').post(adminProtect, createAdminRoom);
 router.route('/rooms').get(adminProtect, getActiveRooms);
 router.route('/rooms/:roomId').delete(adminProtect, deleteRoom);
 router.route('/tournaments').post(adminProtect, createTournament);
+router.route('/tournaments').get(adminProtect, getAllAdminTournaments);
 router.route('/tournaments/:id')
     .put(adminProtect, updateTournament)
     .delete(adminProtect, deleteTournament);

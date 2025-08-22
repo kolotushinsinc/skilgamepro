@@ -51,7 +51,13 @@ export const createAdminRoom = (req: Request, res: Response) => {
 };
 
 export const getActiveRooms = (req: Request, res: Response) => {
-    const publicRooms = Object.values(roomsRef).map(room => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const gameType = req.query.gameType as string;
+    const search = req.query.search as string;
+    
+    // Get all rooms and map them
+    let allRooms = Object.values(roomsRef).map(room => {
         return {
             id: room.id,
             gameType: room.gameType,
@@ -59,7 +65,39 @@ export const getActiveRooms = (req: Request, res: Response) => {
             players: room.players.map(p => p.user.username)
         }
     });
-    res.json(publicRooms);
+    
+    // Apply filters
+    if (gameType && gameType !== 'all') {
+        allRooms = allRooms.filter(room => room.gameType === gameType);
+    }
+    if (search) {
+        allRooms = allRooms.filter(room =>
+            room.id.toLowerCase().includes(search.toLowerCase()) ||
+            room.players.some(player => player.toLowerCase().includes(search.toLowerCase()))
+        );
+    }
+    
+    // Calculate pagination
+    const total = allRooms.length;
+    const skip = (page - 1) * limit;
+    const paginatedRooms = allRooms.slice(skip, skip + limit);
+    
+    const totalPages = Math.ceil(total / limit);
+    const hasNext = page < totalPages;
+    const hasPrev = page > 1;
+    
+    res.json({
+        success: true,
+        data: paginatedRooms,
+        pagination: {
+            currentPage: page,
+            totalPages,
+            totalItems: total,
+            itemsPerPage: limit,
+            hasNext,
+            hasPrev
+        }
+    });
 };
 
 export const deleteRoom = (req: Request, res: Response) => {
@@ -117,6 +155,59 @@ export const createTournament = async (req: Request, res: Response) => {
     }
 };
 
+export const getAllAdminTournaments = async (req: Request, res: Response) => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const status = req.query.status as string;
+        const gameType = req.query.gameType as string;
+        const search = req.query.search as string;
+        
+        // Build filter query
+        const filter: any = {};
+        if (status && status !== 'all') {
+            filter.status = status.toUpperCase();
+        }
+        if (gameType && gameType !== 'all') {
+            filter.gameType = gameType;
+        }
+        if (search) {
+            filter.name = { $regex: search, $options: 'i' };
+        }
+        
+        const skip = (page - 1) * limit;
+        
+        // Get tournaments with pagination
+        const [tournaments, total] = await Promise.all([
+            Tournament.find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate('players._id', 'username avatar'),
+            Tournament.countDocuments(filter)
+        ]);
+        
+        const totalPages = Math.ceil(total / limit);
+        const hasNext = page < totalPages;
+        const hasPrev = page > 1;
+        
+        res.json({
+            data: tournaments,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNext,
+                hasPrev
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching admin tournaments:', error);
+        res.status(500).json({ message: 'Error fetching tournaments list' });
+    }
+};
+
 export const updateTournament = async (req: Request, res: Response) => {
     try {
         const tournament = await Tournament.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -139,9 +230,54 @@ export const deleteTournament = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
-        const users = await User.find({}).select('-password');
-        res.json(users);
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const role = req.query.role as string;
+        const search = req.query.search as string;
+        
+        // Build filter query
+        const filter: any = {};
+        if (role && role !== 'all') {
+            filter.role = role.toUpperCase();
+        }
+        if (search) {
+            filter.$or = [
+                { username: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { _id: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        const skip = (page - 1) * limit;
+        
+        // Get users with pagination
+        const [users, total] = await Promise.all([
+            User.find(filter)
+                .select('-password')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            User.countDocuments(filter)
+        ]);
+        
+        const totalPages = Math.ceil(total / limit);
+        const hasNext = page < totalPages;
+        const hasPrev = page > 1;
+        
+        res.json({
+            success: true,
+            data: users,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNext,
+                hasPrev
+            }
+        });
     } catch (error) {
+        console.error('Error fetching users:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -199,18 +335,127 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const getAllTransactions = async (req: Request, res: Response) => {
     try {
-        const transactions = await Transaction.find({}).populate('user', 'username').sort({ createdAt: -1 });
-        res.json(transactions);
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const type = req.query.type as string;
+        const status = req.query.status as string;
+        const search = req.query.search as string;
+        
+        // Build filter query
+        const filter: any = {};
+        if (type && type !== 'all') {
+            filter.type = type.toUpperCase();
+        }
+        if (status && status !== 'all') {
+            filter.status = status.toUpperCase();
+        }
+        if (search) {
+            // Search by transaction ID or user's username
+            const userFilter = await User.find({
+                username: { $regex: search, $options: 'i' }
+            }).select('_id');
+            const userIds = userFilter.map(user => user._id);
+            
+            filter.$or = [
+                { _id: { $regex: search, $options: 'i' } },
+                { user: { $in: userIds } }
+            ];
+        }
+        
+        const skip = (page - 1) * limit;
+        
+        // Get transactions with pagination
+        const [transactions, total] = await Promise.all([
+            Transaction.find(filter)
+                .populate('user', 'username')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Transaction.countDocuments(filter)
+        ]);
+        
+        const totalPages = Math.ceil(total / limit);
+        const hasNext = page < totalPages;
+        const hasPrev = page > 1;
+        
+        res.json({
+            success: true,
+            data: transactions,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNext,
+                hasPrev
+            }
+        });
     } catch (error) {
+        console.error('Error fetching transactions:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
 
 export const getAllGameRecords = async (req: Request, res: Response) => {
     try {
-        const games = await GameRecord.find({}).populate('user', 'username').sort({ createdAt: -1 });
-        res.json(games);
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const status = req.query.status as string;
+        const gameName = req.query.gameName as string;
+        const search = req.query.search as string;
+        
+        // Build filter query
+        const filter: any = {};
+        if (status && status !== 'all') {
+            filter.status = status.toUpperCase();
+        }
+        if (gameName && gameName !== 'all') {
+            filter.gameName = { $regex: gameName, $options: 'i' };
+        }
+        if (search) {
+            // Search by game ID or user's username
+            const userFilter = await User.find({
+                username: { $regex: search, $options: 'i' }
+            }).select('_id');
+            const userIds = userFilter.map(user => user._id);
+            
+            filter.$or = [
+                { _id: { $regex: search, $options: 'i' } },
+                { user: { $in: userIds } },
+                { opponent: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        const skip = (page - 1) * limit;
+        
+        // Get game records with pagination
+        const [games, total] = await Promise.all([
+            GameRecord.find(filter)
+                .populate('user', 'username')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            GameRecord.countDocuments(filter)
+        ]);
+        
+        const totalPages = Math.ceil(total / limit);
+        const hasNext = page < totalPages;
+        const hasPrev = page > 1;
+        
+        res.json({
+            success: true,
+            data: games,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNext,
+                hasPrev
+            }
+        });
     } catch (error) {
+        console.error('Error fetching game records:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };

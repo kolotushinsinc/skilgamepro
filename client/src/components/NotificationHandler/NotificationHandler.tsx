@@ -11,9 +11,14 @@ export const NotificationHandler: React.FC = () => {
     useEffect(() => {
         if (!socket) return;
 
-        const handleNotification = (data: { title: string; message: string; link?: string }) => {
-            // @ts-ignore
-            console.log(message);
+        const handleNotification = (data: { title: string; message: string; link?: string; type?: string }) => {
+            // Skip support chat notifications as they are handled by SupportChat component
+            if (data.type === 'support' || data.title === 'New Support Message') {
+                console.log('Skipping support notification to prevent duplication');
+                return;
+            }
+
+            console.log('Showing notification:', data);
             toast.custom((t) => (
                 <div
                     style={{

@@ -1360,27 +1360,8 @@ export const initializeSocket = (io: Server) => {
                     });
                 }
 
-                // Notify admins of new message if from user/guest
-                if (senderInfo.type !== 'admin') {
-                    socket.broadcast.emit('chatNotification', {
-                        type: 'new_message',
-                        chatId,
-                        message: 'New message in support chat',
-                        source: chat.source,
-                        userName: senderInfo.name
-                    });
-
-                    // Send direct notification to all admin sockets
-                    for (const [socketId, connectedSocket] of io.sockets.sockets) {
-                        const connectedUser = (connectedSocket as any).user;
-                        if (connectedUser && connectedUser.role === 'ADMIN') {
-                            connectedSocket.emit('newMessage', {
-                                chatId,
-                                message: newMessage
-                            });
-                        }
-                    }
-                }
+                // Note: Removed chatNotification to prevent duplicate notifications
+                // Admins receive notifications through newMessage event only
 
                 console.log(`Message sent in chat ${chatId} by ${senderInfo.name} (${senderInfo.type})`);
             } catch (error) {

@@ -16,11 +16,13 @@ import {
     Crown,
     Settings
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 
-const Sidebar: React.FC = () => {
-    const { logout } = useAuth();
+interface SidebarProps {
+    onLogoutClick: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onLogoutClick }) => {
     const { unreadChatsCount, isConnected } = useNotifications();
 
     const menuItems = [
@@ -69,7 +71,7 @@ const Sidebar: React.FC = () => {
                     </NavLink>
                 ))}
             </nav>
-            <button onClick={logout} className={styles.logoutButton}>
+            <button onClick={onLogoutClick} className={styles.logoutButton}>
                 <LogOut size={16} />
                 <span>Sign Out</span>
             </button>

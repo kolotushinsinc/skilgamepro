@@ -241,8 +241,14 @@
 }
 
 .formGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.formRow {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1.5rem;
 }
 
@@ -584,7 +590,16 @@
     }
     
     .formGrid {
+        gap: 1.25rem;
+    }
+    
+    .formRow {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .formGroup {
+        min-width: 0;
     }
 }
 
@@ -657,5 +672,410 @@
     
     .formGrid {
         gap: 1rem;
+    }
+    
+    .formRow {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Filters Section */
+.filtersSection {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    animation: slideUp 0.6s ease-out 0.3s both;
+}
+
+.filtersHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filterToggle {
+    min-width: 120px;
+    position: relative;
+}
+
+.filterCount {
+    margin-left: 0.5rem;
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+.searchContainer {
+    position: relative;
+    flex: 1;
+    max-width: 300px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    z-index: 1;
+}
+
+.searchInput {
+    /* width: 100%; */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.1),
+        0 4px 20px rgba(59, 130, 246, 0.2);
+}
+
+.searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.filtersContent {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    align-items: end;
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filterLabel {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filterSelect {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.1),
+        0 4px 20px rgba(59, 130, 246, 0.2);
+}
+
+.filterSelect option {
+    background: #1e293b;
+    color: #ffffff;
+    padding: 0.5rem;
+}
+
+.filterActions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    grid-column: 1 / -1;
+    margin-top: 0.5rem;
+}
+
+.filterActions .btn {
+    min-width: 120px;
+}
+
+/* Mobile Responsive for Filters */
+@media (max-width: 768px) {
+    .filtersHeader {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .searchContainer {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .filtersContent {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .filterActions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .filterActions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .filtersSection {
+        padding: 1rem;
+    }
+    
+    .filterToggle {
+        min-width: 100px;
+        font-size: 0.85rem;
+    }
+    
+    .searchInput {
+        padding: 0.6rem 0.75rem 0.6rem 2.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .searchIcon {
+        left: 0.75rem;
+        width: 14px;
+        height: 14px;
+    }
+    
+    .filterSelect {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Custom Select Styles for Tournament Page */
+.customSelect {
+    position: relative;
+    width: 100%;
+}
+
+.selectTrigger {
+    /* width: 100%; */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    outline: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+}
+
+.selectTrigger:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.selectTriggerOpen {
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.1),
+        0 4px 20px rgba(59, 130, 246, 0.2);
+}
+
+.selectedGame {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gameTypeIcon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #60a5fa;
+    flex-shrink: 0;
+}
+
+.chevronIcon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: rgba(255, 255, 255, 0.6);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.chevronIconOpen {
+    transform: rotate(180deg);
+}
+
+.selectDropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    background: rgba(16, 20, 32, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    animation: tournamentDropdownSlide 0.3s ease-out;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.5) transparent;
+}
+
+.selectDropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.selectDropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.selectDropdown::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.5);
+    border-radius: 3px;
+}
+
+.selectDropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.7);
+}
+
+@keyframes tournamentDropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.selectOption {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.selectOption:last-child {
+    border-bottom: none;
+}
+
+.selectOption:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: rgba(255, 255, 255, 1);
+}
+
+.selectOption:hover .gameTypeIcon {
+    color: #7dd3fc;
+    filter: drop-shadow(0 0 5px rgba(125, 211, 252, 0.3));
+}
+
+.selectOptionSelected {
+    background: rgba(59, 130, 246, 0.15);
+    color: rgba(255, 255, 255, 1);
+    font-weight: 600;
+}
+
+.selectOptionSelected .gameTypeIcon {
+    color: #7dd3fc;
+    filter: drop-shadow(0 0 8px rgba(125, 211, 252, 0.4));
+}
+
+.checkIcon {
+    width: 1rem;
+    height: 1rem;
+    color: #10b981;
+    margin-left: auto;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.3));
+}
+
+/* Tournament page specific responsive adjustments */
+@media (max-width: 768px) {
+    .selectTrigger {
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .selectOption {
+        padding: 0.875rem 1rem;
+    }
+    
+    .gameTypeIcon {
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+    
+    .selectDropdown {
+        max-height: 160px;
+    }
+}
+
+@media (max-width: 480px) {
+    .selectTrigger {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .selectOption {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .gameTypeIcon {
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    .chevronIcon {
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    .selectDropdown {
+        max-height: 140px;
+        border-radius: 8px;
+    }
+    
+    .selectedGame {
+        gap: 0.5rem;
+    }
+    
+    .selectOption {
+        gap: 0.5rem;
     }
 }

@@ -64,8 +64,43 @@ export interface SchedulerStats {
     isRunning: boolean;
 }
 
+export interface IPaginationInfo {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
+export interface ITemplatesResponse {
+    data: TournamentTemplate[];
+    pagination: IPaginationInfo;
+}
+
+export interface ITemplatesQuery {
+    page?: number;
+    limit?: number;
+    status?: string;
+    gameType?: string;
+    search?: string;
+}
+
 class TournamentTemplateService {
-    async getAllTemplates(): Promise<TournamentTemplate[]> {
+    async getAllTemplates(query?: ITemplatesQuery): Promise<ITemplatesResponse> {
+        const params = new URLSearchParams();
+        
+        if (query?.page) params.append('page', query.page.toString());
+        if (query?.limit) params.append('limit', query.limit.toString());
+        if (query?.status) params.append('status', query.status);
+        if (query?.gameType) params.append('gameType', query.gameType);
+        if (query?.search) params.append('search', query.search);
+
+        const response = await api.get(`/api/tournament-templates?${params.toString()}`);
+        return response.data;
+    }
+
+    async getAllTemplatesLegacy(): Promise<TournamentTemplate[]> {
         const response = await api.get('/api/tournament-templates');
         return response.data.data;
     }

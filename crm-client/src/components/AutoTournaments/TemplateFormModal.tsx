@@ -172,17 +172,54 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
         updateScheduleData('fixedTimes', times);
     };
 
+    // Добавляем кастомные стили для скролла
+    React.useEffect(() => {
+        if (isOpen) {
+            const style = document.createElement('style');
+            style.id = 'template-modal-scroll-style';
+            style.textContent = `
+                #template-modal::-webkit-scrollbar {
+                    width: 8px;
+                }
+                #template-modal::-webkit-scrollbar-track {
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 4px;
+                    margin: 8px 0;
+                }
+                #template-modal::-webkit-scrollbar-thumb {
+                    background: linear-gradient(135deg, rgba(96, 165, 250, 0.6), rgba(59, 130, 246, 0.8));
+                    border-radius: 4px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                #template-modal::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9));
+                }
+                #template-modal::-webkit-scrollbar-corner {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+            `;
+            document.head.appendChild(style);
+            
+            return () => {
+                const existingStyle = document.getElementById('template-modal-scroll-style');
+                if (existingStyle) {
+                    existingStyle.remove();
+                }
+            };
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const gameTypes = [
-        { value: 'tic-tac-toe', label: 'Tic-Tac-Toe' },
-        { value: 'checkers', label: 'Checkers' },
-        { value: 'chess', label: 'Chess' },
-        { value: 'backgammon', label: 'Backgammon' },
-        { value: 'durak', label: 'Durak' },
-        { value: 'domino', label: 'Domino' },
-        { value: 'dice', label: 'Dice' },
-        { value: 'bingo', label: 'Bingo' }
+        { value: 'tic-tac-toe', label: '⭕ Tic-Tac-Toe' },
+        { value: 'checkers', label: '⚫ Checkers' },
+        { value: 'chess', label: '♔ Chess' },
+        { value: 'backgammon', label: '🎲 Backgammon' },
+        { value: 'durak', label: '🃏 Durak' },
+        { value: 'domino', label: '🀰 Domino' },
+        { value: 'dice', label: '🎲 Dice' },
+        { value: 'bingo', label: '🎯 Bingo' }
     ];
 
     const playerCounts = [4, 8, 16, 32];
@@ -195,8 +232,42 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
     const daysOfWeekLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
-        <div className={styles.overlay}>
-            <div className={styles.modal}>
+        <div
+            className={styles.overlay}
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10000,
+                padding: '20px',
+                overflow: 'auto'
+            }}
+        >
+            <div
+                id="template-modal"
+                className={styles.modal}
+                style={{
+                    background: 'linear-gradient(135deg, rgba(16, 20, 32, 0.95) 0%, rgba(24, 29, 46, 0.95) 50%, rgba(32, 39, 59, 0.95) 100%)',
+                    borderRadius: '16px',
+                    maxWidth: '800px',
+                    width: '100%',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                    position: 'relative',
+                    zIndex: 10001,
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                    // Кастомный скролл
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1)'
+                }}
+            >
                 <div className={styles.header}>
                     <h2>{title}</h2>
                     <button onClick={onClose} className={styles.closeButton}>×</button>

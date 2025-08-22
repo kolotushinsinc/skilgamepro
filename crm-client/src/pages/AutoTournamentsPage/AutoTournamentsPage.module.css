@@ -273,8 +273,9 @@
     border-radius: 16px;
     padding: 1.5rem;
     margin-bottom: 2rem;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
     align-items: center;
     animation: slideUp 0.6s ease-out 0.3s both;
 }
@@ -315,10 +316,65 @@
     color: #ffffff;
 }
 
+.searchInput {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    color: #ffffff;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.filterActions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btnPrimary {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: #ffffff;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.btnPrimary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6);
+}
+
+.btnSecondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btnSecondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
 .filterInfo {
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.9rem;
     font-weight: 500;
+    grid-column: 1 / -1;
+    text-align: center;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Templates Grid */
@@ -443,9 +499,24 @@
     }
     
     .filtersSection {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 1rem;
         text-align: center;
+    }
+    
+    .filterGroup {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .searchInput {
+        min-width: 150px;
+        width: 100%;
+    }
+    
+    .filterActions {
+        justify-content: center;
+        flex-wrap: wrap;
     }
     
     .emptyActions {

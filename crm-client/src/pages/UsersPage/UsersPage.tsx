@@ -1,20 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAdminUsers, updateUser, deleteUser } from '../../services/adminService';
+import { getAdminUsersPaginated, updateUser, deleteUser, type IUsersQuery, type IPaginationInfo } from '../../services/adminService';
 import styles from './UsersPage.module.css';
-import { 
-    Edit, 
-    Trash2, 
-    RefreshCw, 
-    Users, 
-    Shield, 
+import {
+    Edit,
+    Trash2,
+    RefreshCw,
+    Users,
+    Shield,
     DollarSign,
     UserCheck,
     Mail,
     Calendar,
-    Activity
+    Activity,
+    Filter,
+    Search,
+    ChevronDown
 } from 'lucide-react';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import EditUserModal from '../../components/modals/EditUserModal';
+import Pagination from '../../components/ui/Pagination';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
 
 interface IUser {
     _id: string;
@@ -31,21 +36,69 @@ const UsersPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<IUser | null>(null);
+    const [pagination, setPagination] = useState<IPaginationInfo>({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10,
+        hasNext: false,
+        hasPrev: false
+    });
+    
+    // Filter states
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState<IUsersQuery>({
+        page: 1,
+        limit: 10,
+        role: 'all',
+        search: ''
+    });
+    
+    // Confirmation modal states
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
-    const fetchUsers = useCallback(async () => {
+    const fetchUsers = useCallback(async (query: IUsersQuery = filters) => {
         try {
             setLoading(true);
-            const data = await getAdminUsers();
-            setUsers(data);
+            const response = await getAdminUsersPaginated(query);
+            setUsers(response.data);
+            setPagination(response.pagination);
         } catch (error) {
             console.error("Failed to fetch users", error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [filters]);
 
     useEffect(() => {
         fetchUsers();
+    }, [fetchUsers]);
+
+    const handlePageChange = useCallback((page: number) => {
+        window.scrollTo(0, 0);
+        const newFilters = { ...filters, page };
+        setFilters(newFilters);
+        fetchUsers(newFilters);
+    }, [filters, fetchUsers]);
+
+    const handleFilterChange = useCallback((key: string, value: string) => {
+        setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+    }, []);
+
+    const applyFilters = useCallback(() => {
+        fetchUsers(filters);
+    }, [filters, fetchUsers]);
+
+    const clearFilters = useCallback(() => {
+        const clearedFilters = {
+            page: 1,
+            limit: 10,
+            role: 'all',
+            search: ''
+        };
+        setFilters(clearedFilters);
+        fetchUsers(clearedFilters);
     }, [fetchUsers]);
 
     const handleOpenEditModal = (user: IUser) => {
@@ -68,15 +121,27 @@ const UsersPage: React.FC = () => {
         }
     };
 
-    const handleDeleteUser = async (userId: string) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            try {
-                await deleteUser(userId);
-                fetchUsers();
-            } catch (error) {
-                alert('Failed to delete user');
-            }
+    const handleDeleteUser = (userId: string) => {
+        setUserToDelete(userId);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDeleteUser = async () => {
+        if (!userToDelete) return;
+        
+        try {
+            await deleteUser(userToDelete);
+            fetchUsers(filters);
+            setShowConfirmModal(false);
+            setUserToDelete(null);
+        } catch (error) {
+            console.error('Failed to delete user:', error);
         }
+    };
+
+    const cancelDelete = () => {
+        setShowConfirmModal(false);
+        setUserToDelete(null);
     };
 
     const formatDate = (dateString?: string) => {
@@ -92,11 +157,11 @@ const UsersPage: React.FC = () => {
 
     if (loading) return <div className={styles.loadingContainer}><LoadingSpinner size="large" /></div>;
 
-    // Calculate statistics
-    const totalUsers = users.length;
+    // Calculate statistics for current page
+    const totalUsers = pagination.totalItems;
     const totalAdmins = users.filter(user => user.role === 'ADMIN').length;
     const totalBalance = users.reduce((sum, user) => sum + user.balance, 0);
-    const activeUsers = users.filter(user => user.lastLogin && 
+    const activeUsers = users.filter(user => user.lastLogin &&
         new Date(user.lastLogin) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
 
     return (
@@ -111,16 +176,75 @@ const UsersPage: React.FC = () => {
                                 <p className={styles.pageSubtitle}>Monitor and manage platform users</p>
                             </div>
                         </div>
-                        <button
-                            onClick={fetchUsers}
-                            className={`${styles.refreshButton} ${loading ? styles.loading : ''}`}
-                            disabled={loading}
-                        >
-                            <RefreshCw size={18} />
-                            <span>Refresh Data</span>
-                        </button>
+                        <div className={styles.headerActions}>
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className={`${styles.filterToggle} ${showFilters ? styles.active : ''}`}
+                            >
+                                <Filter size={18} />
+                                <span>Filters</span>
+                                <ChevronDown size={16} className={showFilters ? styles.rotated : ''} />
+                            </button>
+                            <button
+                                onClick={() => fetchUsers(filters)}
+                                className={`${styles.refreshButton} ${loading ? styles.loading : ''}`}
+                                disabled={loading}
+                            >
+                                <RefreshCw size={18} />
+                                <span>Refresh</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Filters Section */}
+                {showFilters && (
+                    <div className={styles.filtersSection}>
+                        <div className={styles.filtersGrid}>
+                            <div className={styles.filterGroup}>
+                                <label className={styles.filterLabel}>User Role</label>
+                                <select
+                                    className={styles.filterSelect}
+                                    value={filters.role || 'all'}
+                                    onChange={(e) => handleFilterChange('role', e.target.value)}
+                                >
+                                    <option value="all">All Roles</option>
+                                    <option value="USER">👤 User</option>
+                                    <option value="ADMIN">🛡️ Admin</option>
+                                </select>
+                            </div>
+
+                            <div className={styles.filterGroup}>
+                                <label className={styles.filterLabel}>Search</label>
+                                <div className={styles.searchInputWrapper}>
+                                    <Search className={styles.searchIcon} size={16} />
+                                    <input
+                                        type="text"
+                                        className={styles.searchInput}
+                                        placeholder="Search by username, email or ID..."
+                                        value={filters.search || ''}
+                                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={styles.filterActions}>
+                            <button
+                                className={styles.filterButton}
+                                onClick={applyFilters}
+                            >
+                                Apply Filters
+                            </button>
+                            <button
+                                className={styles.clearButton}
+                                onClick={clearFilters}
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Statistics Cards */}
                 <div className={styles.statsGrid}>
@@ -248,13 +372,38 @@ const UsersPage: React.FC = () => {
                         <p>There are currently no users in the system. User data will appear here as people register on the platform.</p>
                     </div>
                 )}
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                    <div className={styles.paginationSection}>
+                        <Pagination
+                            currentPage={pagination.currentPage}
+                            totalPages={pagination.totalPages}
+                            totalItems={pagination.totalItems}
+                            itemsPerPage={pagination.itemsPerPage}
+                            onPageChange={handlePageChange}
+                            hasNext={pagination.hasNext}
+                            hasPrev={pagination.hasPrev}
+                        />
+                    </div>
+                )}
             </div>
             
-            <EditUserModal 
+            <EditUserModal
                 isOpen={isEditModalOpen}
                 user={editingUser}
                 onClose={handleCloseEditModal}
                 onSave={handleSaveUser}
+            />
+            
+            <ConfirmationModal
+                isOpen={showConfirmModal}
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone."
+                onConfirm={confirmDeleteUser}
+                onClose={cancelDelete}
+                confirmText="Delete"
+                cancelText="Cancel"
             />
         </>
     );

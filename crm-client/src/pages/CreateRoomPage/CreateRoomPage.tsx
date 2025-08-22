@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
-import { 
-  Plus, 
-  Gamepad2, 
-  DollarSign, 
-  Eye, 
-  CheckCircle, 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Plus,
+  Gamepad2,
+  DollarSign,
+  Eye,
+  CheckCircle,
   XCircle,
   Hash,
   Users,
   Trophy,
   Target,
   Crown,
-  Zap
+  Zap,
+  Circle,
+  Dice6,
+  Square,
+  Spade,
+  ChevronDown
 } from 'lucide-react';
 import { createAdminRoom } from '../../services/adminService';
 import styles from './CreateRoomPage.module.css';
@@ -21,15 +26,34 @@ const CreateRoomPage: React.FC = () => {
     const [bet, setBet] = useState(50);
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const selectRef = useRef<HTMLDivElement>(null);
 
     const gameOptions = [
         { value: 'tic-tac-toe', label: 'Tic-Tac-Toe', icon: Hash },
         { value: 'checkers', label: 'Checkers', icon: Target },
         { value: 'chess', label: 'Chess', icon: Crown },
         { value: 'backgammon', label: 'Backgammon', icon: Zap },
+        { value: 'bingo', label: 'Bingo', icon: Circle },
+        { value: 'dice', label: 'Dice', icon: Dice6 },
+        { value: 'domino', label: 'Domino', icon: Square },
+        { value: 'durak', label: 'Durak', icon: Spade },
     ];
 
     const selectedGame = gameOptions.find(game => game.value === gameType);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,18 +114,45 @@ const CreateRoomPage: React.FC = () => {
                                 <Gamepad2 className={styles.labelIcon} />
                                 Game Type
                             </label>
-                            <select 
-                                value={gameType} 
-                                onChange={e => setGameType(e.target.value)} 
-                                className={styles.formSelect}
-                                disabled={isSubmitting}
-                            >
-                                {gameOptions.map(game => (
-                                    <option key={game.value} value={game.value}>
-                                        {game.label}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className={styles.customSelect} ref={selectRef}>
+                                <div
+                                    className={`${styles.selectTrigger} ${isDropdownOpen ? styles.selectTriggerOpen : ''}`}
+                                    onClick={() => !isSubmitting && setIsDropdownOpen(!isDropdownOpen)}
+                                >
+                                    <div className={styles.selectedGame}>
+                                        {React.createElement(selectedGame?.icon || Hash, {
+                                            className: styles.gameTypeIcon
+                                        })}
+                                        <span>{selectedGame?.label || 'Select Game'}</span>
+                                    </div>
+                                    <ChevronDown
+                                        className={`${styles.chevronIcon} ${isDropdownOpen ? styles.chevronIconOpen : ''}`}
+                                    />
+                                </div>
+                                
+                                {isDropdownOpen && (
+                                    <div className={styles.selectDropdown}>
+                                        {gameOptions.map(game => (
+                                            <div
+                                                key={game.value}
+                                                className={`${styles.selectOption} ${gameType === game.value ? styles.selectOptionSelected : ''}`}
+                                                onClick={() => {
+                                                    setGameType(game.value);
+                                                    setIsDropdownOpen(false);
+                                                }}
+                                            >
+                                                {React.createElement(game.icon, {
+                                                    className: styles.gameTypeIcon
+                                                })}
+                                                <span>{game.label}</span>
+                                                {gameType === game.value && (
+                                                    <CheckCircle className={styles.checkIcon} />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className={styles.formGroup}>

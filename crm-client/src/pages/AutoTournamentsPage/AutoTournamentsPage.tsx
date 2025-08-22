@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { tournamentTemplateService } from '../../services/tournamentTemplateService.ts';
-import type { TournamentTemplate, SchedulerStats } from '../../services/tournamentTemplateService.ts';
+import type { TournamentTemplate, SchedulerStats, IPaginationInfo, ITemplatesResponse } from '../../services/tournamentTemplateService.ts';
 import TemplateCard from '../../components/AutoTournaments/TemplateCard.tsx';
 import TemplateFormModal from '../../components/AutoTournaments/TemplateFormModal.tsx';
 import SchedulerStatsCard from '../../components/AutoTournaments/SchedulerStatsCard.tsx';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
+import Pagination from '../../components/ui/Pagination';
 import styles from './AutoTournamentsPage.module.css';
-import { 
-    RefreshCw, 
-    Plus, 
-    FileStack, 
-    Zap, 
-    Activity, 
-    Clock, 
+import {
+    RefreshCw,
+    Plus,
+    FileStack,
+    Zap,
+    Activity,
+    Clock,
     CheckCircle,
     XCircle,
     Settings
@@ -20,21 +22,45 @@ import {
 
 const AutoTournamentsPage: React.FC = () => {
     const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
+    const [pagination, setPagination] = useState<IPaginationInfo>({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 5,
+        hasNext: false,
+        hasPrev: false
+    });
     const [schedulerStats, setSchedulerStats] = useState<SchedulerStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<TournamentTemplate | null>(null);
-    const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+    const [filters, setFilters] = useState({
+        status: 'all',
+        gameType: 'all',
+        search: ''
+    });
+    const [showDefaultTemplatesConfirm, setShowDefaultTemplatesConfirm] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
 
-    const loadData = useCallback(async () => {
+    const loadData = useCallback(async (page: number = 1) => {
         try {
             setLoading(true);
-            const [templatesData, statsData] = await Promise.all([
-                tournamentTemplateService.getAllTemplates(),
+            const query = {
+                page,
+                limit: 5,
+                ...(filters.status !== 'all' && { status: filters.status }),
+                ...(filters.gameType !== 'all' && { gameType: filters.gameType }),
+                ...(filters.search && { search: filters.search })
+            };
+            
+            const [templatesResponse, statsData] = await Promise.all([
+                tournamentTemplateService.getAllTemplates(query),
                 tournamentTemplateService.getSchedulerStats()
             ]);
-            setTemplates(templatesData);
+            setTemplates(templatesResponse.data);
+            setPagination(templatesResponse.pagination);
             setSchedulerStats(statsData);
             setError(null);
         } catch (err: any) {
@@ -42,19 +68,42 @@ const AutoTournamentsPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [filters]);
 
     useEffect(() => {
-        loadData();
-        // Update data every 30 seconds
-        const interval = setInterval(loadData, 30000);
-        return () => clearInterval(interval);
+        loadData(1);
     }, [loadData]);
+
+    const handlePageChange = (page: number) => {
+        // Scroll to top for better UX
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        loadData(page);
+    };
+
+    const handleFilterChange = (newFilters: Partial<typeof filters>) => {
+        setFilters(prev => ({ ...prev, ...newFilters }));
+    };
+
+    const applyFilters = () => {
+        // Scroll to top for better UX
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        loadData(1);
+    };
+
+    const clearFilters = () => {
+        setFilters({
+            status: 'all',
+            gameType: 'all',
+            search: ''
+        });
+        // Scroll to top for better UX
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const handleCreateTemplate = async (templateData: any) => {
         try {
             await tournamentTemplateService.createTemplate(templateData);
-            await loadData();
+            await loadData(pagination.currentPage);
             setShowCreateModal(false);
         } catch (err: any) {
             throw new Error(err.message);
@@ -64,30 +113,42 @@ const AutoTournamentsPage: React.FC = () => {
     const handleUpdateTemplate = async (templateId: string, updateData: any) => {
         try {
             await tournamentTemplateService.updateTemplate(templateId, updateData);
-            await loadData();
+            await loadData(pagination.currentPage);
             setEditingTemplate(null);
         } catch (err: any) {
             throw new Error(err.message);
         }
     };
 
-    const handleDeleteTemplate = async (templateId: string) => {
-        if (window.confirm('Are you sure you want to delete this template?')) {
+    const handleDeleteTemplate = (templateId: string) => {
+        setTemplateToDelete(templateId);
+        setShowDeleteConfirm(true);
+    };
+
+    const handleConfirmDeleteTemplate = async () => {
+        if (templateToDelete) {
             try {
-                await tournamentTemplateService.deleteTemplate(templateId);
-                await loadData();
+                await tournamentTemplateService.deleteTemplate(templateToDelete);
+                await loadData(pagination.currentPage);
             } catch (err: any) {
-                alert(`Delete error: ${err.message}`);
+                setError(`Delete error: ${err.message}`);
             }
         }
+        setShowDeleteConfirm(false);
+        setTemplateToDelete(null);
+    };
+
+    const handleCancelDeleteTemplate = () => {
+        setShowDeleteConfirm(false);
+        setTemplateToDelete(null);
     };
 
     const handleToggleActive = async (templateId: string) => {
         try {
             await tournamentTemplateService.toggleTemplateActive(templateId);
-            await loadData();
+            await loadData(pagination.currentPage);
         } catch (err: any) {
-            alert(`Toggle error: ${err.message}`);
+            setError(`Toggle error: ${err.message}`);
         }
     };
 
@@ -104,36 +165,37 @@ const AutoTournamentsPage: React.FC = () => {
                     await tournamentTemplateService.forceSchedulerCheck();
                     break;
             }
-            await loadData();
+            await loadData(pagination.currentPage);
         } catch (err: any) {
-            alert(`Scheduler action error: ${err.message}`);
+            setError(`Scheduler action error: ${err.message}`);
         }
     };
 
-    const handleCreateDefaultTemplates = async () => {
-        if (window.confirm('Create default tournament templates? This will create standard templates for all games.')) {
-            try {
-                await tournamentTemplateService.createDefaultTemplates();
-                await loadData();
-                alert('Default templates created successfully!');
-            } catch (err: any) {
-                alert(`Template creation error: ${err.message}`);
-            }
+    const handleCreateDefaultTemplates = () => {
+        setShowDefaultTemplatesConfirm(true);
+    };
+
+    const handleConfirmCreateDefaultTemplates = async () => {
+        setShowDefaultTemplatesConfirm(false);
+        try {
+            await tournamentTemplateService.createDefaultTemplates();
+            await loadData(pagination.currentPage);
+            // You could add a success notification here instead of alert
+        } catch (err: any) {
+            setError(`Template creation error: ${err.message}`);
         }
     };
 
-    const filteredTemplates = templates.filter(template => {
-        if (filter === 'active') return template.isActive;
-        if (filter === 'inactive') return !template.isActive;
-        return true;
-    });
+    const handleCancelCreateDefaultTemplates = () => {
+        setShowDefaultTemplatesConfirm(false);
+    };
 
     if (loading && templates.length === 0) {
         return <div className={styles.loadingContainer}><LoadingSpinner size="large" /></div>;
     }
 
-    // Calculate statistics
-    const totalTemplates = templates.length;
+    // Calculate statistics from pagination data
+    const totalTemplates = pagination.totalItems;
     const activeTemplates = templates.filter(t => t.isActive).length;
     const inactiveTemplates = templates.filter(t => !t.isActive).length;
     const schedulerRunning = schedulerStats?.isRunning || false;
@@ -151,7 +213,7 @@ const AutoTournamentsPage: React.FC = () => {
                     </div>
                     <div className={styles.headerActions}>
                         <button
-                            onClick={loadData}
+                            onClick={() => loadData(pagination.currentPage)}
                             className={`${styles.btn} ${styles.refreshButton} ${loading ? styles.loading : ''}`}
                             disabled={loading}
                         >
@@ -179,7 +241,7 @@ const AutoTournamentsPage: React.FC = () => {
             {error && (
                 <div className={styles.errorContainer}>
                     <p>{error}</p>
-                    <button onClick={loadData} className={`${styles.btn} ${styles.retryButton}`}>
+                    <button onClick={() => loadData(pagination.currentPage)} className={`${styles.btn} ${styles.retryButton}`}>
                         <RefreshCw size={16} />
                         Retry
                     </button>
@@ -242,8 +304,8 @@ const AutoTournamentsPage: React.FC = () => {
                 <div className={styles.filterGroup}>
                     <label>Status:</label>
                     <select
-                        value={filter}
-                        onChange={(e) => setFilter(e.target.value as any)}
+                        value={filters.status}
+                        onChange={(e) => handleFilterChange({ status: e.target.value })}
                         className={styles.filterSelect}
                     >
                         <option value="all">All Templates</option>
@@ -251,23 +313,65 @@ const AutoTournamentsPage: React.FC = () => {
                         <option value="inactive">Inactive Only</option>
                     </select>
                 </div>
+                <div className={styles.filterGroup}>
+                    <label>Game Type:</label>
+                    <select
+                        value={filters.gameType}
+                        onChange={(e) => handleFilterChange({ gameType: e.target.value })}
+                        className={styles.filterSelect}
+                    >
+                        <option value="all">All Games</option>
+                        <option value="chess">♔ Chess</option>
+                        <option value="checkers">⚫ Checkers</option>
+                        <option value="tic-tac-toe">⭕ Tic-Tac-Toe</option>
+                        <option value="backgammon">🎲 Backgammon</option>
+                        <option value="durak">🃏 Durak</option>
+                        <option value="domino">🀰 Domino</option>
+                        <option value="dice">🎲 Dice</option>
+                        <option value="bingo">🎯 Bingo</option>
+                    </select>
+                </div>
+                <div className={styles.filterGroup}>
+                    <input
+                        type="text"
+                        placeholder="Search templates..."
+                        value={filters.search}
+                        onChange={(e) => handleFilterChange({ search: e.target.value })}
+                        onKeyPress={(e) => e.key === 'Enter' && applyFilters()}
+                        className={styles.searchInput}
+                    />
+                </div>
+                <div className={styles.filterActions}>
+                    <button
+                        onClick={applyFilters}
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                    >
+                        Apply Filters
+                    </button>
+                    <button
+                        onClick={clearFilters}
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                    >
+                        Clear
+                    </button>
+                </div>
                 <div className={styles.filterInfo}>
-                    Showing: {filteredTemplates.length} of {templates.length} templates
+                    Showing: {templates.length} of {pagination.totalItems} templates
                 </div>
             </div>
 
             {/* Templates List */}
-            {filteredTemplates.length === 0 ? (
+            {templates.length === 0 ? (
                 <div className={styles.emptyState}>
                     <Settings size={48} />
                     <h3>No Templates Found</h3>
                     <p>
-                        {filter === 'all'
+                        {filters.status === 'all' && filters.gameType === 'all' && !filters.search
                             ? 'Create your first template or load default templates to get started'
                             : 'Change filter or create a new template to see results'
                         }
                     </p>
-                    {filter === 'all' && (
+                    {filters.status === 'all' && filters.gameType === 'all' && !filters.search && (
                         <div className={styles.emptyActions}>
                             <button
                                 onClick={() => setShowCreateModal(true)}
@@ -288,7 +392,7 @@ const AutoTournamentsPage: React.FC = () => {
                 </div>
             ) : (
                 <div className={styles.templatesGrid}>
-                    {filteredTemplates.map(template => (
+                    {templates.map(template => (
                         <TemplateCard
                             key={template._id}
                             template={template}
@@ -298,6 +402,19 @@ const AutoTournamentsPage: React.FC = () => {
                         />
                     ))}
                 </div>
+            )}
+
+            {/* Pagination */}
+            {templates.length > 0 && (
+                <Pagination
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    totalItems={pagination.totalItems}
+                    itemsPerPage={pagination.itemsPerPage}
+                    hasNext={pagination.hasNext}
+                    hasPrev={pagination.hasPrev}
+                    onPageChange={handlePageChange}
+                />
             )}
 
             {/* Modal Windows */}
@@ -319,6 +436,30 @@ const AutoTournamentsPage: React.FC = () => {
                     title="Edit Template"
                 />
             )}
+
+            {/* Default Templates Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showDefaultTemplatesConfirm}
+                onClose={handleCancelCreateDefaultTemplates}
+                onConfirm={handleConfirmCreateDefaultTemplates}
+                title="Create Default Templates"
+                message="Create default tournament templates? This will create standard templates for all games."
+                confirmText="Create Templates"
+                cancelText="Cancel"
+                type="info"
+            />
+
+            {/* Delete Template Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showDeleteConfirm}
+                onClose={handleCancelDeleteTemplate}
+                onConfirm={handleConfirmDeleteTemplate}
+                title="Delete Template"
+                message="Are you sure you want to delete this template? This action cannot be undone."
+                confirmText="Delete Template"
+                cancelText="Cancel"
+                type="danger"
+            />
         </div>
     );
 };

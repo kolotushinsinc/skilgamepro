@@ -203,21 +203,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       setIsConnected(false);
     });
 
-    newSocket.on('chatNotification', (data: any) => {
-      console.log('Chat notification received in global context:', data);
-      
-      addNotification({
-        type: 'new_message',
-        title: 'New Support Message',
-        message: data.message || 'You have a new message',
-        chatId: data.chatId
-      });
-
-      if (data.chatId) {
-        setUnreadChats(prev => new Set([...prev, data.chatId]));
-      }
-    });
-
+    // Note: chatNotification is deprecated - we only handle newMessage now to prevent duplicates
     newSocket.on('newMessage', (data: { chatId: string, message: Message }) => {
       console.log('New message received in global context:', data);
       
