@@ -14,7 +14,8 @@ import {
     Zap,
     LogOut,
     Crown,
-    Settings
+    Settings,
+    Shield
 } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 
@@ -35,6 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogoutClick }) => {
         { path: '/auto-tournaments', icon: Zap, label: 'Auto Tournaments' },
         { path: '/game-lobby-scheduler', icon: Settings, label: 'Lobby Scheduler' },
         { path: '/support-chat', icon: MessageCircle, label: 'Support Chat', badge: unreadChatsCount },
+        { path: '/security', icon: Shield, label: 'Security Monitor' },
         { path: '/kyc', icon: ShieldCheck, label: 'KYC Verification' },
         { path: '/create-room', icon: PlusSquare, label: 'Create Room' },
     ];

@@ -14,6 +14,7 @@ export interface IUser extends Document {
   avatar: string;
   balance: number;
   role: 'USER' | 'ADMIN';
+  status: 'ACTIVE' | 'BANNED' | 'SUSPENDED' | 'PENDING';
   passwordResetCode?: string;
   passwordResetExpires?: Date;
   comparePassword(enteredPassword: string): Promise<boolean>;
@@ -41,6 +42,11 @@ const userSchema = new Schema<IUser>({
     type: String,
     enum: ['USER', 'ADMIN'],
     default: 'USER',
+  },
+  status: {
+    type: String,
+    enum: ['ACTIVE', 'BANNED', 'SUSPENDED', 'PENDING'],
+    default: 'ACTIVE',
   },
 
   passwordResetCode: {

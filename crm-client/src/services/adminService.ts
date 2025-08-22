@@ -116,7 +116,7 @@ export interface IUsersQuery {
 
 export const getAdminUsers = async () => {
     const { data } = await axios.get(`${API_URL}/api/admin/users`);
-    return data;
+    return data.data || data; // Extract the actual users array from the structured response
 };
 
 export const getAdminUsersPaginated = async (query: IUsersQuery = {}): Promise<IUsersResponse> => {
@@ -147,7 +147,7 @@ export interface IGameRecordsQuery {
 
 export const getAdminGameRecords = async (): Promise<IGameRecord[]> => {
     const { data } = await axios.get(`${API_URL}/api/admin/games`);
-    return data;
+    return data.data || data; // Extract the actual games array from the structured response
 };
 
 export const getAdminGameRecordsPaginated = async (query: IGameRecordsQuery = {}): Promise<IGameRecordsResponse> => {

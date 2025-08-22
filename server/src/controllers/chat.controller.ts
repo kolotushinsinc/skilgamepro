@@ -9,7 +9,7 @@ const generateId = (): string => {
 // Get chat history for authenticated user
 export const getUserChats = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user._id;
     
     const chats = await Chat.find({
       $or: [
@@ -44,10 +44,10 @@ export const getUserChats = async (req: Request, res: Response) => {
 export const getAdminChats = async (req: Request, res: Response) => {
   try {
     const { page = 1, limit = 20, status, source, search } = req.query;
-    const userId = (req as any).user.id;
+    const userId = (req as any).user._id;
     
-    // Check if user is admin
-    const user = await User.findById(userId);
+    // Check if user is admin (user is already loaded in middleware)
+    const user = (req as any).user;
     if (!user || user.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
@@ -187,7 +187,7 @@ export const createChat = async (req: Request, res: Response) => {
 export const getChatById = async (req: Request, res: Response) => {
   try {
     const { chatId } = req.params;
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?._id;
     
     const chat = await Chat.findOne({ id: chatId })
       .populate('userId', 'username avatar email')
@@ -236,7 +236,7 @@ export const getChatById = async (req: Request, res: Response) => {
 export const markMessagesAsRead = async (req: Request, res: Response) => {
   try {
     const { chatId } = req.params;
-    const userId = (req as any).user.id;
+    const userId = (req as any).user._id;
 
     const chat = await Chat.findOne({ id: chatId });
     
@@ -274,10 +274,10 @@ export const assignChat = async (req: Request, res: Response) => {
   try {
     const { chatId } = req.params;
     const { adminId } = req.body;
-    const currentUserId = (req as any).user.id;
+    const currentUserId = (req as any).user._id;
 
-    // Check if current user is admin
-    const currentUser = await User.findById(currentUserId);
+    // Check if current user is admin (user is already loaded in middleware)
+    const currentUser = (req as any).user;
     if (!currentUser || currentUser.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
@@ -331,7 +331,7 @@ export const assignChat = async (req: Request, res: Response) => {
 export const closeChat = async (req: Request, res: Response) => {
   try {
     const { chatId } = req.params;
-    const userId = (req as any).user.id;
+    const userId = (req as any).user._id;
 
     const user = await User.findById(userId);
     const isAdmin = user?.role === 'ADMIN';
@@ -375,10 +375,10 @@ export const closeChat = async (req: Request, res: Response) => {
 // Get chat statistics (for admin dashboard)
 export const getChatStats = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user._id;
     
-    // Check if user is admin
-    const user = await User.findById(userId);
+    // Check if user is admin (user is already loaded in middleware)
+    const user = (req as any).user;
     if (!user || user.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
@@ -431,7 +431,7 @@ export const sendMessage = async (req: Request, res: Response) => {
   try {
     const { chatId } = req.params;
     const { content } = req.body;
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?._id;
     
     console.log('SendMessage attempt:', { chatId, userId, content: content?.substring(0, 50) });
     

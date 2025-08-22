@@ -13,6 +13,7 @@ import RoomsPage from './pages/RoomsPage/RoomsPage';
 import CreateRoomPage from './pages/CreateRoomPage/CreateRoomPage';
 import TournamentsPage from './pages/TournamentsPage/TournamentsPage';
 import AutoTournamentsPage from './pages/AutoTournamentsPage/AutoTournamentsPage.tsx';
+import SecurityPage from './pages/SecurityPage/SecurityPage';
 import KYCPage from './pages/KYCPage/KYCPage';
 import SupportChatPage from './pages/SupportChatPage/SupportChatPage';
 import GameLobbySchedulerPage from './pages/GameLobbySchedulerPage/GameLobbySchedulerPage';
@@ -42,6 +43,7 @@ function App() {
                         <Route path="auto-tournaments" element={<AutoTournamentsPage />} />
                         <Route path="game-lobby-scheduler" element={<GameLobbySchedulerPage />} />
                         <Route path="support-chat" element={<SupportChatPage />} />
+                        <Route path="security" element={<SecurityPage />} />
                         <Route path="kyc" element={<KYCPage />} />
                         <Route path="create-room" element={<CreateRoomPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
