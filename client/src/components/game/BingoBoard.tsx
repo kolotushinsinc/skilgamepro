@@ -36,11 +36,11 @@ interface BingoBoardProps {
     isMyTurn: boolean;
     isGameFinished: boolean;
     myPlayerIndex: 0 | 1;
-    onTimeout?: () => void; // Called when player times out
-    currentPlayerId?: string; // Current player's ID for timer synchronization
-    myPlayerId?: string; // My player ID
-    hasOpponent?: boolean; // Whether there are 2 players in the game
-    onGameTimeout?: (data: any) => void; // Handle server timeout event
+    onTimeout?: () => void;
+    currentPlayerId?: string;
+    myPlayerId?: string;
+    hasOpponent?: boolean;
+    onGameTimeout?: (data: any) => void;
 }
 
 const BingoBoard: React.FC<BingoBoardProps> = ({
@@ -66,17 +66,13 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
     }, [onTimeout]);
 
     const handleWarning = useCallback(() => {
-        console.log('[Timer] Client triggered warning - showing modal at exactly 10 seconds');
         setShowWarningModal(true);
-        // Timer will be paused by the modal component
     }, []);
 
     const handleMakeMove = useCallback(() => {
         setShowWarningModal(false);
-        // Timer will resume automatically when modal closes
     }, []);
 
-    // Game is considered started when there are 2 players and game is not finished
     const isGameStarted = !isGameFinished && gameState && gameState.players && gameState.players.length >= 2 && (hasOpponent || false);
 
     const timer = useMoveTimer({
@@ -90,54 +86,31 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
         onWarning: handleWarning
     });
 
-    const handleModalClose = useCallback(() => {
-        // Don't allow closing modal during warning period
-    }, []);
-
-    // Socket event handlers for server-side timer synchronization
+    // Socket event handlers
     useEffect(() => {
         if (!socket) return;
 
         const handleMoveTimerStart = (data: { timeLimit: number; currentPlayerId: string; startTime: number }) => {
             if (data.currentPlayerId === myPlayerId) {
-                // Server started timer for my turn, sync with server time
-                console.log('[Timer] Server timer started for my turn, syncing...', data);
                 timer.syncWithServer(data.startTime, data.timeLimit);
             }
         };
 
         const handleMoveTimerWarning = (data: { timeRemaining: number; currentPlayerId: string }) => {
             if (data.currentPlayerId === myPlayerId) {
-                // Server warning received - but modal will be shown by client timer at exactly 10 seconds
-                console.log('[Timer] Server timer warning received - client timer will handle modal display');
                 timer.showWarning();
-                // Modal will be shown by client timer when timeLeft === 10
             }
         };
 
         const handleMoveTimerTimeout = (data: { timedOutPlayerId: string }) => {
             if (data.timedOutPlayerId === myPlayerId) {
-                // I timed out on server
-                console.log('[Timer] Server timeout - I timed out');
                 setShowWarningModal(false);
                 onTimeout?.();
-            } else {
-                // Opponent timed out
-                console.log('[Timer] Server timeout - opponent timed out');
             }
         };
 
-        const handleGameTimeout = (data: {
-            timedOutPlayerId: string;
-            timedOutPlayerName: string;
-            winnerId: string;
-            winnerName: string;
-            message: string;
-        }) => {
-            console.log('[Timer] Game timeout event:', data);
+        const handleGameTimeout = (data: any) => {
             setShowWarningModal(false);
-            
-            // Call parent handler to show proper game result modal
             if (onGameTimeout) {
                 onGameTimeout(data);
             }
@@ -163,10 +136,62 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
         }
     }, [gameState.currentNumber]);
 
+    const getPlayerStats = useCallback((playerIndex: number) => {
+        const player = gameState.players?.[playerIndex];
+        if (!player) return { markedCount: 0, completedLines: 0, progress: 0, nearWinLines: 0, totalPossible: 25 };
+        
+        let markedSet: Set<number>;
+        if (player.markedNumbers instanceof Set) {
+            markedSet = player.markedNumbers;
+        } else if (Array.isArray(player.markedNumbers)) {
+            markedSet = new Set(player.markedNumbers);
+        } else {
+            markedSet = new Set();
+        }
+        
+        const card = player.card;
+        let completedLines = 0;
+        let nearWinLines = 0; // Lines with 4/5 numbers
+        
+        // Check rows
+        for (let row = 0; row < 5; row++) {
+            const rowNumbers = [card.B[row], card.I[row], card.N[row], card.G[row], card.O[row]];
+            const markedInRow = rowNumbers.filter(num => num === 0 || markedSet.has(num)).length;
+            if (markedInRow === 5) completedLines++;
+            else if (markedInRow === 4) nearWinLines++;
+        }
+        
+        // Check columns
+        const columns = [card.B, card.I, card.N, card.G, card.O];
+        columns.forEach(column => {
+            const markedInColumn = column.filter((num, idx) => num === 0 || markedSet.has(num)).length;
+            if (markedInColumn === 5) completedLines++;
+            else if (markedInColumn === 4) nearWinLines++;
+        });
+        
+        // Check diagonals
+        const diagonal1 = [card.B[0], card.I[1], card.N[2], card.G[3], card.O[4]];
+        const diagonal2 = [card.B[4], card.I[3], card.N[2], card.G[1], card.O[0]];
+        
+        const diag1Marked = diagonal1.filter(num => num === 0 || markedSet.has(num)).length;
+        const diag2Marked = diagonal2.filter(num => num === 0 || markedSet.has(num)).length;
+        
+        if (diag1Marked === 5) completedLines++;
+        else if (diag1Marked === 4) nearWinLines++;
+        
+        if (diag2Marked === 5) completedLines++;
+        else if (diag2Marked === 4) nearWinLines++;
+        
+        const progress = Math.min(completedLines * 12.5, 100); // 8 possible lines max
+        const markedCount = markedSet.size;
+        
+        return { markedCount, completedLines, progress, nearWinLines, totalPossible: 25 };
+    }, [gameState.players]);
+
     const handleCallNumber = () => {
         if (gameState.gamePhase !== 'CALLING' || isGameFinished) return;
         onMove({ type: 'CALL_NUMBER' });
-        timer.resetTimer(); // Reset timer after move
+        timer.resetTimer();
     };
 
     const handleMarkNumber = (number: number) => {
@@ -179,7 +204,6 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
         const hasNumber = isNumberOnCard(myPlayer.card, number);
         if (!hasNumber) return;
 
-        // Check if number is already marked
         let markedSet: Set<number>;
         if (myPlayer.markedNumbers instanceof Set) {
             markedSet = myPlayer.markedNumbers;
@@ -189,25 +213,25 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
             markedSet = new Set();
         }
         
-        if (markedSet.has(number)) return; // Already marked
+        if (markedSet.has(number)) return;
 
         setRecentlyMarked(number);
         setTimeout(() => setRecentlyMarked(null), 1000);
         
         onMove({ type: 'MARK_NUMBER', number });
-        timer.resetTimer(); // Reset timer after move
+        timer.resetTimer();
     };
 
     const handleClaimBingo = () => {
         if (gameState.gamePhase !== 'MARKING' || isGameFinished) return;
         onMove({ type: 'CLAIM_BINGO' });
-        timer.resetTimer(); // Reset timer after move
+        timer.resetTimer();
     };
 
     const handleContinueGame = () => {
         if (gameState.gamePhase !== 'MARKING' || isGameFinished) return;
         onMove({ type: 'CONTINUE_GAME' });
-        timer.resetTimer(); // Reset timer after move
+        timer.resetTimer();
     };
 
     const isNumberOnCard = (card: BingoCard, number: number): boolean => {
@@ -289,23 +313,9 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
         );
     };
 
-    const getPhaseMessage = (): string => {
-        if (isGameFinished) return 'Game Finished';
-        
-        switch (gameState.gamePhase) {
-            case 'CALLING':
-                return 'Click to call the next number!';
-            case 'MARKING':
-                return 'Mark your numbers or claim BINGO!';
-            default:
-                return 'Waiting for game to start...';
-        }
-    };
-
     const myCard = gameState.players?.[myPlayerIndex];
     const opponentCard = gameState.players?.[myPlayerIndex === 0 ? 1 : 0];
 
-    // Safety check - if no players data, show loading
     if (!myCard || !opponentCard) {
         return (
             <div className={styles.bingoBoard}>
@@ -314,12 +324,114 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
         );
     }
 
+    const myStats = getPlayerStats(myPlayerIndex);
+    const opponentStats = getPlayerStats(myPlayerIndex === 0 ? 1 : 0);
+
     return (
         <div className={styles.bingoBoard}>
+            <div className={styles.gameHeader}>
+                <h1 className={styles.gameTitle}>🎯 BINGO</h1>
+                <p className={styles.gameSubtitle}>Match Numbers & Win</p>
+            </div>
+
+            <div className={styles.playersInfo}>
+                {/* My Player Card */}
+                <div className={`${styles.playerCard} ${styles.myPlayer} ${
+                    isMyTurn ? styles.currentPlayer : ''
+                }`}>
+                    <div className={styles.playerHeader}>
+                        <div className={styles.playerIcon}>🎮</div>
+                        <div className={styles.playerDetails}>
+                            <h3>You</h3>
+                            <div className={styles.playerStatus}>
+                                {isMyTurn && !isGameFinished ? 'YOUR TURN' : 'WAITING'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={styles.playerStats}>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>Marked</div>
+                            <div className={styles.statValue}>
+                                {myCard.markedNumbers instanceof Set ? myCard.markedNumbers.size : 
+                                 Array.isArray(myCard.markedNumbers) ? myCard.markedNumbers.length : 0}
+                            </div>
+                        </div>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>Lines</div>
+                            <div className={styles.statValue}>{myStats.completedLines}/8</div>
+                        </div>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>Close</div>
+                            <div className={styles.statValue}>{myStats.nearWinLines}</div>
+                        </div>
+                    </div>
+
+                    <div className={styles.progressSection}>
+                        <div className={styles.progressLabel}>
+                            <span>Progress</span>
+                            <span>{Math.round(myStats.progress)}%</span>
+                        </div>
+                        <div className={styles.progressBar}>
+                            <div
+                                className={styles.progressFill}
+                                style={{ width: `${myStats.progress}%` }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Opponent Player Card */}
+                <div className={`${styles.playerCard} ${styles.opponentPlayer} ${
+                    !isMyTurn && !isGameFinished ? styles.currentPlayer : ''
+                }`}>
+                    <div className={styles.playerHeader}>
+                        <div className={styles.playerIcon}>🤖</div>
+                        <div className={styles.playerDetails}>
+                            <h3>Opponent</h3>
+                            <div className={styles.playerStatus}>
+                                {!isMyTurn && !isGameFinished ? 'PLAYING' : 'WAITING'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={styles.playerStats}>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>Marked</div>
+                            <div className={styles.statValue}>
+                                {opponentCard.markedNumbers instanceof Set ? opponentCard.markedNumbers.size : 
+                                 Array.isArray(opponentCard.markedNumbers) ? opponentCard.markedNumbers.length : 0}
+                            </div>
+                        </div>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>Lines</div>
+                            <div className={styles.statValue}>{opponentStats.completedLines}/8</div>
+                        </div>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>Close</div>
+                            <div className={styles.statValue}>{opponentStats.nearWinLines}</div>
+                        </div>
+                    </div>
+
+                    <div className={styles.progressSection}>
+                        <div className={styles.progressLabel}>
+                            <span>Progress</span>
+                            <span>{Math.round(opponentStats.progress)}%</span>
+                        </div>
+                        <div className={styles.progressBar}>
+                            <div
+                                className={styles.progressFill}
+                                style={{ width: `${opponentStats.progress}%` }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Current Number Display */}
             <div className={styles.numberDisplay}>
                 <div className={styles.currentNumberContainer}>
-                    {gameState.currentNumber && (
+                    {gameState.currentNumber ? (
                         <div className={`${styles.currentNumber} ${animatingNumber ? styles.animating : ''}`}>
                             <div className={styles.numberColumn}>
                                 {getNumberColumn(gameState.currentNumber)}
@@ -328,8 +440,7 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
                                 {gameState.currentNumber}
                             </div>
                         </div>
-                    )}
-                    {!gameState.currentNumber && (
+                    ) : (
                         <div className={styles.waitingForNumber}>
                             Waiting for number...
                         </div>
@@ -337,14 +448,43 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
                 </div>
             </div>
 
-            {/* Phase Message */}
-            <div className={styles.phaseMessage}>
-                {getPhaseMessage()}
+            {/* Game Actions */}
+            <div className={styles.gameActions}>
+                {gameState.gamePhase === 'CALLING' && isMyTurn && (
+                    <button
+                        className={`${styles.actionButton} ${styles.callButton}`}
+                        onClick={handleCallNumber}
+                        disabled={isGameFinished}
+                    >
+                        🎱 Call Next Number
+                    </button>
+                )}
+
+                {gameState.gamePhase === 'MARKING' && (
+                    <div className={styles.actionButtons}>
+                        <button
+                            className={`${styles.actionButton} ${styles.bingoButton}`}
+                            onClick={handleClaimBingo}
+                            disabled={isGameFinished}
+                        >
+                            🏆 BINGO!
+                        </button>
+                        {isMyTurn && (
+                            <button
+                                className={`${styles.actionButton} ${styles.continueButton}`}
+                                onClick={handleContinueGame}
+                                disabled={isGameFinished}
+                            >
+                                ➡️ Continue
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Timer */}
             {isMyTurn && !isGameFinished && (
-                <div className={styles.timerContainer}>
+                <div className={styles.timerSection}>
                     <MoveTimer
                         timeLeft={timer.timeLeft}
                         isWarning={timer.isWarning}
@@ -358,67 +498,53 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
             {/* Bingo Cards */}
             <div className={styles.cardsContainer}>
                 <div className={styles.cardSection}>
-                    <h3>Your Card</h3>
+                    <h3 className={styles.cardTitle}>Your Card</h3>
                     {renderBingoCard(myCard.card, myCard.markedNumbers, true)}
                 </div>
                 
                 <div className={styles.cardSection}>
-                    <h3>Opponent's Card</h3>
+                    <h3 className={styles.cardTitle}>Opponent's Card</h3>
                     {renderBingoCard(opponentCard.card, opponentCard.markedNumbers, false)}
                 </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className={styles.actionsContainer}>
-                {gameState.gamePhase === 'CALLING' && (
-                    <button
-                        className={`${styles.actionButton} ${styles.callButton}`}
-                        onClick={handleCallNumber}
-                        disabled={isGameFinished}
-                    >
-                        🎱 Call Number
-                    </button>
-                )}
-
-                {gameState.gamePhase === 'MARKING' && (
-                    <>
-                        <button
-                            className={`${styles.actionButton} ${styles.bingoButton}`}
-                            onClick={handleClaimBingo}
-                            disabled={isGameFinished}
-                        >
-                            🏆 BINGO!
-                        </button>
-                        <button
-                            className={`${styles.actionButton} ${styles.callButton}`}
-                            onClick={handleContinueGame}
-                            disabled={isGameFinished}
-                        >
-                            ➡️ Continue
-                        </button>
-                    </>
-                )}
-            </div>
-
             {/* Called Numbers History */}
             <div className={styles.calledNumbers}>
-                <h4>Called Numbers ({gameState.calledNumbers.length}/75)</h4>
+                <h4>Recent Numbers ({gameState.calledNumbers.length}/75)</h4>
                 <div className={styles.numbersGrid}>
-                    {gameState.calledNumbers.slice(-20).map((number, index) => (
+                    {gameState.calledNumbers.slice(-15).map((number, index) => (
                         <div 
                             key={number} 
                             className={`${styles.calledNumber} ${number === gameState.currentNumber ? styles.latest : ''}`}
                         >
-                            {getNumberColumn(number)}-{number}
+                            {getNumberColumn(number)}{number}
                         </div>
                     ))}
                 </div>
             </div>
 
+            {/* Game Status */}
+            <div className={`${styles.gameStatus} ${
+                isGameFinished ? styles.gameFinished : 
+                isMyTurn ? styles.myTurn : styles.opponentTurn
+            }`}>
+                {isGameFinished ? (
+                    <span>🏁 Game Finished</span>
+                ) : gameState.gamePhase === 'CALLING' && isMyTurn ? (
+                    <span>🎲 Your Turn - Call Number</span>
+                ) : gameState.gamePhase === 'MARKING' ? (
+                    <span>🎯 Mark Numbers on Your Card</span>
+                ) : isMyTurn ? (
+                    <span>🟢 Your Turn</span>
+                ) : (
+                    <span>🟡 Opponent's Turn</span>
+                )}
+            </div>
+
             <TimeoutWarningModal
                 isOpen={showWarningModal}
                 timeLeft={timer.isWarning ? timer.timeLeft : 10}
-                onClose={handleModalClose}
+                onClose={() => {}}
                 onMakeMove={handleMakeMove}
             />
         </div>

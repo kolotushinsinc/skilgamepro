@@ -111,11 +111,20 @@ export class BingoGameLogic implements IGameLogic {
             return { newState: gameState, error: 'Player not found', turnShouldSwitch: false };
         }
 
-        console.log(`[Bingo] Processing direct move: ${move.type}, current phase: ${newState.gamePhase}`);
+        // Check if it's player's turn (except for CLAIM_BINGO which can be done anytime)
+        if (move.type !== 'CLAIM_BINGO' && newState.turn !== playerId) {
+            return { newState: gameState, error: 'Not your turn', turnShouldSwitch: false };
+        }
+
+        console.log(`[Bingo] Processing direct move: ${move.type}, current phase: ${newState.gamePhase}, current turn: ${newState.turn}`);
 
         switch (move.type) {
             case 'CALL_NUMBER':
-                // Auto-call numbers - any player can trigger this
+                // Only current player can call numbers during CALLING phase
+                if (newState.gamePhase !== 'CALLING') {
+                    return { newState: gameState, error: 'Not in calling phase', turnShouldSwitch: false };
+                }
+
                 const callResult = engine.callNextNumber();
                 if (!callResult.success) {
                     return { newState: gameState, error: callResult.error, turnShouldSwitch: false };
@@ -128,10 +137,16 @@ export class BingoGameLogic implements IGameLogic {
 
                 console.log(`[Bingo] Called number: ${callResult.number}`);
                 
-                return { newState, turnShouldSwitch: false };
+                // Switch turn after calling a number
+                this.switchPlayerDirect(newState, players);
+                return { newState, turnShouldSwitch: true };
 
             case 'MARK_NUMBER':
-                // Players can mark numbers anytime during MARKING phase
+                // Players can mark numbers during MARKING phase
+                if (newState.gamePhase !== 'MARKING') {
+                    return { newState: gameState, error: 'Not in marking phase', turnShouldSwitch: false };
+                }
+
                 if (!move.number) {
                     return { newState: gameState, error: 'Number is required', turnShouldSwitch: false };
                 }
@@ -144,6 +159,7 @@ export class BingoGameLogic implements IGameLogic {
                 newState.players[playerIndex].markedNumbers = new Set(engine.state.players[playerIndex].markedNumbers);
                 console.log(`[Bingo] Player ${playerIndex} marked number: ${move.number}`);
 
+                // Don't switch turn for marking - same player continues
                 return { newState, turnShouldSwitch: false };
 
             case 'CONTINUE_GAME':
@@ -151,11 +167,14 @@ export class BingoGameLogic implements IGameLogic {
                 if (newState.gamePhase === 'MARKING') {
                     newState.gamePhase = 'CALLING';
                     console.log(`[Bingo] Continuing game - back to CALLING phase`);
+                    // Switch turn when continuing to calling phase
+                    this.switchPlayerDirect(newState, players);
+                    return { newState, turnShouldSwitch: true };
                 }
                 return { newState, turnShouldSwitch: false };
 
             case 'CLAIM_BINGO':
-                // Players can claim BINGO anytime
+                // Players can claim BINGO anytime (no turn restriction)
                 const claimResult = engine.claimBingo(playerIndex);
                 if (!claimResult.success) {
                     return { newState: gameState, error: claimResult.error, turnShouldSwitch: false };
@@ -178,11 +197,15 @@ export class BingoGameLogic implements IGameLogic {
     }
 
     private switchPlayerDirect(gameState: IBingoGameState, players: Room['players']): void {
-        gameState.currentPlayer = gameState.currentPlayer === 0 ? 1 : 0;
-        gameState.gamePhase = 'CALLING';
-        gameState.turn = (players[gameState.currentPlayer].user as any)._id.toString();
+        // Find current player index
+        const currentPlayerIndex = players.findIndex(p => (p.user as any)._id.toString() === gameState.turn);
         
-        console.log(`[Bingo] Switched to player ${gameState.currentPlayer}, turn: ${gameState.turn}`);
+        // Switch to the other player
+        const nextPlayerIndex = currentPlayerIndex === 0 ? 1 : 0;
+        gameState.currentPlayer = nextPlayerIndex;
+        gameState.turn = (players[nextPlayerIndex].user as any)._id.toString();
+        
+        console.log(`[Bingo] Switched from player ${currentPlayerIndex} to player ${nextPlayerIndex}, new turn: ${gameState.turn}`);
     }
 
     private isNumberOnCard(card: any, number: number): boolean {

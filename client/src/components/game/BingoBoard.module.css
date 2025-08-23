@@ -1,52 +1,277 @@
 .bingoBoard {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
-    padding: 20px;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    gap: 24px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: white;
-    font-family: 'Arial', sans-serif;
+    position: relative;
+    overflow-x: hidden;
 }
 
-/* Current Number Display */
-.numberDisplay {
-    display: flex;
-    justify-content: center;
+.bingoBoard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bingoBoard > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Game Header */
+.gameHeader {
+    text-align: center;
     margin-bottom: 20px;
 }
 
-.currentNumberContainer {
-    background: linear-gradient(145deg, #ff6b6b, #ee5a24);
+.gameTitle {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(135deg, #ffffff, #f8f9fa, #e9ecef);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    letter-spacing: -2px;
+}
+
+.gameSubtitle {
+    font-size: 1.1rem;
+    margin: 8px 0 0 0;
+    opacity: 0.9;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Players Info Cards */
+.playersInfo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 20px;
+}
+
+.playerCard {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
     border-radius: 20px;
-    padding: 20px 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    min-width: 200px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.playerCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    border-radius: 20px 20px 0 0;
+}
+
+.playerCard.currentPlayer {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    transform: translateY(-4px);
+}
+
+.playerCard.currentPlayer::before {
+    background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.playerHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.playerIcon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.playerDetails h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: white;
+}
+
+.playerStatus {
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.playerStats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.statBlock {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 60px;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.statValue {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+}
+
+.progressSection {
+    margin-top: 16px;
+}
+
+.progressLabel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.progressBar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.progressFill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Number Display */
+.numberDisplay {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.currentNumberContainer {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 24px;
+    padding: 32px 48px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    min-width: 240px;
     text-align: center;
     position: relative;
     overflow: hidden;
+}
+
+.currentNumberContainer::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #667eea);
+    border-radius: 26px;
+    z-index: -1;
+    animation: borderRotate 3s linear infinite;
+}
+
+@keyframes borderRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .currentNumber {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    transition: all 0.3s ease;
+    gap: 8px;
 }
 
 .currentNumber.animating {
-    animation: numberPop 2s ease-out;
+    animation: numberReveal 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-@keyframes numberPop {
+@keyframes numberReveal {
     0% {
-        transform: scale(0.5) rotate(-180deg);
+        transform: scale(0) rotate(-180deg);
         opacity: 0;
     }
     50% {
-        transform: scale(1.2) rotate(0deg);
+        transform: scale(1.3) rotate(0deg);
         opacity: 1;
     }
     100% {
@@ -56,239 +281,55 @@
 }
 
 .numberColumn {
-    font-size: 24px;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    letter-spacing: 2px;
 }
 
 .numberValue {
-    font-size: 48px;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+    font-size: 64px;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    line-height: 1;
 }
 
 .waitingForNumber {
-    font-size: 18px;
-    color: #fff;
+    font-size: 20px;
+    color: white;
     opacity: 0.8;
     font-style: italic;
+    font-weight: 500;
 }
 
-/* Phase Message */
-.phaseMessage {
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    padding: 15px 30px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 25px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    margin-bottom: 20px;
-}
-
-/* Cards Container */
-.cardsContainer {
+/* Game Actions */
+.gameActions {
     display: flex;
-    gap: 40px;
     justify-content: center;
-    flex-wrap: wrap;
-    width: 100%;
-    max-width: 1200px;
+    margin-bottom: 24px;
 }
 
-.cardSection {
+.actionButtons {
     display: flex;
-    flex-direction: column;
+    gap: 16px;
     align-items: center;
-    gap: 15px;
-}
-
-.cardSection h3 {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-/* Bingo Card */
-.bingoCard {
-    background: linear-gradient(145deg, #ffffff, #f0f0f0);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-    border: 3px solid #fff;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.bingoCard::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
-    border-radius: 17px;
-    z-index: -1;
-    animation: borderGlow 3s linear infinite;
-}
-
-@keyframes borderGlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.myCard {
-    transform: scale(1.05);
-}
-
-.myCard::before {
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
-    background-size: 400% 400%;
-}
-
-.opponentCard::before {
-    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
-}
-
-/* Card Header */
-.cardHeader {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 2px;
-    margin-bottom: 10px;
-}
-
-.columnHeader {
-    background: linear-gradient(145deg, #2c3e50, #34495e);
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    padding: 15px 0;
-    border-radius: 8px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Card Grid */
-.cardGrid {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.cardRow {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 2px;
-}
-
-.cardCell {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(145deg, #ecf0f1, #bdc3c7);
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #2c3e50;
-    cursor: default;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-.cardCell:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.cardCell.clickable {
-    cursor: pointer;
-    background: linear-gradient(145deg, #74b9ff, #0984e3);
-    color: white;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(116, 185, 255, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(116, 185, 255, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(116, 185, 255, 0); }
-}
-
-.cardCell.marked {
-    background: linear-gradient(145deg, #00b894, #00a085);
-    color: white;
-    position: relative;
-}
-
-.cardCell.marked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 24px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.cardCell.freeSpace {
-    background: linear-gradient(145deg, #fdcb6e, #e17055);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.cardCell.recentlyMarked {
-    animation: markAnimation 1s ease-out;
-}
-
-@keyframes markAnimation {
-    0% {
-        transform: scale(1) rotate(0deg);
-        background: linear-gradient(145deg, #74b9ff, #0984e3);
-    }
-    50% {
-        transform: scale(1.3) rotate(180deg);
-        background: linear-gradient(145deg, #fdcb6e, #e17055);
-    }
-    100% {
-        transform: scale(1) rotate(360deg);
-        background: linear-gradient(145deg, #00b894, #00a085);
-    }
-}
-
-/* Action Buttons */
-.actionsContainer {
-    display: flex;
-    gap: 20px;
-    margin: 20px 0;
 }
 
 .actionButton {
-    padding: 15px 30px;
-    font-size: 18px;
-    font-weight: bold;
-    border: none;
-    border-radius: 25px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
     position: relative;
     overflow: hidden;
 }
@@ -300,41 +341,36 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .actionButton:hover::before {
     left: 100%;
 }
 
-.callButton {
-    background: linear-gradient(145deg, #74b9ff, #0984e3);
-    color: white;
+.actionButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
-.callButton:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+.callButton {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.continueButton {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
 }
 
 .bingoButton {
-    background: linear-gradient(145deg, #fd79a8, #e84393);
-    color: white;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
     animation: bingoGlow 2s ease-in-out infinite alternate;
 }
 
 @keyframes bingoGlow {
-    from {
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    }
-    to {
-        box-shadow: 0 8px 25px rgba(253, 121, 168, 0.5);
-    }
-}
-
-.bingoButton:hover {
-    transform: translateY(-3px) scale(1.05);
+    from { box-shadow: 0 8px 16px rgba(79, 172, 254, 0.4); }
+    to { box-shadow: 0 12px 24px rgba(79, 172, 254, 0.6); }
 }
 
 .actionButton:disabled {
@@ -343,22 +379,227 @@
     transform: none;
 }
 
+/* Timer Section */
+.timerSection {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.gameTimer {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 16px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Cards Container */
+.cardsContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    width: 100%;
+    max-width: 1000px;
+    margin-bottom: 32px;
+}
+
+.cardSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.cardTitle {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Bingo Card */
+.bingoCard {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.bingoCard::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #667eea);
+    border-radius: 22px;
+    z-index: -1;
+    animation: cardGlow 4s linear infinite;
+}
+
+@keyframes cardGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.myCard {
+    transform: scale(1.02);
+}
+
+.myCard::before {
+    background: linear-gradient(45deg, #4facfe, #00f2fe, #4facfe);
+    background-size: 200% 200%;
+}
+
+.opponentCard::before {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+}
+
+/* Card Header */
+.cardHeader {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 3px;
+    margin-bottom: 12px;
+}
+
+.columnHeader {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    padding: 16px 0;
+    border-radius: 12px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    letter-spacing: 1px;
+}
+
+/* Card Grid */
+.cardGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.cardRow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 3px;
+}
+
+.cardCell {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    cursor: default;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.cardCell:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cardCell.clickable {
+    cursor: pointer;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    animation: clickablePulse 2s infinite;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes clickablePulse {
+    0% { box-shadow: 0 0 0 0 rgba(79, 172, 254, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(79, 172, 254, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(79, 172, 254, 0); }
+}
+
+.cardCell.marked {
+    background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    color: white;
+    position: relative;
+}
+
+.cardCell.marked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.cardCell.freeSpace {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.5px;
+}
+
+.cardCell.recentlyMarked {
+    animation: markSuccess 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes markSuccess {
+    0% {
+        transform: scale(1) rotate(0deg);
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+    }
+    50% {
+        transform: scale(1.3) rotate(180deg);
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+    }
+    100% {
+        transform: scale(1) rotate(360deg);
+        background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    }
+}
+
 /* Called Numbers */
 .calledNumbers {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 20px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 24px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     width: 100%;
-    max-width: 800px;
+    max-width: 600px;
+    margin-bottom: 24px;
 }
 
 .calledNumbers h4 {
-    margin: 0 0 15px 0;
+    margin: 0 0 16px 0;
     text-align: center;
     font-size: 18px;
+    font-weight: 700;
     color: white;
+    letter-spacing: 0.5px;
 }
 
 .numbersGrid {
@@ -369,25 +610,27 @@
 }
 
 .calledNumber {
-    background: linear-gradient(145deg, #636e72, #2d3436);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    backdrop-filter: blur(10px);
     color: white;
     padding: 8px 12px;
-    border-radius: 20px;
+    border-radius: 12px;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 700;
     text-align: center;
-    min-width: 50px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    min-width: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .calledNumber.latest {
-    background: linear-gradient(145deg, #ff6b6b, #ee5a24);
-    animation: latestNumber 1s ease-out;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    animation: latestNumberPop 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
-@keyframes latestNumber {
+@keyframes latestNumberPop {
     0% {
         transform: scale(0.5);
         opacity: 0;
@@ -402,16 +645,61 @@
     }
 }
 
+/* Game Status */
+.gameStatus {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 16px 32px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gameStatus.myTurn {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.3), rgba(0, 242, 254, 0.3));
+    border-color: rgba(79, 172, 254, 0.5);
+}
+
+.gameStatus.opponentTurn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.gameStatus.gameFinished {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.3), rgba(245, 87, 108, 0.3));
+    border-color: rgba(240, 147, 251, 0.5);
+}
+
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .cardsContainer {
-        flex-direction: column;
-        gap: 20px;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        max-width: 500px;
+    }
+    
+    .playersInfo {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .bingoBoard {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .gameTitle {
+        font-size: 2.5rem;
     }
     
     .cardCell {
-        width: 50px;
-        height: 50px;
+        width: 56px;
+        height: 56px;
         font-size: 16px;
     }
     
@@ -421,23 +709,29 @@
     }
     
     .numberValue {
-        font-size: 36px;
+        font-size: 48px;
     }
     
     .numberColumn {
-        font-size: 20px;
+        font-size: 24px;
     }
     
     .actionButton {
         padding: 12px 24px;
-        font-size: 16px;
+        font-size: 14px;
+    }
+    
+    .actionButtons {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
     }
 }
 
 @media (max-width: 480px) {
     .cardCell {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         font-size: 14px;
     }
     
@@ -446,8 +740,19 @@
         padding: 10px 0;
     }
     
-    .bingoBoard {
-        padding: 10px;
-        gap: 15px;
+    .bingoCard {
+        padding: 16px;
+    }
+    
+    .gameTitle {
+        font-size: 2rem;
+    }
+    
+    .playersInfo {
+        gap: 16px;
+    }
+    
+    .playerCard {
+        padding: 16px;
     }
 }
