@@ -39,12 +39,33 @@ export class BackgammonEngine {
     private createInitialBoard(): Point[] {
         const board: Point[] = Array(24).fill(null).map(() => ({ pieces: [] }));
 
-        for (let i = 0; i < 15; i++) {
+        // Standard backgammon setup
+        // White pieces (moving from low numbers to high numbers: 0->23)
+        for (let i = 0; i < 2; i++) {
             board[0].pieces.push({ color: 'white' });
         }
+        for (let i = 0; i < 5; i++) {
+            board[11].pieces.push({ color: 'white' });
+        }
+        for (let i = 0; i < 3; i++) {
+            board[16].pieces.push({ color: 'white' });
+        }
+        for (let i = 0; i < 5; i++) {
+            board[18].pieces.push({ color: 'white' });
+        }
 
-        for (let i = 0; i < 15; i++) {
+        // Black pieces (moving from high numbers to low numbers: 23->0)
+        for (let i = 0; i < 2; i++) {
+            board[23].pieces.push({ color: 'black' });
+        }
+        for (let i = 0; i < 5; i++) {
             board[12].pieces.push({ color: 'black' });
+        }
+        for (let i = 0; i < 3; i++) {
+            board[7].pieces.push({ color: 'black' });
+        }
+        for (let i = 0; i < 5; i++) {
+            board[5].pieces.push({ color: 'black' });
         }
 
         return board;

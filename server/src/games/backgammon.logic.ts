@@ -23,14 +23,29 @@ type BackgammonMove = {
 
 function createEngineFromState(gameState: BackgammonState): BackgammonEngine {
     const engine = new BackgammonEngine();
-    engine.restoreGameState({
-        board: gameState.board,
-        bar: gameState.bar,
-        home: gameState.home,
+    
+    // Deep clone the state to avoid reference issues
+    const clonedState = {
+        board: gameState.board.map(point => ({
+            pieces: point.pieces.map(piece => ({ color: piece.color }))
+        })),
+        bar: {
+            white: gameState.bar.white.map(piece => ({ color: piece.color })),
+            black: gameState.bar.black.map(piece => ({ color: piece.color }))
+        },
+        home: {
+            white: gameState.home.white.map(piece => ({ color: piece.color })),
+            black: gameState.home.black.map(piece => ({ color: piece.color }))
+        },
         currentPlayer: gameState.currentPlayer,
-        diceRoll: gameState.diceRoll,
-        moveHistory: gameState.moveHistory
-    });
+        diceRoll: gameState.diceRoll ? {
+            dice: [...gameState.diceRoll.dice],
+            availableMoves: [...gameState.diceRoll.availableMoves]
+        } : null,
+        moveHistory: gameState.moveHistory.map(move => ({ ...move }))
+    };
+    
+    engine.restoreGameState(clonedState);
     return engine;
 }
 
@@ -411,7 +426,7 @@ export const backgammonLogic: IGameLogic = {
     },
     
     makeBotMove(gameState: BackgammonState, playerIndex: 0 | 1): GameMove {
-        console.log('[Backgammon] Bot making move for player:', playerIndex);
+        console.log('[Backgammon] Bot making move for player:', playerIndex, 'Current player:', gameState.currentPlayer, 'Turn phase:', gameState.turnPhase);
         
         const expectedColor: PlayerColor = playerIndex === 0 ? 'white' : 'black';
         
@@ -421,17 +436,27 @@ export const backgammonLogic: IGameLogic = {
         }
 
         if (gameState.turnPhase !== 'MOVING') {
-            console.log('[Backgammon] Bot cannot move - wrong phase');
+            console.log('[Backgammon] Bot cannot move - wrong phase:', gameState.turnPhase);
+            return {};
+        }
+
+        if (!gameState.diceRoll) {
+            console.log('[Backgammon] Bot cannot move - no dice roll available');
             return {};
         }
 
         const engine = createEngineFromState(gameState);
         const possibleMoves = engine.getPossibleMoves();
         
-        console.log('[Backgammon] Available moves for bot:', possibleMoves.length);
+        console.log('[Backgammon] Available moves for bot:', possibleMoves.length, 'Dice:', gameState.diceRoll?.dice, 'Available dice:', gameState.diceRoll?.availableMoves);
         
         if (possibleMoves.length > 0) {
             const bestMove = findBestBackgammonMove(gameState, possibleMoves, expectedColor, engine);
+            
+            if (!bestMove) {
+                console.log('[Backgammon] No best move found despite available moves');
+                return {};
+            }
             
             const botMove = {
                 from: bestMove.from,

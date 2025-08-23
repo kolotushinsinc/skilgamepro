@@ -26,7 +26,7 @@ interface GameRoomState {
     id: string;
     gameType: string;
     players: Player[];
-    gameState: { board: ('X' | 'O' | null)[]; turn: string; };
+    gameState: any; // Generic game state for all games
     bet: number;
     isPrivate?: boolean;
     invitationToken?: string;
@@ -106,6 +106,9 @@ const GamePage: React.FC = () => {
 
         const onGameUpdate = (state: GameRoomState) => {
             console.log('Game updated:', state);
+            console.log('Game state board:', state.gameState?.board);
+            console.log('Current player:', state.gameState?.currentPlayer);
+            console.log('Turn phase:', state.gameState?.turnPhase);
             setRoomState(state);
         };
 

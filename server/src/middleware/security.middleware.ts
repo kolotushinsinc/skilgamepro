@@ -44,6 +44,7 @@ export const corsConfig = {
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:5178',
+      'http://localhost:5177',
       'https://platform.skillgame.pro',
       'https://crm.skillgame.pro'
     ];
@@ -61,7 +62,7 @@ export const corsConfig = {
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-socket-id']
 };
 
 // Enhanced Helmet configuration for security headers

@@ -464,6 +464,7 @@ async function processBotMoveInRegularGame(
             const botPlayerId = nextPlayer.user._id.toString();
             
             if ((currentRoom.gameState as any).turnPhase === 'ROLLING') {
+                console.log('[Bot] Bot is in ROLLING phase, rolling dice first');
                 const { newState: diceState, error: diceError } = rollDiceForBackgammon(
                     currentRoom.gameState,
                     botPlayerId,
@@ -478,10 +479,13 @@ async function processBotMoveInRegularGame(
                 currentRoom.gameState = diceState;
                 io.to(roomId).emit('gameUpdate', getPublicRoomState(currentRoom));
                 
+                // If still in ROLLING phase, bot has no moves - exit
                 if ((currentRoom.gameState as any).turnPhase === 'ROLLING') {
+                    console.log('[Bot] No moves available after dice roll, skipping turn');
                     return;
                 }
                 
+                console.log('[Bot] Dice rolled successfully, proceeding to moves');
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
         }
@@ -492,10 +496,17 @@ async function processBotMoveInRegularGame(
         while (botCanMove && safetyBreak < 10) {
             safetyBreak++;
             
-            const botPlayerIndex = currentRoom.players.findIndex(p => isBot(p)) as 0 | 1;
-            console.log(`[Bot] Bot player index: ${botPlayerIndex}, game phase: ${(currentRoom.gameState as any).gamePhase}`);
+            const botPlayerIndex = currentRoom.players.findIndex(p => isBot(p));
+            console.log(`[Bot] Bot player index: ${botPlayerIndex}, total players: ${currentRoom.players.length}`);
+            console.log(`[Bot] Players:`, currentRoom.players.map(p => ({ id: (p.user._id as any).toString(), username: p.user.username, isBot: isBot(p) })));
+            console.log(`[Bot] Current turn: ${currentRoom.gameState.turn}, Bot ID: ${(nextPlayer.user._id as any).toString()}`);
             
-            const botMove = gameLogic.makeBotMove(currentRoom.gameState, botPlayerIndex);
+            if (botPlayerIndex === -1) {
+                console.log('[Bot] No bot found in players array, breaking');
+                break;
+            }
+            
+            const botMove = gameLogic.makeBotMove(currentRoom.gameState, botPlayerIndex as 0 | 1);
             console.log(`[Bot] Bot move generated:`, botMove);
             
             if (!botMove || Object.keys(botMove).length === 0) {
@@ -560,8 +571,14 @@ async function processBotMoveInRegularGame(
         }
 
         if (currentRoom) {
-            console.log('[Bot] Emitting game update');
-            io.to(roomId).emit('gameUpdate', getPublicRoomState(currentRoom));
+            const publicState = getPublicRoomState(currentRoom);
+            console.log('[Bot] Emitting game update:', {
+                gameType: publicState.gameType,
+                board: publicState.gameState?.board?.slice(0, 3), // Show first 3 points
+                currentPlayer: publicState.gameState?.currentPlayer,
+                turnPhase: publicState.gameState?.turnPhase
+            });
+            io.to(roomId).emit('gameUpdate', publicState);
             
             // ВАЖНО: После хода бота запускать таймер для следующего игрока-человека
             // @ts-ignore
@@ -729,6 +746,15 @@ export const initializeSocket = (io: Server) => {
                     if (!botDiceError) {
                         currentRoom.gameState = botDiceState;
                         io.to(roomId).emit('gameUpdate', getPublicRoomState(currentRoom));
+                        
+                        // After bot rolls dice successfully, trigger bot moves if in MOVING phase
+                        if ((currentRoom.gameState as any).turnPhase === 'MOVING') {
+                            console.log('[Bot] Bot rolled dice successfully, now making moves');
+                            setTimeout(() => {
+                                const gameLogic = gameLogics[currentRoom.gameType];
+                                processBotMoveInRegularGame(io, roomId, nextPlayer, gameLogic);
+                            }, 800);
+                        }
                     }
                 }, 1000);
             }

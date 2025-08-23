@@ -44,11 +44,11 @@ interface BackgammonBoardProps {
     isMyTurn: boolean;
     isGameFinished: boolean;
     myPlayerIndex: 0 | 1;
-    onTimeout?: () => void; // Called when player times out
-    currentPlayerId?: string; // Current player's ID for timer synchronization
-    myPlayerId?: string; // My player ID
-    hasOpponent?: boolean; // Whether there are 2 players in the game
-    onGameTimeout?: (data: any) => void; // Handle server timeout event
+    onTimeout?: () => void;
+    currentPlayerId?: string;
+    myPlayerId?: string;
+    hasOpponent?: boolean;
+    onGameTimeout?: (data: any) => void;
 }
 
 const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
@@ -71,16 +71,14 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
     const [showWarningModal, setShowWarningModal] = useState(false);
     const { socket } = useSocket();
 
-    console.log('[BackgammonBoard] Render:', {
-        isMyTurn,
-        isGameFinished,
-        myPlayerIndex,
-        currentPlayer: gameState.currentPlayer,
-        turnPhase: gameState.turnPhase,
-        diceRoll: gameState.diceRoll
-    });
-
     const myColor: PlayerColor = myPlayerIndex === 0 ? 'white' : 'black';
+
+    // Calculate progress for each player
+    const getPlayerProgress = useCallback((color: PlayerColor) => {
+        const homePieces = gameState.home[color].length;
+        const totalPieces = 15;
+        return (homePieces / totalPieces) * 100;
+    }, [gameState.home]);
 
     const handleTimeout = useCallback(() => {
         setShowWarningModal(false);
@@ -88,17 +86,13 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
     }, [onTimeout]);
 
     const handleWarning = useCallback(() => {
-        console.log('[Timer] Client triggered warning - showing modal at exactly 10 seconds');
         setShowWarningModal(true);
-        // Timer will be paused by the modal component
     }, []);
 
     const handleMakeMove = useCallback(() => {
         setShowWarningModal(false);
-        // Timer will resume automatically when modal closes
     }, []);
 
-    // Game is considered started when there are 2 players and game is not finished
     const isGameStarted = !isGameFinished && gameState && (hasOpponent || false);
 
     const timer = useMoveTimer({
@@ -116,36 +110,26 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
         // Don't allow closing modal during warning period
     }, []);
 
-    // Socket event handlers for server-side timer synchronization
+    // Socket event handlers
     useEffect(() => {
         if (!socket) return;
 
         const handleMoveTimerStart = (data: { timeLimit: number; currentPlayerId: string; startTime: number }) => {
             if (data.currentPlayerId === myPlayerId) {
-                // Server started timer for my turn, sync with server time
-                console.log('[Timer] Server timer started for my turn, syncing...', data);
                 timer.syncWithServer(data.startTime, data.timeLimit);
             }
         };
 
         const handleMoveTimerWarning = (data: { timeRemaining: number; currentPlayerId: string }) => {
             if (data.currentPlayerId === myPlayerId) {
-                // Server warning received - but modal will be shown by client timer at exactly 10 seconds
-                console.log('[Timer] Server timer warning received - client timer will handle modal display');
                 timer.showWarning();
-                // Modal will be shown by client timer when timeLeft === 10
             }
         };
 
         const handleMoveTimerTimeout = (data: { timedOutPlayerId: string }) => {
             if (data.timedOutPlayerId === myPlayerId) {
-                // I timed out on server
-                console.log('[Timer] Server timeout - I timed out');
                 setShowWarningModal(false);
                 onTimeout?.();
-            } else {
-                // Opponent timed out
-                console.log('[Timer] Server timeout - opponent timed out');
             }
         };
 
@@ -156,10 +140,8 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
             winnerName: string;
             message: string;
         }) => {
-            console.log('[Timer] Game timeout event:', data);
             setShowWarningModal(false);
             
-            // Call parent handler to show proper game result modal
             if (onGameTimeout) {
                 onGameTimeout(data);
             }
@@ -249,18 +231,12 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
     }, [gameState, myColor]);
 
     const handlePointClick = useCallback((pointIndex: number) => {
-        console.log('[BackgammonBoard] Point clicked:', pointIndex);
-        
         if (!isMyTurn || isGameFinished || gameState.turnPhase !== 'MOVING') {
-            console.log('[BackgammonBoard] Click ignored - not my turn or wrong phase');
             return;
         }
 
         if (selectedPoint !== null) {
-            console.log('[BackgammonBoard] Attempting move from', selectedPoint, 'to', pointIndex);
-            
             if (selectedPoint === pointIndex) {
-                console.log('[BackgammonBoard] Deselecting point');
                 setSelectedPoint(null);
                 setPossibleMoves([]);
                 return;
@@ -288,10 +264,7 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                         dieValue
                     };
 
-                    console.log('[BackgammonBoard] Sending move:', move);
                     handleMoveWithAnimation(move);
-                } else {
-                    console.log('[BackgammonBoard] Invalid die value:', dieValue);
                 }
             } else {
                 selectPoint(pointIndex);
@@ -305,7 +278,6 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
     const selectPoint = useCallback((pointIndex: number) => {
         if (pointIndex === -1) {
             if (gameState.bar[myColor].length === 0) return;
-            console.log('[BackgammonBoard] Selecting bar');
             setSelectedPoint(-1);
             const moves = getPossibleMovesForPoint(-1);
             setPossibleMoves(moves);
@@ -317,7 +289,6 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
         if (point.pieces.length === 0) return;
         if (point.pieces[point.pieces.length - 1].color !== myColor) return;
 
-        console.log('[BackgammonBoard] Selecting point', pointIndex);
         setSelectedPoint(pointIndex);
         const moves = getPossibleMovesForPoint(pointIndex);
         setPossibleMoves(moves);
@@ -351,7 +322,7 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
             onMove(move);
             setSelectedPoint(null);
             setPossibleMoves([]);
-            timer.resetTimer(); // Reset timer after move
+            timer.resetTimer();
         }, 250);
     }, [onMove, animateMove]);
 
@@ -376,7 +347,6 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
 
         let pointClass = `${styles.point}`;
         if (isDark) pointClass += ` ${styles.darkPoint}`;
-        else pointClass += ` ${styles.lightPoint}`;
         if (isSelected) pointClass += ` ${styles.selectedPoint}`;
         if (isPossibleMove) pointClass += ` ${styles.possibleMove}`;
 
@@ -390,6 +360,9 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                 onClick={() => handlePointClick(pointIndex)}
             >
                 <div className={triangleClass} />
+                <div className={styles.pointNumber}>
+                    {pointIndex + 1}
+                </div>
                 <div className={piecesClass}>
                     {point.pieces.slice(0, 5).map((piece, index) => renderPiece(piece, index, pointIndex))}
                     {point.pieces.length > 5 && (
@@ -434,63 +407,120 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
         );
     }, [gameState.diceRoll, isRollingDice]);
 
+    const whiteProgress = getPlayerProgress('white');
+    const blackProgress = getPlayerProgress('black');
+
     return (
         <div className={styles.backgammonBoard}>
-            <div className={styles.gameInfo}>
-                <div className={styles.playerInfo}>
-                    <div className={styles.playerName}>
-                        {myPlayerIndex === 0 ? 'You' : 'Opponent'}
+            <div className={styles.gameHeader}>
+                <h1 className={styles.gameTitle}>🎯 BACKGAMMON</h1>
+                <p className={styles.gameSubtitle}>Next-Gen Gaming Experience</p>
+            </div>
+
+            <div className={styles.playersInfo}>
+                {/* White Player Card */}
+                <div className={`${styles.playerCard} ${styles.whitePlayer} ${
+                    gameState.currentPlayer === 'white' ? styles.currentPlayer : ''
+                }`}>
+                    <div className={styles.playerHeader}>
+                        <div className={styles.playerIcon}>⚡</div>
+                        <div className={styles.playerDetails}>
+                            <h3>{myPlayerIndex === 0 ? 'White' : 'White'}</h3>
+                            <div className={styles.playerStatus}>
+                                {gameState.currentPlayer === 'white' && !isGameFinished ? 'YOUR TURN' : 'WAITING'}
+                            </div>
+                        </div>
                     </div>
-                    <div className={styles.playerColor}>
-                        White (moves first)
+
+                    <div className={styles.playerStats}>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>Born Off</div>
+                            <div className={styles.statValue}>{gameState.home.white.length}/15</div>
+                        </div>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>On Bar</div>
+                            <div className={styles.statValue}>{gameState.bar.white.length}</div>
+                        </div>
+                    </div>
+
+                    <div className={styles.progressSection}>
+                        <div className={styles.progressLabel}>
+                            <span>Progress</span>
+                            <span>{Math.round(whiteProgress)}%</span>
+                        </div>
+                        <div className={styles.progressBar}>
+                            <div 
+                                className={styles.progressFill}
+                                style={{ width: `${whiteProgress}%` }}
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div className={styles.diceSection}>
-                    {isMyTurn && gameState.turnPhase === 'ROLLING' && !isGameFinished && (
-                        <button
-                            onClick={handleRollDice}
-                            className={styles.rollButton}
-                            disabled={isRollingDice}
-                        >
-                            {isRollingDice ? 'Rolling...' : 'Roll Dice'}
-                        </button>
-                    )}
-                    {renderDice()}
-                    
-                    {isMyTurn && !isGameFinished && (
-                        <MoveTimer
-                            timeLeft={timer.timeLeft}
-                            isWarning={timer.isWarning}
-                            isActive={timer.isActive}
-                            progress={timer.progress}
-                            className={styles.gameTimer}
-                        />
-                    )}
-                </div>
-
-                <div className={styles.playerInfo}>
-                    <div className={styles.playerName}>
-                        {myPlayerIndex === 1 ? 'You' : 'Opponent'}
+                {/* Black Player Card */}
+                <div className={`${styles.playerCard} ${styles.blackPlayer} ${
+                    gameState.currentPlayer === 'black' ? styles.currentPlayer : ''
+                }`}>
+                    <div className={styles.playerHeader}>
+                        <div className={styles.playerIcon}>👤</div>
+                        <div className={styles.playerDetails}>
+                            <h3>{myPlayerIndex === 1 ? 'Black' : 'Black'}</h3>
+                            <div className={styles.playerStatus}>
+                                {gameState.currentPlayer === 'black' && !isGameFinished ? 'PLAYING' : 'WAITING'}
+                            </div>
+                        </div>
                     </div>
-                    <div className={styles.playerColor}>
-                        Black
+
+                    <div className={styles.playerStats}>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>Born Off</div>
+                            <div className={styles.statValue}>{gameState.home.black.length}/15</div>
+                        </div>
+                        <div className={styles.statBlock}>
+                            <div className={styles.statLabel}>On Bar</div>
+                            <div className={styles.statValue}>{gameState.bar.black.length}</div>
+                        </div>
+                    </div>
+
+                    <div className={styles.progressSection}>
+                        <div className={styles.progressLabel}>
+                            <span>Progress</span>
+                            <span>{Math.round(blackProgress)}%</span>
+                        </div>
+                        <div className={styles.progressBar}>
+                            <div 
+                                className={styles.progressFill}
+                                style={{ width: `${blackProgress}%` }}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className={styles.boardContainer}>
-                <div className={styles.pointNumbers}>
-                    {Array.from({ length: 24 }, (_, i) => {
-                        const pointNum = i < 12 ? 12 - i : i + 1;
-                        return (
-                            <div key={i} className={styles.pointNumber}>
-                                {pointNum}
-                            </div>
-                        );
-                    })}
-                </div>
+            <div className={styles.diceSection}>
+                {isMyTurn && gameState.turnPhase === 'ROLLING' && !isGameFinished && (
+                    <button
+                        onClick={handleRollDice}
+                        className={styles.rollButton}
+                        disabled={isRollingDice}
+                    >
+                        {isRollingDice ? 'Rolling...' : 'Roll Dice'}
+                    </button>
+                )}
+                {renderDice()}
+                
+                {isMyTurn && !isGameFinished && (
+                    <MoveTimer
+                        timeLeft={timer.timeLeft}
+                        isWarning={timer.isWarning}
+                        isActive={timer.isActive}
+                        progress={timer.progress}
+                        className={styles.gameTimer}
+                    />
+                )}
+            </div>
 
+            <div className={styles.boardContainer}>
                 <div className={styles.boardGrid}>
                     <div className={styles.topSection}>
                         <div className={styles.leftQuadrant}>
@@ -503,9 +533,7 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                     </div>
 
                     <div className={styles.middleBar}>
-                        <span style={{ color: '#e2e8f0', fontWeight: 'bold', fontSize: 'clamp(10px, 2vw, 14px)' }}>
-                            BAR
-                        </span>
+                        BAR
                     </div>
 
                     <div className={styles.bottomSection}>
@@ -550,7 +578,7 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                 isMyTurn ? styles.myTurn : styles.opponentTurn
             }`}>
                 {isGameFinished ? (
-                    <span>Game Finished</span>
+                    <span>🏁 Game Finished</span>
                 ) : isMyTurn ? (
                     gameState.turnPhase === 'ROLLING' ? 
                         <span>🎲 Your Turn - Roll Dice</span> :
@@ -559,12 +587,6 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                     <span>🟡 Opponent's Turn</span>
                 )}
             </div>
-
-            {gameState.moveHistory && gameState.moveHistory.length > 0 && (
-                <div className={styles.moveHistory}>
-                    <strong>Move History:</strong> {gameState.moveHistory.length} moves
-                </div>
-            )}
 
             <TimeoutWarningModal
                 isOpen={showWarningModal}
