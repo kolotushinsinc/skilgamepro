@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { getAdminUsersPaginated, updateUser, deleteUser, type IUsersQuery, type IPaginationInfo } from '../../services/adminService';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { getAdminUsersPaginated, updateUser, deleteUser, exportUsersToExcel, type IUsersQuery, type IPaginationInfo } from '../../services/adminService';
 import styles from './UsersPage.module.css';
 import {
     Edit,
@@ -14,7 +14,8 @@ import {
     Activity,
     Filter,
     Search,
-    ChevronDown
+    ChevronDown,
+    Download
 } from 'lucide-react';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import EditUserModal from '../../components/modals/EditUserModal';
@@ -54,11 +55,17 @@ const UsersPage: React.FC = () => {
         search: ''
     });
     
+    // Separate search input state to prevent jumping
+    const [searchInput, setSearchInput] = useState('');
+    
     // Confirmation modal states
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [userToDelete, setUserToDelete] = useState<string | null>(null);
+    
+    // Export states
+    const [isExporting, setIsExporting] = useState(false);
 
-    const fetchUsers = useCallback(async (query: IUsersQuery = filters) => {
+    const fetchUsers = useCallback(async (query: IUsersQuery) => {
         try {
             setLoading(true);
             const response = await getAdminUsersPaginated(query);
@@ -69,26 +76,46 @@ const UsersPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [filters]);
+    }, []);
 
+    // Initial load
     useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
+        fetchUsers(filters);
+    }, []);
+    
+    // Initialize search input with current filter
+    useEffect(() => {
+        setSearchInput(filters.search || '');
+    }, []);
 
     const handlePageChange = useCallback((page: number) => {
         window.scrollTo(0, 0);
-        const newFilters = { ...filters, page };
+        const newFilters = { ...filters, page, search: searchInput };
         setFilters(newFilters);
         fetchUsers(newFilters);
-    }, [filters, fetchUsers]);
+    }, [filters, searchInput]);
 
     const handleFilterChange = useCallback((key: string, value: string) => {
-        setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
-    }, []);
+        if (key === 'search') {
+            setSearchInput(value);
+        } else {
+            const newFilters = { ...filters, [key]: value, page: 1 };
+            setFilters(newFilters);
+            fetchUsers(newFilters);
+        }
+    }, [filters]);
 
     const applyFilters = useCallback(() => {
-        fetchUsers(filters);
-    }, [filters, fetchUsers]);
+        const newFilters = { ...filters, search: searchInput, page: 1 };
+        setFilters(newFilters);
+        fetchUsers(newFilters);
+    }, [filters, searchInput]);
+    
+    const handleSearchKeyPress = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            applyFilters();
+        }
+    }, [applyFilters]);
 
     const clearFilters = useCallback(() => {
         const clearedFilters = {
@@ -97,9 +124,10 @@ const UsersPage: React.FC = () => {
             role: 'all',
             search: ''
         };
+        setSearchInput('');
         setFilters(clearedFilters);
         fetchUsers(clearedFilters);
-    }, [fetchUsers]);
+    }, []);
 
     const handleOpenEditModal = (user: IUser) => {
         setEditingUser(user);
@@ -115,7 +143,7 @@ const UsersPage: React.FC = () => {
         try {
             await updateUser(userId, userData);
             handleCloseEditModal();
-            fetchUsers();
+            fetchUsers({ ...filters, search: searchInput });
         } catch (error) {
             alert('Failed to update user');
         }
@@ -131,7 +159,7 @@ const UsersPage: React.FC = () => {
         
         try {
             await deleteUser(userToDelete);
-            fetchUsers(filters);
+            fetchUsers({ ...filters, search: searchInput });
             setShowConfirmModal(false);
             setUserToDelete(null);
         } catch (error) {
@@ -143,6 +171,42 @@ const UsersPage: React.FC = () => {
         setShowConfirmModal(false);
         setUserToDelete(null);
     };
+
+    const handleExportToExcel = useCallback(async () => {
+        try {
+            setIsExporting(true);
+            const exportQuery = {
+                role: filters.role,
+                search: searchInput
+            };
+            
+            const blob = await exportUsersToExcel(exportQuery);
+            
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            link.download = `users-report-${timestamp}.xlsx`;
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up
+            window.URL.revokeObjectURL(url);
+            
+            console.log('Excel export completed successfully');
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('Failed to export users to Excel. Please try again.');
+        } finally {
+            setIsExporting(false);
+        }
+    }, [filters.role, searchInput]);
 
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
@@ -178,6 +242,15 @@ const UsersPage: React.FC = () => {
                         </div>
                         <div className={styles.headerActions}>
                             <button
+                                onClick={handleExportToExcel}
+                                className={`${styles.exportButton} ${isExporting ? styles.loading : ''}`}
+                                disabled={isExporting}
+                                title="Export users to Excel"
+                            >
+                                <Download size={18} />
+                                <span>{isExporting ? 'Exporting...' : 'Export Excel'}</span>
+                            </button>
+                            <button
                                 onClick={() => setShowFilters(!showFilters)}
                                 className={`${styles.filterToggle} ${showFilters ? styles.active : ''}`}
                             >
@@ -186,7 +259,10 @@ const UsersPage: React.FC = () => {
                                 <ChevronDown size={16} className={showFilters ? styles.rotated : ''} />
                             </button>
                             <button
-                                onClick={() => fetchUsers(filters)}
+                                onClick={() => {
+                                    const currentFilters = { ...filters, search: searchInput };
+                                    fetchUsers(currentFilters);
+                                }}
                                 className={`${styles.refreshButton} ${loading ? styles.loading : ''}`}
                                 disabled={loading}
                             >
@@ -222,8 +298,9 @@ const UsersPage: React.FC = () => {
                                         type="text"
                                         className={styles.searchInput}
                                         placeholder="Search by username, email or ID..."
-                                        value={filters.search || ''}
-                                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                                        value={searchInput}
+                                        onChange={(e) => setSearchInput(e.target.value)}
+                                        onKeyPress={handleSearchKeyPress}
                                     />
                                 </div>
                             </div>

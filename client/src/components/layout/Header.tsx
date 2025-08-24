@@ -6,16 +6,20 @@ import { useUI } from '../../context/UIContext';
 import { useSocket } from '../../context/SocketContext';
 import TutorialButton from '../tutorial/TutorialButton';
 import styles from './Header.module.css';
-import { Menu, Bell } from 'lucide-react';
+import { Menu, Bell, Wallet } from 'lucide-react';
 
 const Header: React.FC = () => {
     const { user, refreshUser } = useAuth();
     const { unreadCount, refreshUnreadCount } = useNotifications();
-    const { toggleSidebar } = useUI();
+    const { toggleSidebar, setShowDepositModal } = useUI();
     const { socket } = useSocket();
 
     // Debug log to see if unreadCount is being received
     console.log('Header unreadCount:', unreadCount);
+
+    const handleBalanceClick = () => {
+        setShowDepositModal(true);
+    };
 
     useEffect(() => {
         if (!socket || !user) return;
@@ -55,9 +59,15 @@ const Header: React.FC = () => {
                     <div className={styles.onlineDot}></div>
                     <span className="text-sm font-medium">Online</span>
                 </div>
-                <div className={styles.balance} data-testid="balance-display">
+                <button
+                    className={styles.balance}
+                    data-testid="balance-display"
+                    onClick={handleBalanceClick}
+                    title="Click to deposit funds"
+                >
+                    <Wallet size={16} className={styles.balanceIcon} />
                     {user?.balance.toFixed(2) || '0.00'}
-                </div>
+                </button>
                 <Link to="/notifications" className={styles.notificationBell} data-testid="notifications-button">
                     <Bell size={20} />
                     {unreadCount > 0 && (

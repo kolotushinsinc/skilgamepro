@@ -74,7 +74,13 @@ const ResetPasswordPage: React.FC = () => {
             
             <div className={styles.authCard}>
                 <div className={styles.authHeader}>
-                    <div className={styles.logo}>
+                    <a
+                        href="https://skillgame.pro"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.logo}
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
                         <div className={styles.logoIconContainer}>
                             <Crown className={styles.logoIcon} />
                         </div>
@@ -82,7 +88,7 @@ const ResetPasswordPage: React.FC = () => {
                             <h1 className={styles.logoText}>Skill Game</h1>
                             <p className={styles.logoSubtext}>Gaming Platform</p>
                         </div>
-                    </div>
+                    </a>
                     <div className={styles.titleSection}>
                         <div className={styles.keyIcon}>
                             <KeyRound size={32} />
@@ -177,6 +183,16 @@ const ResetPasswordPage: React.FC = () => {
                         <ArrowLeft size={16} />
                         <span>Back to Sign In</span>
                     </Link>
+                    <div style={{ marginTop: '10px' }}>
+                        <a
+                            href="https://skillgame.pro"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.backLink}
+                        >
+                            <span>Return to main page</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

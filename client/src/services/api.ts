@@ -16,4 +16,19 @@ export const submitKycDocument = (formData: FormData) => {
     return apiClient.post('/users/kyc', formData, config);
 };
 
+// Sumsub KYC API
+export const getSumsubAccessToken = () => {
+    const token = localStorage.getItem('token');
+    return apiClient.get('/sumsub/access-token', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+};
+
+export const getSumsubVerificationStatus = () => {
+    const token = localStorage.getItem('token');
+    return apiClient.get('/sumsub/verification-status', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+};
+
 export default apiClient;

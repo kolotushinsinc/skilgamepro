@@ -15,7 +15,9 @@ import {
     getAllGameRecords,
     getKycSubmissions,
     reviewKycSubmission,
-    getKycDocument
+    getKycDocument,
+    exportUsersToExcel,
+    exportTransactionsToExcel
 } from '../controllers/admin.controller';
 import { adminProtect } from '../middleware/admin.middleware';
 
@@ -31,12 +33,14 @@ router.route('/tournaments/:id')
     .delete(adminProtect, deleteTournament);
 
 router.route('/users').get(adminProtect, getAllUsers);
+router.route('/users/export/excel').get(adminProtect, exportUsersToExcel);
 router.route('/users/:id')
     .get(adminProtect, getUserById)
     .put(adminProtect, updateUser)
     .delete(adminProtect, deleteUser);
 
 router.route('/transactions').get(adminProtect, getAllTransactions);
+router.route('/transactions/export/excel').get(adminProtect, exportTransactionsToExcel);
 router.route('/games').get(adminProtect, getAllGameRecords);
 
 router.route('/kyc-submissions').get(adminProtect, getKycSubmissions);

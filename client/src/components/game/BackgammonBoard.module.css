@@ -10,6 +10,61 @@
     overflow: hidden;
     min-height: 100vh;
     position: relative;
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Portrait mode (default) */
+.backgammonBoard.portrait {
+    flex-direction: column;
+}
+
+/* Landscape mode */
+.backgammonBoard.landscape {
+    min-height: 100vh;
+    width: 100vw;
+    max-width: 100vw;
+    padding: 10px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.landscape .gameHeader {
+    margin-bottom: 15px;
+}
+
+.landscape .playersInfo {
+    margin-bottom: 15px;
+    flex-direction: row;
+    gap: 15px;
+}
+
+.landscape .playerCard {
+    min-width: 200px;
+    padding: 16px;
+}
+
+.landscape .diceSection {
+    margin: 15px 0;
+}
+
+.landscape .boardContainer {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+}
+
+.landscape .boardGrid {
+    height: auto;
+    min-height: 350px;
+    width: 100%;
+    max-width: 800px;
+}
+
+.landscape .gameStatus {
+    margin-top: 15px;
+    padding: 12px 20px;
 }
 
 .backgammonBoard::before {
@@ -327,23 +382,23 @@
 }
 
 .topSection, .bottomSection {
-    height: 45%;
+    height: 47.5%;
     display: flex;
     position: relative;
 }
 
 .middleBar {
-    height: 10%;
+    height: 5%;
     background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 800;
     color: white;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -432,12 +487,23 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #2d3748;
-    font-size: 16px;
-    font-weight: 800;
-    text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+    text-shadow:
+        2px 2px 4px rgba(0, 0, 0, 0.8),
+        -1px -1px 2px rgba(0, 0, 0, 0.6),
+        1px 1px 0px rgba(0, 0, 0, 1);
     z-index: 10;
     pointer-events: none;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .piecesContainer {
@@ -538,7 +604,7 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 60px;
+    width: 5px;
     height: 85%;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
@@ -688,27 +754,61 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .backgammonBoard {
-        padding: 15px;
+        padding: 16px;
     }
     
     .playersInfo {
-        flex-direction: column;
-        gap: 15px;
+        gap: 16px;
+        margin-bottom: 24px;
     }
     
     .playerCard {
         min-width: auto;
     }
     
+    .boardGrid {
+        height: 450px;
+    }
+}
+
+@media (max-width: 768px) {
+    .backgammonBoard {
+        padding: 12px;
+    }
+    
+    .gameTitle {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+    }
+    
+    .gameSubtitle {
+        font-size: 1rem;
+    }
+    
+    .playersInfo {
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .playerCard {
+        padding: 16px;
+    }
+    
+    .diceSection {
+        margin: 20px 0;
+    }
+    
     .boardContainer {
-        padding: 20px;
+        padding: 16px;
         overflow-x: auto;
     }
     
     .boardGrid {
         height: 400px;
+        min-width: 600px;
     }
     
     .bearOffZone {
@@ -718,6 +818,106 @@
     
     .bar {
         width: 45px;
+    }
+    
+    .piece {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .topTriangle, .bottomTriangle {
+        border-left-width: 16px;
+        border-right-width: 16px;
+    }
+    
+    .topTriangle {
+        border-top-width: 120px;
+    }
+    
+    .bottomTriangle {
+        border-bottom-width: 120px;
+    }
+    
+    .pointNumber {
+        font-size: 16px;
+        width: 26px;
+        height: 26px;
+    }
+    
+    .gameStatus {
+        margin-top: 20px;
+        padding: 16px 24px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .backgammonBoard {
+        padding: 10px;
+    }
+    
+    .gameTitle {
+        font-size: 2rem;
+    }
+    
+    .playersInfo {
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    
+    .playerCard {
+        padding: 14px;
+    }
+    
+    .playerIcon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    .playerDetails h3 {
+        font-size: 18px;
+    }
+    
+    .playerStatus {
+        font-size: 12px;
+    }
+    
+    .statValue {
+        font-size: 20px;
+    }
+    
+    .diceSection {
+        margin: 16px 0;
+    }
+    
+    .rollButton {
+        padding: 12px 24px;
+        font-size: 14px;
+    }
+    
+    .die {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    .boardContainer {
+        padding: 12px;
+    }
+    
+    .boardGrid {
+        height: 360px;
+        min-width: 550px;
+    }
+    
+    .bearOffZone {
+        right: -65px;
+        width: 55px;
+    }
+    
+    .bar {
+        width: 42px;
     }
     
     .piece {
@@ -731,17 +931,148 @@
     }
     
     .topTriangle {
-        border-top-width: 120px;
+        border-top-width: 110px;
     }
     
     .bottomTriangle {
-        border-bottom-width: 120px;
+        border-bottom-width: 110px;
+    }
+    
+    .pointNumber {
+        font-size: 15px;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .gameStatus {
+        margin-top: 16px;
+        padding: 14px 20px;
+        font-size: 15px;
     }
 }
 
 @media (max-width: 480px) {
+    .backgammonBoard {
+        padding: 8px;
+    }
+    
+    .gameTitle {
+        font-size: 1.8rem;
+    }
+    
+    .gameSubtitle {
+        font-size: 0.9rem;
+    }
+    
+    .playersInfo {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    
+    .playerCard {
+        padding: 12px;
+    }
+    
+    .playerStats {
+        gap: 8px;
+    }
+    
+    .statBlock {
+        padding: 8px;
+    }
+    
+    .statValue {
+        font-size: 18px;
+    }
+    
+    .diceSection {
+        margin: 12px 0;
+    }
+    
+    .rollButton {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+    
+    .die {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .diceContainer {
+        gap: 8px;
+    }
+    
+    .boardContainer {
+        padding: 8px;
+    }
+    
     .boardGrid {
         height: 320px;
+        min-width: 500px;
+    }
+    
+    .bearOffZone {
+        right: -60px;
+        width: 50px;
+        padding: 8px 4px;
+    }
+    
+    .bearOffLabel {
+        font-size: 8px;
+    }
+    
+    .bar {
+        width: 38px;
+        padding: 8px 4px;
+    }
+    
+    .piece {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .topTriangle, .bottomTriangle {
+        border-left-width: 14px;
+        border-right-width: 14px;
+    }
+    
+    .topTriangle {
+        border-top-width: 100px;
+    }
+    
+    .bottomTriangle {
+        border-bottom-width: 100px;
+    }
+    
+    .pointNumber {
+        font-size: 14px;
+        width: 22px;
+        height: 22px;
+    }
+    
+    .pieceCount {
+        width: 16px;
+        height: 16px;
+        font-size: 9px;
+    }
+    
+    .gameStatus {
+        margin-top: 12px;
+        padding: 12px 18px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 360px) {
+    .gameTitle {
+        font-size: 1.6rem;
+    }
+    
+    .boardGrid {
+        height: 280px;
+        min-width: 450px;
     }
     
     .piece {
@@ -755,19 +1086,138 @@
     }
     
     .topTriangle {
-        border-top-width: 100px;
+        border-top-width: 85px;
     }
     
     .bottomTriangle {
-        border-bottom-width: 100px;
+        border-bottom-width: 85px;
     }
     
     .bearOffZone {
-        right: -60px;
-        width: 50px;
+        right: -55px;
+        width: 45px;
     }
     
     .bar {
         width: 35px;
+    }
+    
+    .pointNumber {
+        font-size: 13px;
+        width: 20px;
+        height: 20px;
+    }
+    
+    .die {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+    
+    .gameStatus {
+        margin-top: 10px;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+}
+
+/* Landscape mode specific styles */
+@media screen and (orientation: landscape) {
+    .landscape {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .landscape .gameHeader {
+        flex-shrink: 0;
+        margin-bottom: 10px;
+    }
+    
+    .landscape .playersInfo {
+        flex-shrink: 0;
+        margin-bottom: 10px;
+    }
+    
+    .landscape .diceSection {
+        flex-shrink: 0;
+        margin: 10px 0;
+    }
+    
+    .landscape .boardContainer {
+        flex: 1;
+        min-height: 0;
+    }
+    
+    .landscape .boardGrid {
+        height: 100%;
+        min-height: 300px;
+    }
+    
+    .landscape .gameStatus {
+        flex-shrink: 0;
+        margin-top: 10px;
+    }
+}
+
+/* Force landscape styles when landscape class is applied */
+.landscape {
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.landscape .gameHeader {
+    flex-shrink: 0 !important;
+}
+
+.landscape .playersInfo {
+    flex-shrink: 0 !important;
+}
+
+.landscape .diceSection {
+    flex-shrink: 0 !important;
+}
+
+.landscape .boardContainer {
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.landscape .boardGrid {
+    height: 100% !important;
+    width: 100% !important;
+    max-width: 900px !important;
+}
+
+.landscape .gameStatus {
+    flex-shrink: 0 !important;
+}
+
+/* Mobile rotation adjustments */
+@media (max-width: 768px) {
+    .gameHeader {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .rotateButton {
+        align-self: center;
+        width: fit-content;
+    }
+}
+
+@media (max-width: 480px) {
+    .rotateButton {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+    
+    .rotateButton svg {
+        width: 16px;
+        height: 16px;
     }
 }

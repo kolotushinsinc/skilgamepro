@@ -11,6 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@sumsub/websdk": "^2.4.0",
+    "@sumsub/websdk-react": "^2.4.0",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
     "chess.js": "^1.4.0",

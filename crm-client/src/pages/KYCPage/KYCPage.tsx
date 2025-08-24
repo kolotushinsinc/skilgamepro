@@ -14,7 +14,14 @@ import {
   Users,
   TrendingUp
 } from 'lucide-react';
-import { getKycSubmissions, reviewKycSubmission, getKycDocumentFile, type IKycSubmission } from '../../services/adminService';
+import {
+    getEnhancedKycSubmissions,
+    reviewKycSubmission,
+    getKycDocumentFile,
+    getSumsubApplicantInfo,
+    syncSumsubStatus,
+    type IEnhancedKycSubmission
+} from '../../services/adminService';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import styles from './KYCPage.module.css';
 
@@ -28,16 +35,18 @@ interface KycStats {
 }
 
 const KYCPage: React.FC = () => {
-    const [submissions, setSubmissions] = useState<IKycSubmission[]>([]);
+    const [submissions, setSubmissions] = useState<IEnhancedKycSubmission[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewingDoc, setViewingDoc] = useState<string | null>(null);
     const [filter, setFilter] = useState<KycFilter>('PENDING');
     const [stats, setStats] = useState<KycStats>({ total: 0, pending: 0, approved: 0, rejected: 0 });
+    const [sumsubDetails, setSumsubDetails] = useState<{[userId: string]: any}>({});
+    const [syncing, setSyncing] = useState<{[userId: string]: boolean}>({});
 
     const fetchSubmissions = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await getKycSubmissions(filter);
+            const data = await getEnhancedKycSubmissions(filter);
             setSubmissions(data);
         } catch (error) {
             console.error("Failed to fetch KYC submissions", error);
@@ -49,7 +58,7 @@ const KYCPage: React.FC = () => {
     const fetchStats = useCallback(async () => {
         try {
             // Fetch all submissions to calculate stats
-            const allSubmissions = await getKycSubmissions('ALL');
+            const allSubmissions = await getEnhancedKycSubmissions('ALL');
             const stats = {
                 total: allSubmissions.length,
                 pending: allSubmissions.filter(sub => sub.kycStatus === 'PENDING').length,
@@ -106,6 +115,37 @@ const KYCPage: React.FC = () => {
         }
     };
 
+    const handleViewSumsubDetails = async (userId: string) => {
+        try {
+            setLoading(true);
+            const details = await getSumsubApplicantInfo(userId);
+            setSumsubDetails(prev => ({ ...prev, [userId]: details }));
+        } catch (error) {
+            console.error('Failed to fetch Sumsub details:', error);
+            alert('Failed to fetch Sumsub details');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSyncSumsubStatus = async (userId: string) => {
+        try {
+            setSyncing(prev => ({ ...prev, [userId]: true }));
+            const result = await syncSumsubStatus(userId);
+            
+            // Обновляем локальные данные
+            await fetchSubmissions();
+            await fetchStats();
+            
+            alert(`Status synchronized successfully. Old: ${result.oldStatus}, New: ${result.newStatus}`);
+        } catch (error: any) {
+            console.error('Failed to sync Sumsub status:', error);
+            alert(`Failed to sync status: ${error.response?.data?.message || error.message}`);
+        } finally {
+            setSyncing(prev => ({ ...prev, [userId]: false }));
+        }
+    };
+
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'PENDING':
@@ -130,6 +170,24 @@ const KYCPage: React.FC = () => {
             default:
                 return styles.statusPending;
         }
+    };
+
+    const getProviderBadge = (provider: string) => {
+        return (
+            <span
+                className={`${styles.providerBadge} ${provider === 'SUMSUB' ? styles.sumsubProvider : styles.legacyProvider}`}
+                style={{
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    background: provider === 'SUMSUB' ? '#6366f1' : '#64748b',
+                    color: 'white'
+                }}
+            >
+                {provider || 'LEGACY'}
+            </span>
+        );
     };
 
     if (loading && submissions.length === 0) {
@@ -254,7 +312,10 @@ const KYCPage: React.FC = () => {
                                 <div className={styles.submissionInfo}>
                                     <p><strong>Request ID:</strong> {sub._id}</p>
                                     <p><strong>Status:</strong> {sub.kycStatus}</p>
-                                    <p><strong>Documents Count:</strong> {sub.kycDocuments?.length || 0} document(s)</p>
+                                    <p><strong>Provider:</strong> {getProviderBadge(sub.kycProvider || 'LEGACY')}</p>
+                                    {sub.sumsubData?.applicantId && (
+                                        <p><strong>Sumsub Applicant ID:</strong> {sub.sumsubData.applicantId}</p>
+                                    )}
                                 </div>
 
                                 {/* Documents */}
@@ -284,8 +345,58 @@ const KYCPage: React.FC = () => {
                                     </div>
                                 ))}
 
-                                {/* Actions for pending requests */}
-                                {sub.kycStatus === 'PENDING' && (
+                                {/* Sumsub specific info and actions */}
+                                {sub.kycProvider === 'SUMSUB' && sub.sumsubData?.applicantId && (
+                                    <div className={styles.sumsubSection}>
+                                        <div className={styles.sumsubActions}>
+                                            <button
+                                                onClick={() => handleViewSumsubDetails(sub._id)}
+                                                className={styles.sumsubButton}
+                                                disabled={loading}
+                                            >
+                                                <Eye className={styles.documentLinkIcon} />
+                                                View Sumsub Details
+                                            </button>
+                                            <button
+                                                onClick={() => handleSyncSumsubStatus(sub._id)}
+                                                className={styles.sumsubButton}
+                                                disabled={syncing[sub._id]}
+                                            >
+                                                {syncing[sub._id] ? (
+                                                    <>
+                                                        <Clock className={styles.documentLinkIcon} />
+                                                        Syncing...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <TrendingUp className={styles.documentLinkIcon} />
+                                                        Sync Status
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+
+                                        {sumsubDetails[sub._id] && (
+                                            <div className={styles.sumsubDetails}>
+                                                <h4>Sumsub Details:</h4>
+                                                <div className={styles.detailsGrid}>
+                                                    <p><strong>Applicant ID:</strong> {sumsubDetails[sub._id].sumsub.applicantId}</p>
+                                                    <p><strong>Level:</strong> {sumsubDetails[sub._id].sumsub.levelName}</p>
+                                                    <p><strong>Review Status:</strong> {sumsubDetails[sub._id].sumsub.verificationStatus.status}</p>
+                                                    {sumsubDetails[sub._id].sumsub.verificationStatus.reviewResult && (
+                                                        <p><strong>Review Result:</strong> {sumsubDetails[sub._id].sumsub.verificationStatus.reviewResult}</p>
+                                                    )}
+                                                    {sumsubDetails[sub._id].sumsub.verificationStatus.moderationComment && (
+                                                        <p><strong>Comment:</strong> {sumsubDetails[sub._id].sumsub.verificationStatus.moderationComment}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Actions for pending requests - only show for legacy KYC or manual review needed */}
+                                {sub.kycStatus === 'PENDING' && sub.kycProvider !== 'SUMSUB' && (
                                     <div className={styles.actions}>
                                         <button 
                                             onClick={() => handleReview(sub._id, sub.username, 'APPROVE')} 
@@ -301,6 +412,14 @@ const KYCPage: React.FC = () => {
                                             <XCircle className={styles.btnIcon} />
                                             Reject Request
                                         </button>
+                                    </div>
+                                )}
+
+                                {/* Warning for Sumsub pending requests */}
+                                {sub.kycStatus === 'PENDING' && sub.kycProvider === 'SUMSUB' && (
+                                    <div className={styles.sumsubWarning}>
+                                        <AlertTriangle className={styles.warningIcon} />
+                                        <span>This verification is processed automatically by Sumsub. Manual review is not available.</span>
                                     </div>
                                 )}
                             </div>

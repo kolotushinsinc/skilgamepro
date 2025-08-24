@@ -6,6 +6,12 @@ interface UIContextType {
     setSidebarOpen: (isOpen: boolean) => void;
     showLogoutModal: boolean;
     setShowLogoutModal: (show: boolean) => void;
+    showDepositModal: boolean;
+    setShowDepositModal: (show: boolean) => void;
+    showInsufficientFundsModal: boolean;
+    setShowInsufficientFundsModal: (show: boolean) => void;
+    insufficientFundsData: { requiredAmount: number; currentBalance: number } | null;
+    setInsufficientFundsData: (data: { requiredAmount: number; currentBalance: number } | null) => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -15,6 +21,9 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
     const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
+    const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
+    const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState<boolean>(false);
+    const [insufficientFundsData, setInsufficientFundsData] = useState<{ requiredAmount: number; currentBalance: number } | null>(null);
 
     // Инициализация только для десктопа
     useEffect(() => {
@@ -74,7 +83,13 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
             toggleSidebar,
             setSidebarOpen,
             showLogoutModal,
-            setShowLogoutModal
+            setShowLogoutModal,
+            showDepositModal,
+            setShowDepositModal,
+            showInsufficientFundsModal,
+            setShowInsufficientFundsModal,
+            insufficientFundsData,
+            setInsufficientFundsData
         }}>
             {children}
         </UIContext.Provider>

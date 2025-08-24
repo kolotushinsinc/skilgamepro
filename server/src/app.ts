@@ -10,6 +10,7 @@ import paymentRoutes from './routes/payment.routes';
 import chatRoutes from './routes/chat.routes';
 import gameLobbySchedulerRoutes from './routes/gameLobbyScheduler.routes';
 import securityRoutes from './routes/security.routes';
+import sumsubRoutes from './routes/sumsub.routes';
 import { corsConfig } from './middleware/security.middleware';
 
 const app = express();
@@ -45,5 +46,6 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/game-lobby-scheduler', gameLobbySchedulerRoutes);
 app.use('/api/security', securityRoutes);
+app.use('/api/sumsub', sumsubRoutes);
 
 export default app;

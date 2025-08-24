@@ -41,7 +41,13 @@ const ForgotPasswordPage: React.FC = () => {
             
             <div className={styles.authCard}>
                 <div className={styles.authHeader}>
-                    <div className={styles.logo}>
+                    <a
+                        href="https://skillgame.pro"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.logo}
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
                         <div className={styles.logoIconContainer}>
                             <Crown className={styles.logoIcon} />
                         </div>
@@ -49,7 +55,7 @@ const ForgotPasswordPage: React.FC = () => {
                             <h1 className={styles.logoText}>Skill Game</h1>
                             <p className={styles.logoSubtext}>Gaming Platform</p>
                         </div>
-                    </div>
+                    </a>
                     <div className={styles.titleSection}>
                         <h2 className={styles.authTitle}>Forgot Password</h2>
                         <p className={styles.authSubtitle}>Enter your email address and we'll send you a reset code</p>
@@ -111,6 +117,16 @@ const ForgotPasswordPage: React.FC = () => {
                         <ArrowLeft size={16} />
                         <span>Back to Sign In</span>
                     </Link>
+                    <div style={{ marginTop: '10px' }}>
+                        <a
+                            href="https://skillgame.pro"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.backLink}
+                        >
+                            <span>Return to main page</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

@@ -3,7 +3,9 @@ import styles from './BackgammonBoard.module.css';
 import { useMoveTimer } from '../../hooks/useMoveTimer';
 import MoveTimer from './MoveTimer';
 import TimeoutWarningModal from '../modals/TimeoutWarningModal';
+import RotationWarningModal from '../modals/RotationWarningModal';
 import { useSocket } from '../../context/SocketContext';
+import { RotateCw } from 'lucide-react';
 
 // Types for backgammon
 type PlayerColor = 'white' | 'black';
@@ -69,7 +71,37 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
     const [isRollingDice, setIsRollingDice] = useState(false);
     const [movingPiece, setMovingPiece] = useState<{from: number, to: number} | null>(null);
     const [showWarningModal, setShowWarningModal] = useState(false);
+    const [showRotationModal, setShowRotationModal] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [isPortrait, setIsPortrait] = useState(false);
     const { socket } = useSocket();
+
+    // Detect mobile device and orientation
+    useEffect(() => {
+        const checkDeviceAndOrientation = () => {
+            const mobile = window.innerWidth <= 768 || 'ontouchstart' in window;
+            const portrait = window.innerHeight > window.innerWidth;
+            
+            setIsMobile(mobile);
+            setIsPortrait(portrait);
+            
+            // Show rotation modal automatically on mobile in portrait mode
+            if (mobile && portrait) {
+                setShowRotationModal(true);
+            } else {
+                setShowRotationModal(false);
+            }
+        };
+        
+        checkDeviceAndOrientation();
+        window.addEventListener('resize', checkDeviceAndOrientation);
+        window.addEventListener('orientationchange', checkDeviceAndOrientation);
+        
+        return () => {
+            window.removeEventListener('resize', checkDeviceAndOrientation);
+            window.removeEventListener('orientationchange', checkDeviceAndOrientation);
+        };
+    }, []);
 
     const myColor: PlayerColor = myPlayerIndex === 0 ? 'white' : 'black';
 
@@ -230,7 +262,13 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
         return piecesOnBoard + gameState.home[myColor].length === 15;
     }, [gameState, myColor]);
 
-    const handlePointClick = useCallback((pointIndex: number) => {
+    const handlePointClick = useCallback((pointIndex: number, event?: React.MouseEvent | React.TouchEvent) => {
+        // Prevent default to avoid unwanted mobile behaviors
+        if (event && isMobile) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
         if (!isMyTurn || isGameFinished || gameState.turnPhase !== 'MOVING') {
             return;
         }
@@ -273,7 +311,7 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
         }
 
         selectPoint(pointIndex);
-    }, [isMyTurn, isGameFinished, selectedPoint, possibleMoves, gameState, myColor, onMove]);
+    }, [isMyTurn, isGameFinished, selectedPoint, possibleMoves, gameState, myColor, onMove, isMobile]);
 
     const selectPoint = useCallback((pointIndex: number) => {
         if (pointIndex === -1) {
@@ -324,7 +362,16 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
             setPossibleMoves([]);
             timer.resetTimer();
         }, 250);
-    }, [onMove, animateMove]);
+    }, [onMove, animateMove, timer]);
+
+    const handleConfirmRotation = useCallback(() => {
+        setShowRotationModal(false);
+        // Пользователь понял инструкцию - закрываем модальное окно
+    }, []);
+
+    const handleCloseRotationModal = useCallback(() => {
+        setShowRotationModal(false);
+    }, []);
 
     const renderPiece = useCallback((piece: BackgammonPiece, index: number, pointIndex?: number) => {
         const isMoving = movingPiece && pointIndex !== undefined &&
@@ -357,7 +404,12 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
             <div
                 key={pointIndex}
                 className={pointClass}
-                onClick={() => handlePointClick(pointIndex)}
+                onClick={(e) => handlePointClick(pointIndex, e)}
+                onTouchStart={isMobile ? (e) => handlePointClick(pointIndex, e) : undefined}
+                style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
+                }}
             >
                 <div className={triangleClass} />
                 <div className={styles.pointNumber}>
@@ -549,7 +601,12 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
 
                 <div
                     className={styles.bar}
-                    onClick={() => handlePointClick(-1)}
+                    onClick={(e) => handlePointClick(-1, e)}
+                    onTouchStart={isMobile ? (e) => handlePointClick(-1, e) : undefined}
+                    style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                    }}
                 >
                     <div className={styles.barPieces}>
                         {gameState.bar.white.map((piece, index) => renderPiece(piece, index, -1))}
@@ -562,6 +619,11 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                 <div
                     className={styles.bearOffZone}
                     onClick={handleBearOffClick}
+                    onTouchStart={isMobile ? handleBearOffClick : undefined}
+                    style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                    }}
                 >
                     <div className={styles.bearOffLabel}>BEAR OFF</div>
                     <div className={styles.bearOffPieces}>
@@ -593,6 +655,12 @@ const BackgammonBoard: React.FC<BackgammonBoardProps> = ({
                 timeLeft={timer.isWarning ? timer.timeLeft : 10}
                 onClose={handleModalClose}
                 onMakeMove={handleMakeMove}
+            />
+            
+            <RotationWarningModal
+                isOpen={showRotationModal}
+                onClose={handleCloseRotationModal}
+                onConfirm={handleConfirmRotation}
             />
         </div>
     );

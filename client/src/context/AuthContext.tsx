@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useContext, ReactNode, useCallback } from 'react';
+import React, { createContext, useReducer, useContext, ReactNode, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import { API_URL } from '../api/index';
 
@@ -19,12 +19,14 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
+  sessionExpired: boolean;
 }
 
 interface AuthContextType extends AuthState {
   login: (data: { token: string; user: User }) => void;
-  logout: () => void;
+  logout: (showMessage?: boolean) => void;
   refreshUser: () => Promise<void>;
+  clearSessionExpired: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,8 +34,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 type AuthAction =
   | { type: 'LOGIN_SUCCESS'; payload: { token: string; user: User } }
   | { type: 'USER_UPDATED'; payload: { user: User } }
-  | { type: 'LOGOUT' }
-  | { type: 'SET_LOADING'; payload: boolean };
+  | { type: 'LOGOUT'; payload?: { sessionExpired?: boolean } }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'CLEAR_SESSION_EXPIRED' };
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
@@ -46,6 +49,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         loading: false,
         token: action.payload.token,
         user: action.payload.user,
+        sessionExpired: false,
       };
     case 'USER_UPDATED':
         return {
@@ -53,13 +57,22 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
             isAuthenticated: true,
             loading: false,
             user: action.payload.user,
+            sessionExpired: false,
         };
     case 'LOGOUT':
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
-      return { token: null, user: null, isAuthenticated: false, loading: false };
+      return {
+        token: null,
+        user: null,
+        isAuthenticated: false,
+        loading: false,
+        sessionExpired: action.payload?.sessionExpired || false
+      };
     case 'SET_LOADING':
         return { ...state, loading: action.payload };
+    case 'CLEAR_SESSION_EXPIRED':
+        return { ...state, sessionExpired: false };
     default:
       return state;
   }
@@ -71,6 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     token: localStorage.getItem('token'),
     isAuthenticated: false,
     loading: true,
+    sessionExpired: false,
   });
 
   const refreshUser = useCallback(async () => {
@@ -82,9 +96,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const { data } = await axios.get(`${API_URL}/api/users/profile`);
             dispatch({ type: 'USER_UPDATED', payload: { user: data } });
             console.log('Profile data updated successfully!', data);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error updating profile, log out.", err);
-            dispatch({ type: 'LOGOUT' });
+            // Check if it's a session expiry
+            if (err.response?.data?.code === 'SESSION_EXPIRED') {
+                dispatch({ type: 'LOGOUT', payload: { sessionExpired: true } });
+            } else {
+                dispatch({ type: 'LOGOUT' });
+            }
         }
     } else {
         dispatch({ type: 'LOGOUT' });
@@ -95,12 +114,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'LOGIN_SUCCESS', payload: data });
   }, []);
 
-  const logout = useCallback(() => {
-    dispatch({ type: 'LOGOUT' });
+  const logout = useCallback((showMessage: boolean = false) => {
+    dispatch({ type: 'LOGOUT', payload: { sessionExpired: showMessage } });
+  }, []);
+
+  const clearSessionExpired = useCallback(() => {
+    dispatch({ type: 'CLEAR_SESSION_EXPIRED' });
+  }, []);
+
+  // Set up axios interceptor for handling session expiry
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.data?.code === 'SESSION_EXPIRED') {
+          console.log('Session expired detected, logging out...');
+          dispatch({ type: 'LOGOUT', payload: { sessionExpired: true } });
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ ...state, login, logout, refreshUser, clearSessionExpired }}>
       {children}
     </AuthContext.Provider>
   );

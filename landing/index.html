@@ -1,13 +1,162 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" prefix="og: https://ogp.me/ns#">
   <head>
     <meta charset="UTF-8" />
+    
+    <!-- Core Performance Optimization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- Favicon and Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Skill Game</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- SEO Meta Tags -->
+    <title>SkillGame Pro - Premium Online Gaming Platform | Chess, Poker, Tournaments</title>
+    <meta name="description" content="Join SkillGame Pro - the ultimate online gaming platform featuring chess, poker, backgammon, and competitive tournaments. Play skill-based games, win real prizes, and compete with players worldwide." />
+    <meta name="keywords" content="online gaming, chess online, poker games, backgammon, skill games, gaming tournaments, competitive gaming, board games online, card games, strategy games" />
+    <meta name="author" content="SkillGame Pro" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="theme-color" content="#1a1a2e" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SkillGame Pro - Premium Online Gaming Platform" />
+    <meta property="og:description" content="Join the ultimate online gaming platform featuring chess, poker, backgammon, and competitive tournaments. Play skill-based games and win real prizes." />
+    <meta property="og:url" content="https://skillgame.pro" />
+    <meta property="og:site_name" content="SkillGame Pro" />
+    <meta property="og:image" content="https://skillgame.pro/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="SkillGame Pro - Online Gaming Platform" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SkillGame Pro - Premium Online Gaming Platform" />
+    <meta name="twitter:description" content="Join the ultimate online gaming platform featuring chess, poker, backgammon, and competitive tournaments." />
+    <meta name="twitter:image" content="https://skillgame.pro/og-image.jpg" />
+    <meta name="twitter:image:alt" content="SkillGame Pro Gaming Platform" />
+    <meta name="twitter:site" content="@skillgamepro" />
+    <meta name="twitter:creator" content="@skillgamepro" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://skillgame.pro" />
+    
+    <!-- DNS Prefetch for External Resources -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//www.google-analytics.com" />
+    <link rel="dns-prefetch" href="//connect.facebook.net" />
+    
+    <!-- Preconnect for Critical Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Critical CSS will be injected here by Vite -->
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SkillGame Pro",
+      "url": "https://skillgame.pro",
+      "description": "Premium online gaming platform featuring chess, poker, backgammon, and competitive tournaments",
+      "publisher": {
+        "@type": "Organization",
+        "name": "SkillGame Pro",
+        "url": "https://skillgame.pro"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://skillgame.pro/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "SkillGame Pro",
+      "description": "Online gaming platform with skill-based games and tournaments",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "2547"
+      }
+    }
+    </script>
+    
+    <!-- Performance Monitoring -->
+    <script>
+      // Performance timing
+      window.performance && window.performance.mark && window.performance.mark('head-end');
+    </script>
   </head>
   <body>
+    <script>
+      // Performance timing
+      window.performance && window.performance.mark && window.performance.mark('body-start');
+    </script>
+    
+    <!-- Loading Screen for Better UX -->
+    <div id="loading-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a2e; display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div style="color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <div style="width: 40px; height: 40px; border: 3px solid #333; border-top: 3px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+        <div>Loading SkillGame Pro...</div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    </div>
+    
+    <!-- App Root -->
     <div id="root"></div>
+    
+    <!-- Main Application Script -->
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Remove loading screen when app loads -->
+    <script>
+      window.addEventListener('load', function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          loadingScreen.style.transition = 'opacity 0.3s ease';
+          setTimeout(() => loadingScreen.remove(), 300);
+        }
+        // Performance timing
+        window.performance && window.performance.mark && window.performance.mark('app-loaded');
+      });
+    </script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator && location.protocol === 'https:') {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('SW registered: ', registration);
+            })
+            .catch(function(registrationError) {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

@@ -286,8 +286,8 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
                                     markedSet = new Set();
                                 }
                                 
-                                const isMarked = markedSet.has(number) || (colIndex === 2 && row === 2 && number === 0);
                                 const isFreeSpace = colIndex === 2 && row === 2 && number === 0;
+                                const isMarked = !isFreeSpace && markedSet.has(number);
                                 const isClickable = isMyCard && gameState.gamePhase === 'MARKING' && gameState.calledNumbers.includes(number) && !isMarked && !isFreeSpace;
                                 const isRecentlyMarked = recentlyMarked === number;
                                 
@@ -428,8 +428,21 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
                 </div>
             </div>
 
-            {/* Current Number Display */}
-            <div className={styles.numberDisplay}>
+            {/* Current Number Display with Timer */}
+            <div className={styles.numberTimerContainer}>
+                {/* Timer in same block - LEFT SIDE */}
+                {isMyTurn && !isGameFinished && (
+                    <div className={styles.timerInline}>
+                        <MoveTimer
+                            timeLeft={timer.timeLeft}
+                            isWarning={timer.isWarning}
+                            isActive={timer.isActive}
+                            progress={timer.progress}
+                            className={styles.gameTimer}
+                        />
+                    </div>
+                )}
+                
                 <div className={styles.currentNumberContainer}>
                     {gameState.currentNumber ? (
                         <div className={`${styles.currentNumber} ${animatingNumber ? styles.animating : ''}`}>
@@ -450,16 +463,6 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
 
             {/* Game Actions */}
             <div className={styles.gameActions}>
-                {gameState.gamePhase === 'CALLING' && isMyTurn && (
-                    <button
-                        className={`${styles.actionButton} ${styles.callButton}`}
-                        onClick={handleCallNumber}
-                        disabled={isGameFinished}
-                    >
-                        🎱 Call Next Number
-                    </button>
-                )}
-
                 {gameState.gamePhase === 'MARKING' && (
                     <div className={styles.actionButtons}>
                         <button
@@ -482,24 +485,25 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
                 )}
             </div>
 
-            {/* Timer */}
-            {isMyTurn && !isGameFinished && (
-                <div className={styles.timerSection}>
-                    <MoveTimer
-                        timeLeft={timer.timeLeft}
-                        isWarning={timer.isWarning}
-                        isActive={timer.isActive}
-                        progress={timer.progress}
-                        className={styles.gameTimer}
-                    />
-                </div>
-            )}
 
             {/* Bingo Cards */}
             <div className={styles.cardsContainer}>
                 <div className={styles.cardSection}>
                     <h3 className={styles.cardTitle}>Your Card</h3>
                     {renderBingoCard(myCard.card, myCard.markedNumbers, true)}
+                </div>
+                
+                {/* Call Number Button between cards */}
+                <div className={styles.centerActions}>
+                    {gameState.gamePhase === 'CALLING' && isMyTurn && (
+                        <button
+                            className={`${styles.actionButton} ${styles.callButton}`}
+                            onClick={handleCallNumber}
+                            disabled={isGameFinished}
+                        >
+                            🎱 Call Next Number
+                        </button>
+                    )}
                 </div>
                 
                 <div className={styles.cardSection}>

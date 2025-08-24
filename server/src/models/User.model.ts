@@ -7,6 +7,18 @@ interface IKycDocument {
     submittedAt: Date;
 }
 
+interface ISumsubData {
+    applicantId?: string;
+    inspectionId?: string;
+    externalUserId: string;
+    levelName?: string;
+    reviewStatus?: 'init' | 'pending' | 'prechecked' | 'queued' | 'completed' | 'onHold';
+    reviewResult?: 'GREEN' | 'RED' | 'YELLOW';
+    createdAt?: Date;
+    updatedAt?: Date;
+    webhookData?: any;
+}
+
 export interface IUser extends Document {
   username: string;
   email: string;
@@ -21,6 +33,9 @@ export interface IUser extends Document {
   kycStatus: 'NOT_SUBMITTED' | 'PENDING' | 'APPROVED' | 'REJECTED';
   kycDocuments: IKycDocument[];
   kycRejectionReason?: string;
+  // Sumsub integration fields
+  sumsubData?: ISumsubData;
+  kycProvider: 'LEGACY' | 'SUMSUB';
   ageConfirmed: boolean;
   termsAccepted: boolean;
   privacyPolicyAccepted: boolean;
@@ -30,6 +45,24 @@ const kycDocumentSchema = new Schema<IKycDocument>({
     documentType: { type: String, required: true, enum: ['PASSPORT', 'UTILITY_BILL', 'INTERNATIONAL_PASSPORT', 'RESIDENCE_PERMIT'] },
     filePath: { type: String, required: true },
     submittedAt: { type: Date, default: Date.now },
+}, { _id: false });
+
+const sumsubDataSchema = new Schema<ISumsubData>({
+    applicantId: { type: String },
+    inspectionId: { type: String },
+    externalUserId: { type: String, required: true },
+    levelName: { type: String },
+    reviewStatus: {
+        type: String,
+        enum: ['init', 'pending', 'prechecked', 'queued', 'completed', 'onHold']
+    },
+    reviewResult: {
+        type: String,
+        enum: ['GREEN', 'RED', 'YELLOW']
+    },
+    createdAt: { type: Date },
+    updatedAt: { type: Date },
+    webhookData: { type: Schema.Types.Mixed }
 }, { _id: false });
 
 const userSchema = new Schema<IUser>({
@@ -64,6 +97,13 @@ const userSchema = new Schema<IUser>({
   },
   kycDocuments: [kycDocumentSchema],
   kycRejectionReason: { type: String },
+  // Sumsub integration
+  sumsubData: sumsubDataSchema,
+  kycProvider: {
+    type: String,
+    enum: ['LEGACY', 'SUMSUB'],
+    default: 'SUMSUB'
+  },
   ageConfirmed: { type: Boolean, required: true, default: false },
   termsAccepted: { type: Boolean, required: true, default: false },
   privacyPolicyAccepted: { type: Boolean, required: true, default: false },

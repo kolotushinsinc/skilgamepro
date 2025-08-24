@@ -1,0 +1,217 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modalContent {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border: 2px solid #475569;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.closeButton {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+    background-color: rgba(248, 113, 113, 0.1);
+    color: #f87171;
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.warningIcon {
+    color: #fbbf24;
+    flex-shrink: 0;
+}
+
+.modalTitle {
+    color: #f1f5f9;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.modalBody {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.rotationIcon {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.rotateAnimation {
+    color: #3b82f6;
+    animation: rotateLoop 2s linear infinite;
+}
+
+@keyframes rotateLoop {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.warningText {
+    color: #cbd5e1;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+}
+
+.warningList {
+    text-align: left;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.warningItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.warningItem:last-child {
+    margin-bottom: 0;
+}
+
+.bullet {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-right: 4px;
+}
+
+.instructionNote {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    text-align: center;
+}
+
+.instructionNote strong {
+    color: #3b82f6;
+}
+
+.modalActions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.cancelButton {
+    background: transparent;
+    border: 2px solid #475569;
+    color: #94a3b8;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+    background-color: rgba(71, 85, 105, 0.2);
+    border-color: #64748b;
+    color: #cbd5e1;
+}
+
+.confirmButton {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.confirmButton:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.confirmButton:active {
+    transform: translateY(0);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+    .modalContent {
+        padding: 20px;
+        margin: 16px;
+    }
+    
+    .modalTitle {
+        font-size: 1.1rem;
+    }
+    
+    .modalActions {
+        flex-direction: column;
+    }
+    
+    .cancelButton,
+    .confirmButton {
+        width: 100%;
+        justify-content: center;
+    }
+}

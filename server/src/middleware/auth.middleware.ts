@@ -90,8 +90,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
 
     // Get user with additional security checks
     const user = await User.findById(decoded.id)
-      .select('-password')
-      .lean();
+      .select('-password');
 
     if (!user) {
       securityLogger.warn('Token for non-existent user', {
@@ -123,13 +122,15 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
 
     // Session management
     const sessionId = decoded.sessionId || crypto.randomBytes(16).toString('hex');
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
     
     // Validate session if it exists
     if (activeSessions.has(sessionId)) {
       const session = activeSessions.get(sessionId)!;
       
       // Check if session belongs to the same user
-      if (session.userId !== user._id.toString()) {
+      if (session.userId !== user.id.toString()) {
         securityLogger.error('Session hijacking attempt detected', {
           sessionId,
           expectedUserId: session.userId,
@@ -149,16 +150,37 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
         });
       }
       
+      // Check if session has been inactive for more than 1 hour
+      if (session.lastActivity < oneHourAgo) {
+        securityLogger.info('Session expired due to inactivity', {
+          sessionId,
+          userId: user._id,
+          lastActivity: session.lastActivity,
+          ip,
+          userAgent,
+          timestamp: now
+        });
+        
+        // Remove expired session
+        activeSessions.delete(sessionId);
+        tokenBlacklist.add(token);
+        
+        return res.status(401).json({
+          message: 'Session expired due to inactivity. Please log in again.',
+          code: 'SESSION_EXPIRED'
+        });
+      }
+      
       // Update session activity
-      session.lastActivity = new Date();
+      session.lastActivity = now;
     } else {
       // Create new session
       activeSessions.set(sessionId, {
-        userId: user._id.toString(),
+        userId: user.id.toString(),
         ip: ip || 'unknown',
         userAgent,
-        createdAt: new Date(),
-        lastActivity: new Date()
+        createdAt: now,
+        lastActivity: now
       });
     }
 
@@ -173,7 +195,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     // Log successful authentication for high-value operations
     if (req.path.includes('/admin') || req.path.includes('/payment')) {
       securityLogger.info('High-privilege access', {
-        userId: user._id,
+        userId: user.id,
         userRole: user.role,
         ip,
         userAgent,
@@ -231,18 +253,28 @@ export const logout = (req: Request, res: Response, next: NextFunction) => {
 // Clean up expired sessions and blacklisted tokens
 setInterval(() => {
   const now = new Date();
-  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
   
-  // Clean up old sessions
+  // Clean up sessions inactive for more than 1 hour
+  let cleanedSessions = 0;
   for (const [sessionId, session] of activeSessions.entries()) {
-    if (session.lastActivity < oneWeekAgo) {
+    if (session.lastActivity < oneHourAgo) {
       activeSessions.delete(sessionId);
+      cleanedSessions++;
     }
+  }
+  
+  if (cleanedSessions > 0) {
+    securityLogger.info('Cleaned up expired sessions', {
+      cleanedSessions,
+      activeSessions: activeSessions.size,
+      timestamp: now
+    });
   }
   
   // In production, you'd implement a more sophisticated cleanup for tokenBlacklist
   // using Redis with TTL or a database cleanup job
-}, 60 * 60 * 1000); // Run every hour
+}, 30 * 60 * 1000); // Run every 30 minutes to catch expired sessions quickly
 
 // Export session utilities for admin monitoring
 export const getActiveSessions = () => Array.from(activeSessions.entries());

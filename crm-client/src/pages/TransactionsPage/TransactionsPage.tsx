@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAdminTransactionsPaginated, type ITransaction, type ITransactionsQuery, type IPaginationInfo } from '../../services/adminService';
+import { getAdminTransactionsPaginated, exportTransactionsToExcel, type ITransaction, type ITransactionsQuery, type IPaginationInfo } from '../../services/adminService';
 import styles from './TransactionsPage.module.css';
 import {
     RefreshCw,
@@ -16,7 +16,8 @@ import {
     Target,
     Filter,
     Search,
-    ChevronDown
+    ChevronDown,
+    Download
 } from 'lucide-react';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import Pagination from '../../components/ui/Pagination';
@@ -42,6 +43,9 @@ const TransactionsPage: React.FC = () => {
         status: 'all',
         search: ''
     });
+    
+    // Export states
+    const [isExporting, setIsExporting] = useState(false);
 
     const fetchTransactions = useCallback(async (query: ITransactionsQuery = filters) => {
         try {
@@ -86,6 +90,43 @@ const TransactionsPage: React.FC = () => {
         setFilters(clearedFilters);
         fetchTransactions(clearedFilters);
     }, [fetchTransactions]);
+
+    const handleExportToExcel = useCallback(async () => {
+        try {
+            setIsExporting(true);
+            const exportQuery = {
+                type: filters.type,
+                status: filters.status,
+                search: filters.search
+            };
+            
+            const blob = await exportTransactionsToExcel(exportQuery);
+            
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            link.download = `transactions-report-${timestamp}.xlsx`;
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up
+            window.URL.revokeObjectURL(url);
+            
+            console.log('Excel export completed successfully');
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('Failed to export transactions to Excel. Please try again.');
+        } finally {
+            setIsExporting(false);
+        }
+    }, [filters]);
 
     const getTypeStyle = (type: string) => {
         const styleKey = `type_${type.toUpperCase()}`;
@@ -138,6 +179,15 @@ const TransactionsPage: React.FC = () => {
                         </div>
                     </div>
                     <div className={styles.headerActions}>
+                        <button
+                            onClick={handleExportToExcel}
+                            className={`${styles.exportButton} ${isExporting ? styles.loading : ''}`}
+                            disabled={isExporting}
+                            title="Export transactions to Excel"
+                        >
+                            <Download size={18} />
+                            <span>{isExporting ? 'Exporting...' : 'Export Excel'}</span>
+                        </button>
                         <button
                             onClick={() => setShowFilters(!showFilters)}
                             className={`${styles.filterToggle} ${showFilters ? styles.active : ''}`}

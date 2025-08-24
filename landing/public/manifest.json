@@ -1,0 +1,111 @@
+{
+  "name": "SkillGame Pro - Premium Online Gaming Platform",
+  "short_name": "SkillGame Pro",
+  "description": "Join the ultimate online gaming platform featuring chess, poker, backgammon, and competitive tournaments. Play skill-based games and win real prizes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["games", "entertainment", "sports"],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-home.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "SkillGame Pro Desktop Homepage"
+    },
+    {
+      "src": "/screenshots/mobile-games.jpg",
+      "sizes": "390x844",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "SkillGame Pro Mobile Games"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Play Chess",
+      "short_name": "Chess",
+      "description": "Start a chess game",
+      "url": "/chess",
+      "icons": [
+        {
+          "src": "/icons/chess-icon.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Tournaments",
+      "short_name": "Tournaments",
+      "description": "View active tournaments",
+      "url": "/tournaments",
+      "icons": [
+        {
+          "src": "/icons/tournament-icon.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Play Backgammon",
+      "short_name": "Backgammon",
+      "description": "Start a backgammon game",
+      "url": "/backgammon",
+      "icons": [
+        {
+          "src": "/icons/backgammon-icon.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "handle_links": "preferred",
+  "prefer_related_applications": false
+}

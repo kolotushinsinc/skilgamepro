@@ -132,6 +132,38 @@
     animation: spin 1s linear infinite;
 }
 
+.exportButton {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.exportButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+}
+
+.exportButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.exportButton.loading svg {
+    animation: spin 1s linear infinite;
+}
+
 /* Header Actions */
 .headerActions {
     display: flex;

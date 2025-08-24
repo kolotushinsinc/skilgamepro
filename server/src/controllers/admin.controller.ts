@@ -10,6 +10,7 @@ import GameRecord from '../models/GameRecord.model';
 import { createNotification } from '../services/notification.service';
 import { createTournament as createTournamentService } from '../services/tournament.service';
 import path from 'path';
+import * as XLSX from 'xlsx';
 
 let roomsRef: Record<string, Room> = {}; 
 let gameLogicsRef: Record<string, IGameLogic> = {};
@@ -235,18 +236,24 @@ export const getAllUsers = async (req: Request, res: Response) => {
         const role = req.query.role as string;
         const search = req.query.search as string;
         
+        console.log('[Admin] getAllUsers query params:', { page, limit, role, search });
+        
         // Build filter query
         const filter: any = {};
         if (role && role !== 'all') {
             filter.role = role.toUpperCase();
         }
-        if (search) {
+        if (search && search.trim() !== '') {
+            const searchTerm = search.trim();
+            console.log('[Admin] Applying search filter for:', searchTerm);
             filter.$or = [
-                { username: { $regex: search, $options: 'i' } },
-                { email: { $regex: search, $options: 'i' } },
-                { _id: { $regex: search, $options: 'i' } }
+                { username: { $regex: searchTerm, $options: 'i' } },
+                { email: { $regex: searchTerm, $options: 'i' } },
+                { _id: { $regex: searchTerm, $options: 'i' } }
             ];
         }
+        
+        console.log('[Admin] Final filter object:', JSON.stringify(filter, null, 2));
         
         const skip = (page - 1) * limit;
         
@@ -259,6 +266,8 @@ export const getAllUsers = async (req: Request, res: Response) => {
                 .limit(limit),
             User.countDocuments(filter)
         ]);
+        
+        console.log('[Admin] Search results:', { foundUsers: users.length, total });
         
         const totalPages = Math.ceil(total / limit);
         const hasNext = page < totalPages;
@@ -519,6 +528,237 @@ export const reviewKycSubmission = async (req: Request, res: Response) => {
 
     } catch (error) {
         res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+export const exportUsersToExcel = async (req: Request, res: Response) => {
+    try {
+        const role = req.query.role as string;
+        const search = req.query.search as string;
+        
+        console.log('[Admin] Exporting users to Excel with filters:', { role, search });
+        
+        // Build filter query (same as getAllUsers)
+        const filter: any = {};
+        if (role && role !== 'all') {
+            filter.role = role.toUpperCase();
+        }
+        if (search && search.trim() !== '') {
+            const searchTerm = search.trim();
+            filter.$or = [
+                { username: { $regex: searchTerm, $options: 'i' } },
+                { email: { $regex: searchTerm, $options: 'i' } },
+                { _id: { $regex: searchTerm, $options: 'i' } }
+            ];
+        }
+        
+        // Get all users without pagination for export
+        const users = await User.find(filter)
+            .select('-password')
+            .sort({ createdAt: -1 });
+        
+        // Prepare data for Excel export
+        const excelData = users.map((user, index) => {
+            const userDoc = user as any; // Type assertion for timestamps
+            return {
+                '#': index + 1,
+                'User ID': userDoc._id?.toString() || 'N/A',
+                'Username': user.username,
+                'Email': user.email,
+                'Role': user.role,
+                'Status': user.status,
+                'Balance': user.balance.toFixed(2),
+                'KYC Status': user.kycStatus,
+                'KYC Provider': user.kycProvider,
+                'Registration Date': userDoc.createdAt ? new Date(userDoc.createdAt).toLocaleDateString('en-US') : 'N/A',
+                'Last Updated': userDoc.updatedAt ? new Date(userDoc.updatedAt).toLocaleDateString('en-US') : 'N/A',
+                'Age Confirmed': user.ageConfirmed ? 'Yes' : 'No',
+                'Terms Accepted': user.termsAccepted ? 'Yes' : 'No',
+                'Privacy Policy Accepted': user.privacyPolicyAccepted ? 'Yes' : 'No',
+                'KYC Documents Count': user.kycDocuments?.length || 0,
+                'KYC Rejection Reason': user.kycRejectionReason || 'N/A',
+                'Sumsub Applicant ID': user.sumsubData?.applicantId || 'N/A',
+                'Sumsub Review Status': user.sumsubData?.reviewStatus || 'N/A',
+                'Sumsub Review Result': user.sumsubData?.reviewResult || 'N/A'
+            };
+        });
+        
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Add some styling and formatting
+        const columnWidths = [
+            { wch: 5 },   // #
+            { wch: 25 },  // User ID
+            { wch: 20 },  // Username
+            { wch: 30 },  // Email
+            { wch: 10 },  // Role
+            { wch: 12 },  // Balance
+            { wch: 15 },  // KYC Status
+            { wch: 18 },  // Registration Date
+            { wch: 15 },  // Last Login
+            { wch: 12 },  // Games Played
+            { wch: 15 },  // Total Winnings
+            { wch: 15 },  // Total Deposits
+            { wch: 18 }   // Total Withdrawals
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        // Add summary information
+        const summaryData = [
+            { 'Summary': 'Total Users', 'Value': users.length },
+            { 'Summary': 'Total Admins', 'Value': users.filter(u => u.role === 'ADMIN').length },
+            { 'Summary': 'Total Regular Users', 'Value': users.filter(u => u.role === 'USER').length },
+            { 'Summary': 'Total Balance', 'Value': `$${users.reduce((sum, u) => sum + u.balance, 0).toFixed(2)}` },
+            { 'Summary': 'KYC Approved', 'Value': users.filter(u => u.kycStatus === 'APPROVED').length },
+            { 'Summary': 'KYC Pending', 'Value': users.filter(u => u.kycStatus === 'PENDING').length },
+            { 'Summary': 'Export Date', 'Value': new Date().toLocaleDateString('en-US') }
+        ];
+        
+        const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
+        summaryWorksheet['!cols'] = [{ wch: 20 }, { wch: 30 }];
+        
+        // Add worksheets to workbook
+        XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+        
+        // Generate Excel file buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
+        // Generate filename with timestamp
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        const filename = `users-report-${timestamp}.xlsx`;
+        
+        // Set response headers for file download
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', excelBuffer.length);
+        
+        console.log(`[Admin] Excel export completed: ${users.length} users exported to ${filename}`);
+        
+        // Send the Excel file
+        res.send(excelBuffer);
+    } catch (error) {
+        console.error('Error exporting users to Excel:', error);
+        res.status(500).json({ message: 'Failed to export users to Excel' });
+    }
+};
+
+export const exportTransactionsToExcel = async (req: Request, res: Response) => {
+    try {
+        const type = req.query.type as string;
+        const status = req.query.status as string;
+        const search = req.query.search as string;
+        
+        console.log('[Admin] Exporting transactions to Excel with filters:', { type, status, search });
+        
+        // Build filter query (same as getAllTransactions)
+        const filter: any = {};
+        if (type && type !== 'all') {
+            filter.type = type.toUpperCase();
+        }
+        if (status && status !== 'all') {
+            filter.status = status.toUpperCase();
+        }
+        if (search && search.trim() !== '') {
+            // Search by transaction ID or user's username
+            const userFilter = await User.find({
+                username: { $regex: search.trim(), $options: 'i' }
+            }).select('_id');
+            const userIds = userFilter.map(user => user._id);
+            
+            filter.$or = [
+                { _id: { $regex: search.trim(), $options: 'i' } },
+                { user: { $in: userIds } }
+            ];
+        }
+        
+        // Get all transactions without pagination for export
+        const transactions = await Transaction.find(filter)
+            .populate('user', 'username')
+            .sort({ createdAt: -1 });
+        
+        // Prepare data for Excel export
+        const excelData = transactions.map((transaction, index) => {
+            const transactionDoc = transaction as any;
+            return {
+                '#': index + 1,
+                'Transaction ID': transactionDoc._id?.toString() || 'N/A',
+                'User': transactionDoc.user?.username || 'N/A',
+                'Type': transaction.type,
+                'Status': transaction.status,
+                'Amount': `$${transaction.amount.toFixed(2)}`,
+                'Created Date': transactionDoc.createdAt ? new Date(transactionDoc.createdAt).toLocaleDateString('en-US') : 'N/A',
+                'Created Time': transactionDoc.createdAt ? new Date(transactionDoc.createdAt).toLocaleTimeString('en-US') : 'N/A',
+                'Updated Date': transactionDoc.updatedAt ? new Date(transactionDoc.updatedAt).toLocaleDateString('en-US') : 'N/A'
+            };
+        });
+        
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Add column widths
+        const columnWidths = [
+            { wch: 5 },   // #
+            { wch: 25 },  // Transaction ID
+            { wch: 20 },  // User
+            { wch: 18 },  // Type
+            { wch: 12 },  // Status
+            { wch: 12 },  // Amount
+            { wch: 15 },  // Created Date
+            { wch: 15 },  // Created Time
+            { wch: 15 }   // Updated Date
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        // Calculate summary statistics
+        const totalAmount = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+        const depositCount = transactions.filter(tx => tx.type === 'DEPOSIT').length;
+        const withdrawalCount = transactions.filter(tx => tx.type === 'WITHDRAWAL').length;
+        const completedCount = transactions.filter(tx => tx.status === 'COMPLETED').length;
+        const pendingCount = transactions.filter(tx => tx.status === 'PENDING').length;
+        
+        // Add summary information
+        const summaryData = [
+            { 'Summary': 'Total Transactions', 'Value': transactions.length },
+            { 'Summary': 'Total Amount', 'Value': `$${totalAmount.toFixed(2)}` },
+            { 'Summary': 'Deposits', 'Value': depositCount },
+            { 'Summary': 'Withdrawals', 'Value': withdrawalCount },
+            { 'Summary': 'Completed', 'Value': completedCount },
+            { 'Summary': 'Pending', 'Value': pendingCount },
+            { 'Summary': 'Failed', 'Value': transactions.filter(tx => tx.status === 'FAILED').length },
+            { 'Summary': 'Export Date', 'Value': new Date().toLocaleDateString('en-US') },
+            { 'Summary': 'Export Time', 'Value': new Date().toLocaleTimeString('en-US') }
+        ];
+        
+        const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
+        summaryWorksheet['!cols'] = [{ wch: 20 }, { wch: 30 }];
+        
+        // Add worksheets to workbook
+        XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
+        
+        // Generate Excel file buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
+        // Generate filename with timestamp
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        const filename = `transactions-report-${timestamp}.xlsx`;
+        
+        // Set response headers for file download
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', excelBuffer.length);
+        
+        console.log(`[Admin] Excel export completed: ${transactions.length} transactions exported to ${filename}`);
+        
+        // Send the Excel file
+        res.send(excelBuffer);
+    } catch (error) {
+        console.error('Error exporting transactions to Excel:', error);
+        res.status(500).json({ message: 'Failed to export transactions to Excel' });
     }
 };
 

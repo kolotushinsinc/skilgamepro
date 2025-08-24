@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { TutorialProvider } from './context/TutorialContext';
@@ -10,6 +10,7 @@ import SupportChat from './components/SupportChat/SupportChat';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import TutorialManager from './components/tutorial/TutorialManager';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import SessionExpiredModal from './components/modals/SessionExpiredModal';
 
 import MainLayout from './components/layout/MainLayout';
 
@@ -22,10 +23,22 @@ import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
 // Компонент для проверки игрового состояния
 const GameAwareApp: React.FC = () => {
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, sessionExpired } = useAuth();
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
   
   // Определяем, находится ли игрок в игре
   const isInGame = location.pathname.includes('/game/') || location.pathname.includes('/tournament-game/');
+
+  // Обработка истечения сессии
+  useEffect(() => {
+    if (sessionExpired) {
+      setShowSessionExpiredModal(true);
+    }
+  }, [sessionExpired]);
+
+  const handleCloseSessionModal = () => {
+    setShowSessionExpiredModal(false);
+  };
 
   return (
     <ErrorBoundary>
@@ -65,6 +78,12 @@ const GameAwareApp: React.FC = () => {
           
           {/* Support Chat - скрывается во время игры */}
           {!isInGame && <SupportChat />}
+          
+          {/* Session Expired Modal */}
+          <SessionExpiredModal
+            isOpen={showSessionExpiredModal}
+            onClose={handleCloseSessionModal}
+          />
       </TournamentExitManager>
     </ErrorBoundary>
   );

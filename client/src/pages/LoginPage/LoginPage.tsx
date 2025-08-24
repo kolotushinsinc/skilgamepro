@@ -42,7 +42,13 @@ const LoginPage: React.FC = () => {
             
             <div className={styles.authCard}>
                 <div className={styles.authHeader}>
-                    <div className={styles.logo}>
+                    <a
+                        href="https://skillgame.pro"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.logo}
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
                         <div className={styles.logoIconContainer}>
                             <Crown className={styles.logoIcon} />
                         </div>
@@ -50,7 +56,7 @@ const LoginPage: React.FC = () => {
                             <h1 className={styles.logoText}>Skill Game</h1>
                             <p className={styles.logoSubtext}>Gaming Platform</p>
                         </div>
-                    </div>
+                    </a>
                     <div className={styles.titleSection}>
                         <h2 className={styles.authTitle}>Welcome Back</h2>
                         <p className={styles.authSubtitle}>Sign in to your account to continue</p>
@@ -135,6 +141,16 @@ const LoginPage: React.FC = () => {
                         <Link to="/register" className={styles.signupLink}>
                             Create account
                         </Link>
+                    </p>
+                    <p className={styles.signupPrompt} style={{ marginTop: '10px' }}>
+                        <a
+                            href="https://skillgame.pro"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.signupLink}
+                        >
+                            Return to main page
+                        </a>
                     </p>
                 </div>
             </div>

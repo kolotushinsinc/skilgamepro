@@ -5,7 +5,10 @@ import Header from './Header';
 import { useUI } from '../../context/UIContext';
 import { useAuth } from '../../context/AuthContext';
 import LogoutConfirmModal from '../modals/LogoutConfirmModal';
+import DepositModal from '../modals/DepositModal';
+import InsufficientFundsModal from '../modals/InsufficientFundsModal';
 import styles from './MainLayout.module.css';
+import toast from 'react-hot-toast';
 
 import DashboardPage from '../../pages/DashboardPage/DashboardPage';
 import HomePage from '../../pages/HomePage/HomePage';
@@ -23,8 +26,17 @@ import PrivateRoomPage from '../../pages/PrivateRoomPage/PrivateRoomPage';
 import NotFoundPage from '../../pages/NotFoundPage/NotFoundPage';
 
 const MainLayout: React.FC = () => {
-    const { isSidebarOpen, showLogoutModal, setShowLogoutModal } = useUI();
-    const { logout } = useAuth();
+    const {
+        isSidebarOpen,
+        showLogoutModal,
+        setShowLogoutModal,
+        showDepositModal,
+        setShowDepositModal,
+        showInsufficientFundsModal,
+        setShowInsufficientFundsModal,
+        insufficientFundsData
+    } = useUI();
+    const { logout, refreshUser } = useAuth();
     
     const handleLogoutConfirm = () => {
         logout();
@@ -33,6 +45,22 @@ const MainLayout: React.FC = () => {
 
     const handleLogoutCancel = () => {
         setShowLogoutModal(false);
+    };
+
+    const handleDepositSuccess = (amount: number) => {
+        toast.success(`Successfully deposited $${amount.toFixed(2)}!`, {
+            duration: 4000,
+            icon: '💰',
+        });
+        refreshUser();
+    };
+
+    const handleDepositClose = () => {
+        setShowDepositModal(false);
+    };
+
+    const handleInsufficientFundsClose = () => {
+        setShowInsufficientFundsModal(false);
     };
 
     return (
@@ -69,6 +97,21 @@ const MainLayout: React.FC = () => {
                 isOpen={showLogoutModal}
                 onClose={handleLogoutCancel}
                 onConfirm={handleLogoutConfirm}
+            />
+
+            {/* Deposit Modal - positioned over entire screen */}
+            <DepositModal
+                isOpen={showDepositModal}
+                onClose={handleDepositClose}
+                onSuccess={handleDepositSuccess}
+            />
+
+            {/* Insufficient Funds Modal - positioned over entire screen */}
+            <InsufficientFundsModal
+                isOpen={showInsufficientFundsModal}
+                onClose={handleInsufficientFundsClose}
+                requiredAmount={insufficientFundsData?.requiredAmount || 0}
+                currentBalance={insufficientFundsData?.currentBalance || 0}
             />
         </div>
     )

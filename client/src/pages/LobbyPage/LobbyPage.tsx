@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
+import { useUI } from '../../context/UIContext';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import InsufficientFundsModal from '../../components/modals/InsufficientFundsModal';
 import {
     ArrowLeft,
     Plus,
@@ -67,7 +67,8 @@ const getGameGradient = (gameType: string = ''): string => {
 const LobbyPage: React.FC = () => {
     const { gameType } = useParams<{ gameType: string }>();
     const { socket } = useSocket();
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
+    const { setShowInsufficientFundsModal, setInsufficientFundsData } = useUI();
     const navigate = useNavigate();
 
     const [rooms, setRooms] = useState<RoomInfo[]>([]);
@@ -75,7 +76,6 @@ const LobbyPage: React.FC = () => {
     const [error, setError] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [showPrivateModal, setShowPrivateModal] = useState(false);
-    const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
     const [privateRoomData, setPrivateRoomData] = useState<{
         invitationToken: string;
         invitationUrl: string;
@@ -94,6 +94,10 @@ const LobbyPage: React.FC = () => {
             if (message.toLowerCase().includes('insufficient funds') ||
                 message.toLowerCase().includes('not enough balance') ||
                 message.toLowerCase().includes('недостаточно средств')) {
+                setInsufficientFundsData({
+                    requiredAmount: bet,
+                    currentBalance: user?.balance || 0
+                });
                 setShowInsufficientFundsModal(true);
             } else {
                 setError(message);
@@ -167,9 +171,6 @@ const LobbyPage: React.FC = () => {
         closePrivateModal();
     };
 
-    const closeInsufficientFundsModal = () => {
-        setShowInsufficientFundsModal(false);
-    };
 
     if (!user || !gameType) {
         return <LoadingSpinner fullScreen text="Loading lobby..." />;
@@ -411,13 +412,6 @@ const LobbyPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Insufficient Funds Modal */}
-            <InsufficientFundsModal
-                isOpen={showInsufficientFundsModal}
-                onClose={closeInsufficientFundsModal}
-                requiredAmount={bet}
-                currentBalance={user?.balance || 0}
-            />
         </div>
     );
 };

@@ -125,9 +125,21 @@ export const getAdminUsersPaginated = async (query: IUsersQuery = {}): Promise<I
     if (query.page) params.append('page', query.page.toString());
     if (query.limit) params.append('limit', query.limit.toString());
     if (query.role && query.role !== 'all') params.append('role', query.role);
-    if (query.search) params.append('search', query.search);
+    if (query.search && query.search.trim() !== '') params.append('search', query.search.trim());
     
-    const { data } = await axios.get(`${API_URL}/api/admin/users?${params.toString()}`);
+    const url = `${API_URL}/api/admin/users?${params.toString()}`;
+    console.log('[AdminService] Fetching users with URL:', url);
+    console.log('[AdminService] Query object:', query);
+    
+    const token = localStorage.getItem('crm_token');
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    
+    const { data } = await axios.get(url, config);
+    console.log('[AdminService] Response received:', data);
     return data;
 };
 
@@ -299,5 +311,120 @@ export const getKycDocumentFile = async (userId: string, fileName: string): Prom
     };
 
     const response = await axios.get(`${API_URL}/api/admin/kyc-document/${userId}/${fileName}`, config);
+    return response.data;
+};
+
+// Sumsub KYC API methods
+export interface ISumsubApplicantInfo {
+    user: {
+        id: string;
+        username: string;
+        email: string;
+    };
+    sumsub: {
+        applicantId: string;
+        externalUserId: string;
+        levelName: string;
+        applicantInfo: any;
+        verificationStatus: {
+            status: 'NOT_STARTED' | 'PENDING' | 'APPROVED' | 'REJECTED';
+            reviewResult?: string;
+            moderationComment?: string;
+        };
+    };
+    localKycStatus: string;
+}
+
+export const getSumsubApplicantInfo = async (userId: string): Promise<ISumsubApplicantInfo> => {
+    const token = localStorage.getItem('crm_token');
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    
+    const { data } = await axios.get(`${API_URL}/api/sumsub/admin/applicant/${userId}`, config);
+    return data;
+};
+
+export const syncSumsubStatus = async (userId: string) => {
+    const token = localStorage.getItem('crm_token');
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    
+    const { data } = await axios.post(`${API_URL}/api/sumsub/admin/sync/${userId}`, {}, config);
+    return data;
+};
+
+// Enhanced KYC submission interface for Sumsub support
+export interface IEnhancedKycSubmission extends IKycSubmission {
+    kycProvider?: 'LEGACY' | 'SUMSUB';
+    sumsubData?: {
+        applicantId?: string;
+        inspectionId?: string;
+        externalUserId: string;
+        reviewStatus?: string;
+        reviewResult?: string;
+        updatedAt?: string;
+    };
+}
+
+export const getEnhancedKycSubmissions = async (status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL'): Promise<IEnhancedKycSubmission[]> => {
+    const params = status === 'ALL' ? {} : { status };
+    const token = localStorage.getItem('crm_token');
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        params
+    };
+    
+    const { data } = await axios.get(`${API_URL}/api/admin/kyc-submissions`, config);
+    return data;
+};
+
+export const exportUsersToExcel = async (query: IUsersQuery = {}): Promise<Blob> => {
+    const params = new URLSearchParams();
+    
+    if (query.role && query.role !== 'all') params.append('role', query.role);
+    if (query.search && query.search.trim() !== '') params.append('search', query.search.trim());
+    
+    const url = `${API_URL}/api/admin/users/export/excel?${params.toString()}`;
+    console.log('[AdminService] Exporting users to Excel with URL:', url);
+    
+    const token = localStorage.getItem('crm_token');
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        responseType: 'blob' as 'blob'
+    };
+    
+    const response = await axios.get(url, config);
+    return response.data;
+};
+
+export const exportTransactionsToExcel = async (query: ITransactionsQuery = {}): Promise<Blob> => {
+    const params = new URLSearchParams();
+    
+    if (query.type && query.type !== 'all') params.append('type', query.type);
+    if (query.status && query.status !== 'all') params.append('status', query.status);
+    if (query.search && query.search.trim() !== '') params.append('search', query.search.trim());
+    
+    const url = `${API_URL}/api/admin/transactions/export/excel?${params.toString()}`;
+    console.log('[AdminService] Exporting transactions to Excel with URL:', url);
+    
+    const token = localStorage.getItem('crm_token');
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        responseType: 'blob' as 'blob'
+    };
+    
+    const response = await axios.get(url, config);
     return response.data;
 };

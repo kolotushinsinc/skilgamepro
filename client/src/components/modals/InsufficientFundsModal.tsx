@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Wallet, ArrowRight, AlertTriangle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useUI } from '../../context/UIContext';
 import styles from './InsufficientFundsModal.module.css';
 
 interface InsufficientFundsModalProps {
@@ -16,7 +16,7 @@ const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
     requiredAmount,
     currentBalance = 0
 }) => {
-    const navigate = useNavigate();
+    const { setShowDepositModal } = useUI();
 
     if (!isOpen) return null;
 
@@ -28,8 +28,8 @@ const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
 
     const handleGoToDeposit = () => {
         onClose();
-        // Navigate to profile page with Payment History tab focused
-        navigate('/profile?section=payment-history');
+        // Open the global deposit modal
+        setShowDepositModal(true);
     };
 
     return (
