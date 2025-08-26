@@ -222,54 +222,10 @@ export const getCSRFToken = (req: Request, res: Response) => {
   });
 };
 
-// Origin validation middleware
+// Origin validation middleware - allow all origins
 export const validateOrigin = (req: Request, res: Response, next: NextFunction) => {
-  const origin = req.get('Origin') || req.get('Referer');
-  const host = req.get('Host');
-  
-  // Allow requests without origin for same-origin requests
-  if (!origin) {
-    return next();
-  }
-  
-  try {
-    const originUrl = new URL(origin);
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
-    
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin) || originUrl.host === host) {
-      return next();
-    }
-    
-    securityLogger.warn('Invalid origin detected', {
-      ip: req.ip,
-      origin,
-      host,
-      path: req.path,
-      method: req.method,
-      timestamp: new Date()
-    });
-    
-    return res.status(403).json({
-      error: 'Invalid origin',
-      code: 'INVALID_ORIGIN'
-    });
-    
-  } catch (error) {
-    securityLogger.warn('Malformed origin header', {
-      ip: req.ip,
-      origin,
-      path: req.path,
-      method: req.method,
-      error: (error as Error).message,
-      timestamp: new Date()
-    });
-    
-    return res.status(403).json({
-      error: 'Malformed origin',
-      code: 'MALFORMED_ORIGIN'
-    });
-  }
+  // Allow all origins
+  next();
 };
 
 export default {

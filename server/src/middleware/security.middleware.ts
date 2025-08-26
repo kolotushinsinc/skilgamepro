@@ -39,30 +39,11 @@ const securityLogger = winston.createLogger({
 
 // Enhanced CORS configuration
 export const corsConfig = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:5178',
-      'http://localhost:5177',
-      'https://platform.skillgame.pro',
-      'https://crm.skillgame.pro'
-    ];
-    
-    // Allow requests with no origin (mobile apps, postman)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      securityLogger.warn('CORS block attempt', { origin, timestamp: new Date() });
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
+  origin: '*', // Allow all origins explicitly
+  credentials: false, // Cannot be true when origin is '*'
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-socket-id']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-socket-id', 'Access-Control-Allow-Origin']
 };
 
 // Enhanced Helmet configuration for security headers
