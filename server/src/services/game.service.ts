@@ -1,23 +1,24 @@
 import { Server } from 'socket.io';
-import { IRoom, GamePlayer, IGameResult, GameMove } from '../types/game.types';
-import { gameLogics, getIO } from '../socket';
+import { GamePlayer, IGameResult, GameMove } from '../types/game.types';
+import { gameLogics, getIO, Room } from '../socket';
 import User from '../models/User.model';
 import GameRecord from '../models/GameRecord.model';
 import Transaction from '../models/Transaction.model';
 import { advanceTournamentWinner } from './tournament.service';
+import PlatformRevenueService from './platformRevenue.service';
 
 export class GameService {
     private io: Server;
-    private rooms: Record<string, IRoom>;
+    private rooms: Record<string, Room>;
 
-    constructor(io: Server, rooms: Record<string, IRoom>) {
+    constructor(io: Server, rooms: Record<string, Room>) {
         this.io = io;
         this.rooms = rooms;
     }
 
-    private isBot(player: GamePlayer): boolean {
+    private isBot(player: any): boolean {
         if (!player || !player.user || !player.user._id) return false;
-        return player.user._id.toString().startsWith('bot-');
+        return (player.user._id as any).toString().startsWith('bot-');
     }
 
     private formatGameNameForDB(gameType: string): 'Checkers' | 'Chess' | 'Backgammon' | 'Tic-Tac-Toe' {
@@ -30,7 +31,7 @@ export class GameService {
         }
     }
 
-    private getPublicRoomState(room: IRoom) {
+    private getPublicRoomState(room: Room) {
         const { botJoinTimer, disconnectTimer, ...publicState } = room;
         return publicState;
     }
@@ -43,10 +44,10 @@ export class GameService {
 
         const gameLogic = gameLogics[room.gameType];
         const { newState, error, turnShouldSwitch } = gameLogic.processMove(
-            room.gameState, 
-            move, 
-            playerId, 
-            room.players
+            room.gameState,
+            move,
+            playerId,
+            room.players as GamePlayer[]
         );
         
         if (error) {
@@ -56,7 +57,7 @@ export class GameService {
 
         room.gameState = newState;
         
-        const gameResult = gameLogic.checkGameEnd(room.gameState, room.players);
+        const gameResult = gameLogic.checkGameEnd(room.gameState, room.players as GamePlayer[]);
         if (gameResult.isGameOver) {
             await this.endGame(room, gameResult.winnerId, gameResult.isDraw);
             return true;
@@ -71,9 +72,9 @@ export class GameService {
         return true;
     }
 
-    private async processBotMove(room: IRoom): Promise<void> {
-        const currentPlayer = room.players.find(p => 
-            p.user._id.toString() === room.gameState.turn
+    private async processBotMove(room: Room): Promise<void> {
+        const currentPlayer = room.players.find(p =>
+            (p.user._id as any).toString() === room.gameState.turn
         );
         
         if (!currentPlayer || !this.isBot(currentPlayer)) {
@@ -99,15 +100,15 @@ export class GameService {
                 const botProcessResult = gameLogic.processMove(
                     currentRoom.gameState,
                     botMove,
-                    currentPlayer.user._id.toString(),
-                    currentRoom.players
+                    (currentPlayer.user._id as any).toString(),
+                    currentRoom.players as GamePlayer[]
                 );
 
                 if (botProcessResult.error) break;
 
                 currentRoom.gameState = botProcessResult.newState;
                 
-                const botGameResult = gameLogic.checkGameEnd(currentRoom.gameState, currentRoom.players);
+                const botGameResult = gameLogic.checkGameEnd(currentRoom.gameState, currentRoom.players as GamePlayer[]);
                 if (botGameResult.isGameOver) {
                     await this.endGame(currentRoom, botGameResult.winnerId, botGameResult.isDraw);
                     return;
@@ -122,7 +123,7 @@ export class GameService {
         }, 1500);
     }
 
-    async endGame(room: IRoom, winnerId?: string, isDraw: boolean = false): Promise<void> {
+    async endGame(room: Room, winnerId?: string, isDraw: boolean = false): Promise<void> {
         console.log(`[GameService] Ending game in room ${room.id}, winner: ${winnerId}, draw: ${isDraw}`);
         
         if (room.id.startsWith('tourney-')) {
@@ -133,18 +134,18 @@ export class GameService {
         await this.endRegularGame(room, winnerId, isDraw);
     }
 
-    private async endTournamentGame(room: IRoom, winnerId?: string, isDraw: boolean = false): Promise<void> {
+    private async endTournamentGame(room: Room, winnerId?: string, isDraw: boolean = false): Promise<void> {
         const [, tournamentId, , matchIdStr] = room.id.split('-');
         const matchId = parseInt(matchIdStr, 10);
         
         let winnerObject = null;
         if (winnerId && !isDraw) {
-            const winnerPlayer = room.players.find(p => 
-                p.user._id.toString() === winnerId
+            const winnerPlayer = room.players.find((p: any) =>
+                (p.user._id as any).toString() === winnerId
             );
             if (winnerPlayer) {
                 winnerObject = {
-                    _id: winnerPlayer.user._id.toString(),
+                    _id: (winnerPlayer.user._id as any).toString(),
                     username: winnerPlayer.user.username,
                     isBot: this.isBot(winnerPlayer)
                 };
@@ -152,7 +153,7 @@ export class GameService {
         } else if (isDraw) {
             const randomWinner = room.players[Math.floor(Math.random() * room.players.length)];
             winnerObject = {
-                _id: randomWinner.user._id.toString(),
+                _id: (randomWinner.user._id as any).toString(),
                 username: randomWinner.user.username,
                 isBot: this.isBot(randomWinner)
             };
@@ -170,93 +171,232 @@ export class GameService {
         delete this.rooms[room.id];
     }
 
-    private async endRegularGame(room: IRoom, winnerId?: string, isDraw: boolean = false): Promise<void> {
+    private async endRegularGame(room: Room, winnerId?: string, isDraw: boolean = false): Promise<void> {
         if (room.disconnectTimer) clearTimeout(room.disconnectTimer);
         if (room.botJoinTimer) clearTimeout(room.botJoinTimer);
         
-        const winner = room.players.find(p => p.user._id.toString() === winnerId);
-        const loser = room.players.find(p => p.user._id.toString() !== winnerId);
+        const winner = room.players.find(p => (p.user._id as any).toString() === winnerId);
+        const loser = room.players.find(p => (p.user._id as any).toString() !== winnerId);
         const gameNameForDB = this.formatGameNameForDB(room.gameType);
+        const globalIO = getIO();
 
-        if (isDraw) {
-            for (const player of room.players) {
-                if (!this.isBot(player)) {
-                    const opponent = room.players.find(p => p.user._id !== player.user._id);
-                    await GameRecord.create({ 
-                        user: player.user._id, 
-                        gameName: gameNameForDB, 
-                        status: 'DRAW', 
-                        amountChanged: 0, 
-                        opponent: opponent?.user.username || 'Bot' 
-                    });
-                }
-            }
-            this.io.to(room.id).emit('gameEnd', { winner: null, isDraw: true });
-        } else if (winner && loser) {
-            const globalIO = getIO();
+        // Проверяем, что в игре есть хотя бы один реальный игрок (не бот)
+        const hasRealPlayers = room.players.some(p => !this.isBot(p));
+        
+        if (!hasRealPlayers) {
+            // Если только боты, просто удаляем комнату без обработки доходов
+            this.io.to(room.id).emit('gameEnd', {
+                winner: isDraw ? null : winner,
+                isDraw
+            });
+            const gameType = room.gameType;
+            delete this.rooms[room.id];
+            this.broadcastLobbyState(gameType);
+            return;
+        }
+
+        try {
+            let revenueResult;
+            const isWinnerBot = winner ? this.isBot(winner) : false;
+            const isLoserBot = loser ? this.isBot(loser) : false;
+            const isBotGame = isWinnerBot && isLoserBot;
+            const isPlayerVsBot = (isWinnerBot && !isLoserBot) || (!isWinnerBot && isLoserBot);
+            const isPlayerVsPlayer = !isWinnerBot && !isLoserBot;
             
-            if (!this.isBot(winner)) {
-                const updatedWinner = await User.findByIdAndUpdate(winner.user._id, { $inc: { balance: room.bet } }, { new: true });
-                await GameRecord.create({
-                    user: winner.user._id,
-                    gameName: gameNameForDB,
-                    status: 'WON',
-                    amountChanged: room.bet,
-                    opponent: loser.user.username
-                });
-                const winnerTransaction = await Transaction.create({
-                    user: winner.user._id,
-                    type: 'WAGER_WIN',
-                    amount: room.bet
-                });
-
-                if (updatedWinner && globalIO) {
-                    globalIO.emit('balanceUpdated', {
-                        userId: winner.user._id.toString(),
-                        newBalance: updatedWinner.balance,
-                        transaction: {
-                            type: winnerTransaction.type,
-                            amount: winnerTransaction.amount,
-                            status: winnerTransaction.status,
-                            createdAt: new Date()
+            if (isDraw) {
+                // Логика для ничьи
+                if (isPlayerVsPlayer) {
+                    // Игрок против игрока - берем 5% комиссию с каждого
+                    revenueResult = await PlatformRevenueService.processLobbyGameRevenue(
+                        room.id,
+                        gameNameForDB,
+                        winner,
+                        loser,
+                        room.bet,
+                        true // isDraw
+                    );
+                } else if (isPlayerVsBot) {
+                    // Игрок против бота - просто возвращаем ставку игроку без комиссии
+                    const realPlayer = !isWinnerBot ? winner : loser;
+                    if (realPlayer) {
+                        const updatedPlayer = await User.findByIdAndUpdate(
+                            realPlayer.user._id,
+                            { $inc: { balance: room.bet } },
+                            { new: true }
+                        );
+                        
+                        if (updatedPlayer && globalIO) {
+                            globalIO.emit('balanceUpdated', {
+                                userId: (realPlayer.user._id as any).toString(),
+                                newBalance: updatedPlayer.balance,
+                                transaction: {
+                                    type: 'GAME_REFUND',
+                                    amount: room.bet,
+                                    status: 'completed',
+                                    createdAt: new Date()
+                                }
+                            });
                         }
-                    });
+                    }
                 }
-            }
-            if (!this.isBot(loser)) {
-                const updatedLoser = await User.findByIdAndUpdate(loser.user._id, { $inc: { balance: -room.bet } }, { new: true });
-                await GameRecord.create({
-                    user: loser.user._id,
-                    gameName: gameNameForDB,
-                    status: 'LOST',
-                    amountChanged: -room.bet,
-                    opponent: winner.user.username
-                });
-                const loserTransaction = await Transaction.create({
-                    user: loser.user._id,
-                    type: 'WAGER_LOSS',
-                    amount: room.bet
-                });
 
-                if (updatedLoser && globalIO) {
-                    globalIO.emit('balanceUpdated', {
-                        userId: loser.user._id.toString(),
-                        newBalance: updatedLoser.balance,
-                        transaction: {
-                            type: loserTransaction.type,
-                            amount: loserTransaction.amount,
-                            status: loserTransaction.status,
-                            createdAt: new Date()
+                // Создаем записи игр для реальных игроков
+                for (const player of room.players) {
+                    if (!this.isBot(player)) {
+                        const opponent = room.players.find(p => p.user._id !== player.user._id);
+                        const isVsBot = opponent ? this.isBot(opponent) : false;
+                        let amountChanged: number;
+                        
+                        if (isVsBot) {
+                            // Против бота - полный возврат ставки (0 изменений)
+                            amountChanged = 0;
+                        } else {
+                            // Против игрока - возврат 95%, т.е. потеря 5%
+                            amountChanged = -room.bet * 0.05;
                         }
-                    });
+                        
+                        await GameRecord.create({
+                            user: player.user._id,
+                            gameName: gameNameForDB,
+                            status: 'DRAW',
+                            amountChanged,
+                            opponent: opponent?.user.username || 'Bot'
+                        });
+                    }
                 }
+                
+                this.io.to(room.id).emit('gameEnd', { winner: null, isDraw: true });
+
+            } else if (winner && loser) {
+                // Логика для победы
+                if (isPlayerVsPlayer) {
+                    // Игрок против игрока - новая система монетизации
+                    revenueResult = await PlatformRevenueService.processLobbyGameRevenue(
+                        room.id,
+                        gameNameForDB,
+                        winner,
+                        loser,
+                        room.bet,
+                        false // not draw
+                    );
+                    
+                    // Победитель получает свою ставку + ставку противника - 10% комиссии
+                    const totalWon = room.bet * 2; // общая сумма выигрыша
+                    const commission = totalWon * 0.10; // 10% комиссии
+                    const netGain = totalWon - commission - room.bet; // чистая прибыль = выигрыш - комиссия - своя ставка
+                    
+                    await GameRecord.create({
+                        user: winner.user._id,
+                        gameName: gameNameForDB,
+                        status: 'WON',
+                        amountChanged: netGain, // чистая прибыль после всех вычетов
+                        opponent: loser.user.username
+                    });
+
+                    await GameRecord.create({
+                        user: loser.user._id,
+                        gameName: gameNameForDB,
+                        status: 'LOST',
+                        amountChanged: -room.bet, // проиграл свою ставку
+                        opponent: winner.user.username
+                    });
+
+                    // Обновляем балансы через socket
+                    if (revenueResult && globalIO) {
+                        if (revenueResult.winnerNewBalance !== undefined) {
+                            const winnerReceivedAmount = totalWon - commission; // то что получил победитель
+                            globalIO.emit('balanceUpdated', {
+                                userId: (winner.user._id as any).toString(),
+                                newBalance: revenueResult.winnerNewBalance,
+                                transaction: {
+                                    type: 'WAGER_WIN',
+                                    amount: winnerReceivedAmount,
+                                    status: 'completed',
+                                    createdAt: new Date()
+                                }
+                            });
+                        }
+                        
+                        if (revenueResult.loserNewBalance !== undefined) {
+                            globalIO.emit('balanceUpdated', {
+                                userId: (loser.user._id as any).toString(),
+                                newBalance: revenueResult.loserNewBalance,
+                                transaction: {
+                                    type: 'WAGER_LOSS',
+                                    amount: 0, // баланс не изменяется, ставка уже списана
+                                    status: 'completed',
+                                    createdAt: new Date()
+                                }
+                            });
+                        }
+                    }
+                    
+                } else if (isPlayerVsBot) {
+                    // Игрок против бота - старая логика без комиссии
+                    const realPlayer = !isWinnerBot ? winner : loser;
+                    const isRealPlayerWinner = realPlayer && (realPlayer.user._id as any).toString() === (winner.user._id as any).toString();
+                    
+                    if (realPlayer) {
+                        if (isRealPlayerWinner) {
+                            // Реальный игрок выиграл против бота - получает удвоенную ставку (свою + бота)
+                            const winAmount = room.bet * 2; // полный выигрыш
+                            const netWin = room.bet; // чистый выигрыш (выигрыш - уже списанная ставка)
+                            
+                            const updatedPlayer = await User.findByIdAndUpdate(
+                                realPlayer.user._id,
+                                { $inc: { balance: winAmount } },
+                                { new: true }
+                            );
+                            
+                            await GameRecord.create({
+                                user: realPlayer.user._id,
+                                gameName: gameNameForDB,
+                                status: 'WON',
+                                amountChanged: netWin, // чистая прибыль
+                                opponent: 'Bot'
+                            });
+
+                            if (updatedPlayer && globalIO) {
+                                globalIO.emit('balanceUpdated', {
+                                    userId: (realPlayer.user._id as any).toString(),
+                                    newBalance: updatedPlayer.balance,
+                                    transaction: {
+                                        type: 'WAGER_WIN',
+                                        amount: winAmount,
+                                        status: 'completed',
+                                        createdAt: new Date()
+                                    }
+                                });
+                            }
+                        } else {
+                            // Реальный игрок проиграл боту - только теряет ставку (уже списана при входе)
+                            await GameRecord.create({
+                                user: realPlayer.user._id,
+                                gameName: gameNameForDB,
+                                status: 'LOST',
+                                amountChanged: -room.bet,
+                                opponent: 'Bot'
+                            });
+                        }
+                    }
+                }
+
+                this.io.to(room.id).emit('gameEnd', { winner, isDraw: false });
             }
-            this.io.to(room.id).emit('gameEnd', { winner, isDraw: false });
+
+            console.log(`[GameService] Regular game ended in room ${room.id}. Platform revenue: $${revenueResult?.platformRevenue || 0}. Bot game: ${isBotGame}, Player vs Bot: ${isPlayerVsBot}`);
+
+        } catch (error) {
+            console.error('[GameService] Error processing game revenue:', error);
+            // В случае ошибки используем старую логику как fallback
+            this.io.to(room.id).emit('gameEnd', {
+                winner: isDraw ? null : winner,
+                isDraw
+            });
         }
         
         const gameType = room.gameType;
         delete this.rooms[room.id];
-        
         this.broadcastLobbyState(gameType);
     }
 
@@ -280,7 +420,7 @@ export class GameService {
         
         const winningPlayer = room.players.find(p => p.socketId !== socketId);
         if (winningPlayer) {
-            await this.endGame(room, winningPlayer.user._id.toString());
+            await this.endGame(room, (winningPlayer.user._id as any).toString());
         } else {
             if (room.botJoinTimer) clearTimeout(room.botJoinTimer);
             delete this.rooms[roomId];
@@ -309,7 +449,7 @@ export class GameService {
             });
             
             room.disconnectTimer = setTimeout(async () => {
-                await this.endGame(room, remainingPlayer.user._id.toString());
+                await this.endGame(room, (remainingPlayer.user._id as any).toString());
             }, 60000);
         }
     }

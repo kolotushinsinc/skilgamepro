@@ -6,6 +6,7 @@ import Transaction from '../models/Transaction.model';
 import { createNotification } from './notification.service';
 import { gameLogics } from '../socket';
 import { advanceTournamentWinner } from './tournament.service';
+import PlatformRevenueService from './platformRevenue.service';
 
 export const tournamentRooms: Record<string, ITournamentRoom> = {};
 export const tournamentPlayerSockets: Record<string, string> = {};
@@ -778,6 +779,46 @@ async function finishTournament(io: Server, tournament: ITournament, winner: any
         tournament.winner = winner;
         tournament.finishedAt = new Date();
 
+        // Рассчитываем доходы от турнира
+        const realPlayers = tournament.players.filter(p => !p.isBot);
+        const totalEntryFees = realPlayers.length * tournament.entryFee;
+        const winnerPrize = Math.floor(tournament.prizePool * 0.6); // 60% победителю
+        
+        console.log(`[TournamentRoom] Tournament revenue calculation: totalEntryFees=${totalEntryFees}, winnerPrize=${winnerPrize}, realPlayers=${realPlayers.length}`);
+
+        // Выплачиваем приз победителю (если это не бот)
+        if (!winner.isBot) {
+            const winnerUser = await User.findById(winner._id);
+            if (winnerUser) {
+                winnerUser.balance += winnerPrize;
+                await winnerUser.save();
+
+                // Создаем транзакцию победителя
+                await Transaction.create({
+                    user: winner._id,
+                    type: 'TOURNAMENT_WIN',
+                    amount: winnerPrize,
+                    description: `Tournament "${tournament.name}" victory prize`
+                });
+
+                console.log(`[TournamentRoom] Paid prize ${winnerPrize} to winner ${winner.username}`);
+            }
+        }
+
+        // Записываем доходы платформы от турнира
+        try {
+            const revenueRecord = await PlatformRevenueService.processTournamentRevenue(
+                tournament._id.toString(),
+                totalEntryFees,
+                winner.isBot ? 0 : winnerPrize, // если победитель бот, приз не выплачивается
+                realPlayers.length
+            );
+            
+            console.log(`[TournamentRoom] Tournament revenue recorded: $${revenueRecord.amount} from tournament ${tournament.name}`);
+        } catch (revenueError) {
+            console.error(`[TournamentRoom] Error recording tournament revenue:`, revenueError);
+        }
+
         await tournament.save();
 
         io.emit('tournamentFinished', tournament);
@@ -798,7 +839,8 @@ async function finishTournament(io: Server, tournament: ITournament, winner: any
                             isWinner,
                             winner: winner.username,
                             tournamentName: tournament.name,
-                            prizePool: tournament.prizePool
+                            prizePool: tournament.prizePool,
+                            winnerPrize: isWinner ? winnerPrize : 0
                         });
                     }
                 }
@@ -806,7 +848,7 @@ async function finishTournament(io: Server, tournament: ITournament, winner: any
                 await createNotification(io, player._id, {
                     title: isWinner ? `🏆 Congratulations on your victory!` : `🎯 Tournament completed`,
                     message: isWinner
-                        ? `You won tournament "${tournament.name}"! Prize: ${Math.floor(tournament.prizePool * 0.6)} coins`
+                        ? `You won tournament "${tournament.name}"! Prize: ${winnerPrize} coins`
                         : `Tournament "${tournament.name}" completed. Winner: ${winner.username}`,
                     link: `/tournament/${tournament._id}`
                 });

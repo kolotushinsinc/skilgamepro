@@ -13,6 +13,7 @@ import { durakLogic } from './games/durak.logic';
 import { dominoLogic } from './games/domino.logic';
 import { DiceGameLogic } from './games/dice.logic';
 import { BingoGameLogic } from './games/bingo.logic';
+import { GameService } from './services/game.service';
 
 const diceLogic = new DiceGameLogic();
 const bingoLogic = new BingoGameLogic();
@@ -99,10 +100,12 @@ const cleanExpiredInvitations = (): void => {
 setInterval(cleanExpiredInvitations, 5 * 60 * 1000);
 
 let globalIO: Server | null = null;
+let gameService: GameService | null = null;
 
 export const getIO = (): Server | null => globalIO;
 export const setIO = (io: Server): void => {
     globalIO = io;
+    gameService = new GameService(io, rooms);
 };
 
 export const gameLogics: Record<Room['gameType'], IGameLogic> = {
@@ -331,120 +334,51 @@ function formatGameNameForDB(gameType: string): 'Checkers' | 'Chess' | 'Backgamm
 async function endGame(io: Server, room: Room, winnerId?: string, isDraw: boolean = false) {
     console.log(`[EndGame] Starting endGame for room: ${room.id}, Winner: ${winnerId}, Draw: ${isDraw}`);
     
-    if (!room) {
-        console.log(`[EndGame] Room not found, cannot end game`);
+    if (!room || !gameService) {
+        console.log(`[EndGame] Room not found or GameService not initialized, cannot end game`);
         return;
     }
+    
+    // Use the new GameService instead of old logic
+    try {
+        await gameService.endGame(room, winnerId, isDraw);
+        console.log(`[EndGame] Game ended successfully using GameService for room: ${room.id}`);
+    } catch (error) {
+        console.error(`[EndGame] Error ending game with GameService:`, error);
+        // Fallback to old logic in case of error - but this shouldn't happen
+        await endGameFallback(io, room, winnerId, isDraw);
+    }
+}
+
+// Fallback function - kept for safety but shouldn't be used
+async function endGameFallback(io: Server, room: Room, winnerId?: string, isDraw: boolean = false) {
+    console.log(`[EndGame-Fallback] Using fallback for room: ${room.id}`);
     
     // Mark game as finished immediately to prevent race conditions
     if (room.gameState) {
         room.gameState.isGameFinished = true;
-        console.log(`[EndGame] Game marked as finished for room: ${room.id}`);
     }
     
     if (room.disconnectTimer) {
-        console.log(`[EndGame] Clearing disconnect timer for room: ${room.id}`);
         clearTimeout(room.disconnectTimer);
     }
     
     if (room.botJoinTimer) {
-        console.log(`[EndGame] Clearing bot join timer for room: ${room.id}`);
         clearTimeout(room.botJoinTimer);
     }
     
     // Stop move timer
-    console.log(`[EndGame] Stopping move timer for room: ${room.id}`);
     stopMoveTimer(room);
     
-    // @ts-ignore
-    const winner = room.players.find(p => p.user._id.toString() === winnerId);
-    // @ts-ignore
-    const loser = room.players.find(p => p.user._id.toString() !== winnerId);
-
-    console.log(`[EndGame] Found players - Winner: ${winner?.user.username}, Loser: ${loser?.user.username}`);
-
-    const gameNameForDB = formatGameNameForDB(room.gameType);
-
-    if (isDraw) {
-        for (const player of room.players) {
-            if (!isBot(player)) {
-                const opponent = room.players.find(p => p.user._id !== player.user._id);
-                await GameRecord.create({
-                    user: player.user._id,
-                    gameName: gameNameForDB,
-                    status: 'DRAW',
-                    amountChanged: 0,
-                    opponent: opponent?.user.username || 'Bot'
-                });
-            }
-        }
-        io.to(room.id).emit('gameEnd', { winner: null, isDraw: true });
-    } else if (winner && loser) {
-        if (!isBot(winner)) {
-            const updatedWinner = await User.findByIdAndUpdate(winner.user._id, { $inc: { balance: room.bet } }, { new: true });
-            await GameRecord.create({
-                user: winner.user._id,
-                gameName: gameNameForDB,
-                status: 'WON',
-                amountChanged: room.bet,
-                opponent: loser.user.username
-            });
-            const winnerTransaction = await Transaction.create({
-                user: winner.user._id,
-                type: 'WAGER_WIN',
-                amount: room.bet
-            });
-
-            if (updatedWinner) {
-                io.emit('balanceUpdated', {
-                    userId: (winner.user._id as any).toString(),
-                    newBalance: updatedWinner.balance,
-                    transaction: {
-                        type: winnerTransaction.type,
-                        amount: winnerTransaction.amount,
-                        status: winnerTransaction.status,
-                        createdAt: new Date()
-                    }
-                });
-            }
-        }
-        if (!isBot(loser)) {
-            const updatedLoser = await User.findByIdAndUpdate(loser.user._id, { $inc: { balance: -room.bet } }, { new: true });
-            await GameRecord.create({
-                user: loser.user._id,
-                gameName: gameNameForDB,
-                status: 'LOST',
-                amountChanged: -room.bet,
-                opponent: winner.user.username
-            });
-            const loserTransaction = await Transaction.create({
-                user: loser.user._id,
-                type: 'WAGER_LOSS',
-                amount: room.bet
-            });
-
-            if (updatedLoser) {
-                io.emit('balanceUpdated', {
-                    userId: (loser.user._id as any).toString(),
-                    newBalance: updatedLoser.balance,
-                    transaction: {
-                        type: loserTransaction.type,
-                        amount: loserTransaction.amount,
-                        status: loserTransaction.status,
-                        createdAt: new Date()
-                    }
-                });
-            }
-        }
-        io.to(room.id).emit('gameEnd', { winner, isDraw: false });
-    }
+    // Simple cleanup without revenue processing
+    io.to(room.id).emit('gameEnd', {
+        winner: winnerId ? room.players.find(p => (p.user._id as any).toString() === winnerId) : null,
+        isDraw
+    });
     
-    console.log(`[EndGame] Game completed successfully, cleaning up room: ${room.id}`);
     const gameType = room.gameType;
     delete rooms[room.id];
-    console.log(`[EndGame] Room ${room.id} deleted from rooms object`);
     broadcastLobbyState(io, gameType);
-    console.log(`[EndGame] Lobby state updated for gameType: ${gameType}`);
 }
 
 async function processBotMoveInRegularGame(
@@ -533,7 +467,11 @@ async function processBotMoveInRegularGame(
             const botGameResult = gameLogic.checkGameEnd(currentRoom.gameState, currentRoom.players);
             if (botGameResult.isGameOver) {
                 console.log('[Bot] Game ended, winner:', botGameResult.winnerId);
-                return endGame(io, currentRoom, botGameResult.winnerId, botGameResult.isDraw);
+                if (gameService) {
+                    return gameService.endGame(currentRoom, botGameResult.winnerId, botGameResult.isDraw);
+                } else {
+                    return endGame(io, currentRoom, botGameResult.winnerId, botGameResult.isDraw);
+                }
             }
             
             botCanMove = !('turnShouldSwitch' in botProcessResult ? botProcessResult.turnShouldSwitch : true);
@@ -781,11 +719,15 @@ export const initializeSocket = (io: Server) => {
             socket.emit('gameStart', getPublicRoomState(newRoom));
             broadcastLobbyState(io, gameType);
 
-            newRoom.botJoinTimer = setTimeout(() => {
+            newRoom.botJoinTimer = setTimeout(async () => {
                 const room = rooms[roomId];
                 if (room && room.players.length === 1) {
                     const botUser: Player['user'] = { _id: `bot-${Date.now()}` as any, username: botUsernames[Math.floor(Math.random() * botUsernames.length)], avatar: 'bot_avatar.png', balance: 9999 };
                     room.players.push({ socketId: 'bot_socket_id', user: botUser });
+                    
+                    // No need to deduct bet from bot - bots have unlimited balance
+                    console.log(`[CreateRoom] Bot ${botUser.username} joined room ${roomId} - no bet deduction needed`);
+                    
                     room.gameState = gameLogic.createInitialState(room.players);
                     io.to(roomId).emit('gameStart', getPublicRoomState(room));
                     
@@ -981,11 +923,15 @@ export const initializeSocket = (io: Server) => {
                 room.gameState = gameLogic.createInitialState(room.players);
                 socket.emit('gameStart', getPublicRoomState(room));
 
-                room.botJoinTimer = setTimeout(() => {
+                room.botJoinTimer = setTimeout(async () => {
                     const currentRoom = rooms[roomId];
                     if (currentRoom && currentRoom.players.length === 1) {
                         const botUser: Player['user'] = { _id: `bot-${Date.now()}` as any, username: botUsernames[Math.floor(Math.random() * botUsernames.length)], avatar: 'bot_avatar.png', balance: 9999 };
                         currentRoom.players.push({ socketId: 'bot_socket_id', user: botUser });
+                        
+                        // No need to deduct bet from bot - bots have unlimited balance
+                        console.log(`[JoinRoom] Bot ${botUser.username} joined room ${roomId} - no bet deduction needed`);
+                        
                         currentRoom.gameState = gameLogic.createInitialState(currentRoom.players);
                         io.to(roomId).emit('gameStart', getPublicRoomState(currentRoom));
                         
@@ -1072,7 +1018,11 @@ export const initializeSocket = (io: Server) => {
             const gameResult = gameLogic.checkGameEnd(room.gameState, room.players);
             if (gameResult.isGameOver) {
                 console.log(`[PlayerMove] Game over detected, ending game with winner: ${gameResult.winnerId}`);
-                return endGame(io, room, gameResult.winnerId, gameResult.isDraw);
+                if (gameService) {
+                    return gameService.endGame(room, gameResult.winnerId, gameResult.isDraw);
+                } else {
+                    return endGame(io, room, gameResult.winnerId, gameResult.isDraw);
+                }
             }
             
             io.to(roomId).emit('gameUpdate', getPublicRoomState(room));
@@ -1106,7 +1056,11 @@ export const initializeSocket = (io: Server) => {
             const winningPlayer = room.players.find(p => p.socketId !== socket.id);
             if (winningPlayer) {
                 // @ts-ignore
-                endGame(io, room, winningPlayer.user._id.toString());
+                if (gameService) {
+                    gameService.endGame(room, (winningPlayer.user._id as any).toString());
+                } else {
+                    endGame(io, room, (winningPlayer.user._id as any).toString());
+                }
             } else {
                 if (room.botJoinTimer) clearTimeout(room.botJoinTimer);
                 delete rooms[roomId];
@@ -1145,7 +1099,11 @@ export const initializeSocket = (io: Server) => {
                 io.to(remainingPlayer.socketId).emit('opponentDisconnected', { message: `Opponent disconnected. Waiting for reconnection (60 sec)...` });
                 room.disconnectTimer = setTimeout(() => {
                     // @ts-ignore
-                    endGame(io, room, remainingPlayer.user._id.toString());
+                    if (gameService) {
+                        gameService.endGame(room, (remainingPlayer.user._id as any).toString());
+                    } else {
+                        endGame(io, room, (remainingPlayer.user._id as any).toString());
+                    }
                 }, 60000);
             }
         });

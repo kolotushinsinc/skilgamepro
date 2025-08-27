@@ -15,7 +15,8 @@ import {
     LogOut,
     Crown,
     Settings,
-    Shield
+    Shield,
+    DollarSign
 } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 
@@ -28,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogoutClick }) => {
 
     const menuItems = [
         { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+        { path: '/revenue', icon: DollarSign, label: 'Platform Revenue' },
         { path: '/users', icon: Users, label: 'Users' },
         { path: '/games', icon: Gamepad2, label: 'Games' },
         { path: '/transactions', icon: List, label: 'Transactions' },

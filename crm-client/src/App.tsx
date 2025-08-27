@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage/LoginPage';
 import AdminLayout from './components/layout/AdminLayout';
 
 import DashboardPage from './pages/DashboardPage/DashboardPage';
+import RevenuePage from './pages/RevenuePage/RevenuePage';
 import UsersPage from './pages/UsersPage/UsersPage';
 import TransactionsPage from './pages/TransactionsPage/TransactionsPage';
 import GamesPage from './pages/GamesPage/GamesPage';
@@ -35,6 +36,7 @@ function App() {
                         </NotificationProvider>
                     }>
                         <Route index element={<DashboardPage />} />
+                        <Route path="revenue" element={<RevenuePage />} />
                         <Route path="users" element={<UsersPage />} />
                         <Route path="games" element={<GamesPage />} />
                         <Route path="transactions" element={<TransactionsPage />} />

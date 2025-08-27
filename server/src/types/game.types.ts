@@ -105,12 +105,22 @@ export type GameState = ITicTacToeState | IChessState | ICheckersState | IBackga
 
 export interface IRoom {
     id: string;
-    gameType: 'tic-tac-toe' | 'checkers' | 'chess' | 'backgammon' | 'durak' | 'domino' | 'dice';
+    gameType: 'tic-tac-toe' | 'checkers' | 'chess' | 'backgammon' | 'durak' | 'domino' | 'dice' | 'bingo';
     bet: number;
     players: GamePlayer[];
     gameState: GameState;
     botJoinTimer?: NodeJS.Timeout;
     disconnectTimer?: NodeJS.Timeout;
+    // Move timer properties
+    moveTimer?: NodeJS.Timeout;
+    turnStartTime?: number;
+    moveTimeLimit?: number; // in milliseconds, default 30 seconds
+    // Private room properties
+    isPrivate?: boolean;
+    invitationToken?: string;
+    allowBots?: boolean;
+    hostUserId?: string;
+    expiresAt?: Date;
 }
 
 export interface IGameResult {
