@@ -1,4 +1,5 @@
 import React, { useState, useEffect, FormEvent, ChangeEvent, FC } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -58,6 +59,8 @@ const KYCStatus: FC<KYCStatusProps> = ({ user, onVerifyClick }) => {
 const ProfilePage: React.FC = () => {
     const { user, refreshUser } = useAuth();
     const { socket } = useSocket();
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     const [gameHistory, setGameHistory] = useState<IGameRecord[]>([]);
     const [transactionHistory, setTransactionHistory] = useState<ITransaction[]>([]);
@@ -200,6 +203,15 @@ const ProfilePage: React.FC = () => {
         fetchTransactionHistory(transactionPage);
     }, []);
 
+    // Update active tab when URL parameters change
+    useEffect(() => {
+        const tabFromUrl = searchParams.get('tab');
+        if (tabFromUrl && ['profile', 'security', 'wallet', 'games', 'transactions'].includes(tabFromUrl)) {
+            setActiveTab(tabFromUrl);
+            localStorage.setItem('profileActiveTab', tabFromUrl);
+        }
+    }, [searchParams]);
+
     useEffect(() => {
         if (!socket || !user) return;
 
@@ -330,15 +342,29 @@ const ProfilePage: React.FC = () => {
             await axios.put(`${API_URL}/api/users/profile/avatar`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+            
+            // Force refresh user data after avatar upload
             await refreshUser();
+            
+            // Clear preview states
             setAvatarFile(null);
             setAvatarPreview(null);
-        } catch (error) {
+            
+            // Show success message
+            setPaymentModal({
+                isOpen: true,
+                status: 'success',
+                title: 'Avatar Updated!',
+                message: 'Your avatar has been successfully updated.',
+                amount: 0,
+                operation: 'deposit'
+            });
+        } catch (error: any) {
             setPaymentModal({
                 isOpen: true,
                 status: 'error',
                 title: 'Upload Error',
-                message: 'Failed to upload avatar. Make sure it is an image smaller than 5MB.',
+                message: error.response?.data?.message || 'Failed to upload avatar. Make sure it is an image smaller than 5MB.',
                 amount: 0,
                 operation: 'deposit'
             });
@@ -359,6 +385,11 @@ const ProfilePage: React.FC = () => {
     const typeTranslations: Record<ITransaction['type'], string> = { DEPOSIT: 'Deposit', WITHDRAWAL: 'Withdrawal', WAGER_WIN: 'Wager win', WAGER_LOSS: 'Wager loss' };
 
     const [activeTab, setActiveTab] = useState(() => {
+        // Check URL params first, then localStorage, then default
+        const tabFromUrl = searchParams.get('tab');
+        if (tabFromUrl && ['profile', 'security', 'wallet', 'games', 'transactions'].includes(tabFromUrl)) {
+            return tabFromUrl;
+        }
         return localStorage.getItem('profileActiveTab') || 'profile';
     });
 
@@ -485,7 +516,7 @@ const ProfilePage: React.FC = () => {
                                     {avatarPreview ? (
                                         <img src={avatarPreview} alt="Preview" className={styles.profileAvatarImg} data-testid="avatar-preview" />
                                     ) : (
-                                        <Avatar size="large" />
+                                        <Avatar size="large" key={user.avatar || 'default'} />
                                     )}
                                     <label htmlFor="avatarInput" className={styles.avatarEditButton} data-testid="avatar-edit-button">✏️</label>
                                     <input id="avatarInput" type="file" accept=".png,.jpg,.jpeg,.webp" onChange={handleFileChange} style={{ display: 'none' }} data-testid="avatar-upload-input" />
@@ -671,6 +702,7 @@ const ProfilePage: React.FC = () => {
                                     onClick={() => {
                                         setActiveTab(tab.id);
                                         localStorage.setItem('profileActiveTab', tab.id);
+                                        navigate(`/profile?tab=${tab.id}`, { replace: true });
                                     }}
                                     className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
                                     data-testid={`tab-${tab.id}`}

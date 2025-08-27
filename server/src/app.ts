@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import adminRoutes from './routes/admin.routes';
@@ -33,6 +34,9 @@ app.use((req, res, next) => {
 app.use(cors(corsConfig));
 
 app.use(express.json());
+
+// Serve static files from public directory
+app.use('/', express.static(path.join(__dirname, '../public')));
 
 app.get('/health', (req, res) => {
   res.status(200).json({

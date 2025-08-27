@@ -17,31 +17,32 @@ interface UIContextType {
 const UIContext = createContext<UIContextType | undefined>(undefined);
 
 export const UIProvider = ({ children }: { children: ReactNode }) => {
-    // Для мобильных ВСЕГДА закрыто при входе
-    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+    // Инициализируем состояние с учетом localStorage и размера экрана
+    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        
+        const isMobile = window.innerWidth < 1024;
+        
+        if (isMobile) {
+            // Мобильные: принудительно закрыто
+            return false;
+        } else {
+            // Десктоп: загружаем из localStorage или открываем по умолчанию
+            try {
+                const saved = window.localStorage.getItem('sidebarOpen');
+                return saved ? JSON.parse(saved) : true;
+            } catch {
+                return true;
+            }
+        }
+    });
 
     const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
     const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
     const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState<boolean>(false);
     const [insufficientFundsData, setInsufficientFundsData] = useState<{ requiredAmount: number; currentBalance: number } | null>(null);
 
-    // Инициализация только для десктопа
-    useEffect(() => {
-        const isMobile = window.innerWidth < 1024;
-        
-        if (isMobile) {
-            // Мобильные: принудительно закрыто
-            setIsSidebarOpen(false);
-        } else {
-            // Десктоп: загружаем из localStorage или открываем по умолчанию
-            try {
-                const saved = window.localStorage.getItem('sidebarOpen');
-                setIsSidebarOpen(saved ? JSON.parse(saved) : true);
-            } catch {
-                setIsSidebarOpen(true);
-            }
-        }
-    }, []);
+    // Убираем инициализацию из useEffect, так как теперь это делается в useState
 
     useEffect(() => {
         const isMobile = window.innerWidth < 1024;

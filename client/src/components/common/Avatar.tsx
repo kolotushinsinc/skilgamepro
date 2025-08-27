@@ -15,11 +15,16 @@ const Avatar: React.FC<AvatarProps> = ({ size = 'small' }) => {
     const hasUploadedAvatar = user.avatar && user.avatar.startsWith('/uploads');
 
     if (hasUploadedAvatar) {
+        // Use a more stable cache-busting parameter based on avatar path
+        // This will only change when the avatar actually changes
+        const avatarVersion = user.avatar.split('/').pop()?.split('.')[0] || 'default';
+        // Remove leading slash from user.avatar to avoid double slash
+        const avatarPath = user.avatar.startsWith('/') ? user.avatar.slice(1) : user.avatar;
         return (
-            <img 
-                src={`${API_URL}/${user.avatar}`} 
-                alt={user.username} 
-                className={`${styles.avatarImage} ${size === 'large' ? styles.large : styles.small}`} 
+            <img
+                src={`${API_URL}/${avatarPath}?v=${avatarVersion}`}
+                alt={user.username}
+                className={`${styles.avatarImage} ${size === 'large' ? styles.large : styles.small}`}
             />
         );
     }

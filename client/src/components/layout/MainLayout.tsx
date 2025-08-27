@@ -87,7 +87,8 @@ const MainLayout: React.FC = () => {
                             <Route path="/admin" element={<AdminPage />} />
                         </Route>
 
-                        <Route path="*" element={<NotFoundPage />} />
+                        {/* Redirect unknown routes to dashboard instead of showing 404 */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </main>
             </div>

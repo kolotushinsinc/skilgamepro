@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
         { path: '/profile', icon: UserIcon, label: 'Profile' },
     ];
     
-    const initials = <Avatar size="small" />
+    const initials = <Avatar size="small" key={user?.avatar || 'default'} />
     
     const getNavLinkClass = ({ isActive }: { isActive: boolean }) => 
         `${styles.navLink} ${isActive ? styles.active : ''}`;

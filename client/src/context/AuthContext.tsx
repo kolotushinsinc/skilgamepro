@@ -89,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshUser = useCallback(async () => {
     const token = localStorage.getItem('token');
+    
     if (token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {

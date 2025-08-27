@@ -132,7 +132,7 @@ const DashboardPage: React.FC = () => {
                 <div className={styles.contentBox} data-testid="recent-games-section">
                     <div className={styles.boxHeader}>
                         <h2>Recent Games</h2>
-                        <Link to="/profile" data-testid="view-all-games">View All</Link>
+                        <Link to="/profile?tab=games" data-testid="view-all-games">View All</Link>
                     </div>
                     <div className={styles.itemList}>
                         {recentGames.length > 0 ? (

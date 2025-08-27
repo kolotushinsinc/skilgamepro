@@ -3,35 +3,69 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CookieBanner } from './components/CookieBanner';
 import SupportChat from './components/SupportChat';
 
-// Loading component for Suspense fallback
+// Premium Loading component matching landing design
 const LoadingFallback = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '50vh',
-    color: 'white',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-  }}>
-    <div style={{ textAlign: 'center' }}>
-      <div style={{
-        width: '40px',
-        height: '40px',
-        border: '3px solid #333',
-        borderTop: '3px solid #4f46e5',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-        margin: '0 auto 16px'
-      }}></div>
-      <div>Loading...</div>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `
-      }} />
+  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center relative overflow-hidden">
+    {/* Background Effects */}
+    <div className="absolute inset-0 opacity-20">
+      <div className="absolute top-20 left-20 w-64 h-64 bg-yellow-400 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+    </div>
+    
+    {/* Loading Content */}
+    <div className="relative z-10 text-center">
+      {/* Animated Logo */}
+      <div className="mb-8">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-2xl shadow-yellow-500/25 mb-4 animate-bounce">
+          <svg className="w-10 h-10 text-black" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L3.09 8.26L3 9L3.09 9.74L12 16L20.91 9.74L21 9L20.91 8.26L12 2ZM12 4.74L18.26 9L12 13.26L5.74 9L12 4.74Z"/>
+            <path d="M12 18L3.09 24.26L3 25L3.09 25.74L12 32L20.91 25.74L21 25L20.91 24.26L12 18ZM12 20.74L18.26 25L12 29.26L5.74 25L12 20.74Z" transform="translate(0, -14)"/>
+          </svg>
+        </div>
+      </div>
+      
+      {/* Brand Name */}
+      <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+        Skill Game
+      </h2>
+      
+      {/* Loading Spinner */}
+      <div className="relative mb-6">
+        <div className="w-16 h-16 mx-auto">
+          <div className="absolute inset-0 rounded-full border-4 border-gray-700"></div>
+          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-yellow-500 border-r-yellow-400 animate-spin"></div>
+          <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-yellow-300 border-r-yellow-200 animate-spin" style={{animationDirection: 'reverse', animationDuration: '0.75s'}}></div>
+        </div>
+      </div>
+      
+      {/* Loading Text */}
+      <p className="text-xl text-gray-300 mb-4 animate-pulse">
+        Loading amazing gaming experience...
+      </p>
+      
+      {/* Progress Dots */}
+      <div className="flex justify-center space-x-2">
+        <div className="w-3 h-3 bg-yellow-500 rounded-full animate-bounce"></div>
+        <div className="w-3 h-3 bg-yellow-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+        <div className="w-3 h-3 bg-yellow-300 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+      </div>
+    </div>
+    
+    {/* Floating Particles Effect */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(20)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-2 h-2 bg-yellow-400 rounded-full opacity-30 animate-ping"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 2}s`,
+            animationDuration: `${2 + Math.random() * 2}s`
+          }}
+        />
+      ))}
     </div>
   </div>
 );

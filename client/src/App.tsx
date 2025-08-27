@@ -10,6 +10,7 @@ import SupportChat from './components/SupportChat/SupportChat';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import TutorialManager from './components/tutorial/TutorialManager';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import ScrollToTop from './components/common/ScrollToTop';
 import SessionExpiredModal from './components/modals/SessionExpiredModal';
 
 import MainLayout from './components/layout/MainLayout';
@@ -21,9 +22,9 @@ import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage';
 import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
 
 // Компонент для проверки игрового состояния
-const GameAwareApp: React.FC = () => {
+const GameAwareApp: React.FC<{ initialLoad: boolean }> = ({ initialLoad }) => {
   const location = useLocation();
-  const { isAuthenticated, sessionExpired } = useAuth();
+  const { isAuthenticated, sessionExpired, loading } = useAuth();
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
   
   // Определяем, находится ли игрок в игре
@@ -39,6 +40,9 @@ const GameAwareApp: React.FC = () => {
   const handleCloseSessionModal = () => {
     setShowSessionExpiredModal(false);
   };
+
+  // Auth state is already handled by parent App component
+  // No need for additional loading check here
 
   return (
     <ErrorBoundary>
@@ -70,7 +74,8 @@ const GameAwareApp: React.FC = () => {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/404" element={<NotFoundPage />} />
+                {/* Immediately redirect to login, no 404 flash */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </ErrorBoundary>
@@ -91,18 +96,26 @@ const GameAwareApp: React.FC = () => {
 
 function App() {
   const { isAuthenticated, loading, refreshUser } = useAuth();
+  const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
-    refreshUser();
+    const initializeApp = async () => {
+      await refreshUser();
+      setInitialLoad(false);
+    };
+    
+    initializeApp();
   }, [refreshUser]);
 
-  if (loading) {
+  // Show loading until both auth context loading is done AND initial load is complete
+  if (loading || initialLoad) {
     return <LoadingSpinner fullScreen text="Loading application..." />;
   }
 
   return (
     <Router>
-        <GameAwareApp />
+        <ScrollToTop />
+        <GameAwareApp initialLoad={false} />
     </Router>
   );
 }
