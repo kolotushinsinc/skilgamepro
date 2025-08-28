@@ -245,7 +245,7 @@
     pointer-events: none;
     z-index: 1001;
     font-size: 36px;
+    line-height: 1;
     transform: translate(-50%, -50%);
-    isolation: isolate;
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
 }

@@ -3,6 +3,9 @@ import User from '../models/User.model';
 import Tournament from '../models/Tournament.model';
 import mongoose from 'mongoose';
 
+// Специальный ObjectId для всех ботов в системе
+const BOT_OBJECT_ID = new mongoose.Types.ObjectId('000000000000000000000001');
+
 export class PlatformRevenueService {
     /**
      * Обработка завершения игры в лобби с новой системой монетизации
@@ -13,16 +16,34 @@ export class PlatformRevenueService {
         winner: any,
         loser: any,
         betAmount: number,
-        isDraw: boolean = false
-    ): Promise<{ 
-        winnerNewBalance?: number; 
-        loserNewBalance?: number; 
+        isDraw: boolean = false,
+        isPlayerVsBotScenario: boolean = false
+    ): Promise<{
+        winnerNewBalance?: number;
+        loserNewBalance?: number;
         platformRevenue: number;
-        revenueRecord: IPlatformRevenue 
+        revenueRecord: IPlatformRevenue
     }> {
         const session = await mongoose.startSession();
         
         try {
+            // Валидация входных данных
+            if (!winner || !winner.user || !loser || !loser.user) {
+                throw new Error(`Invalid player data: winner=${!!winner?.user}, loser=${!!loser?.user}`);
+            }
+            
+            if (!roomId || !gameType || betAmount <= 0) {
+                throw new Error(`Invalid game data: roomId=${!!roomId}, gameType=${!!gameType}, betAmount=${betAmount}`);
+            }
+            
+            console.log(`[PlatformRevenue] 🎮 Processing revenue for ${gameType} game:`);
+            console.log(`  - Room: ${roomId}`);
+            console.log(`  - Bet: $${betAmount}`);
+            console.log(`  - Draw: ${isDraw}`);
+            console.log(`  - Player vs Bot: ${isPlayerVsBotScenario}`);
+            console.log(`  - Winner: ${winner.user.username} (ID: ${winner.user._id})`);
+            console.log(`  - Loser: ${loser.user.username} (ID: ${loser.user._id})`);
+            
             await session.startTransaction();
 
             let winnerNewBalance: number | undefined;
@@ -31,16 +52,43 @@ export class PlatformRevenueService {
             let description: string;
             let commissionRate: number;
 
-            if (isDraw) {
-                // Ничья: с каждого игрока 5% комиссии, остальное возвращается
+            if (isPlayerVsBotScenario) {
+                // Специальная логика для игр игрок против бота
+                const isWinnerBot = winner.user._id.toString().startsWith('bot') || winner.user._id === 'bot';
+                const isLoserBot = loser.user._id.toString().startsWith('bot') || loser.user._id === 'bot';
+                
+                if (isDraw) {
+                    // Ничья с ботом: 5% комиссия с игрока
+                    commissionRate = 5;
+                    platformRevenue = betAmount * 0.05;
+                    description = `Draw commission from ${gameType} game (Player vs Bot)`;
+                    
+                    // Балансы уже обновлены в game.service.ts, здесь только записываем
+                    
+                } else if (isWinnerBot) {
+                    // Игрок проиграл боту - вся ставка игрока идет платформе
+                    commissionRate = 100;
+                    platformRevenue = betAmount;
+                    description = `Player lost to bot in ${gameType} game - full stake to platform`;
+                    
+                } else {
+                    // Игрок выиграл бота - платформа платит игроку (отрицательный доход)
+                    commissionRate = 100;
+                    platformRevenue = -betAmount; // отрицательный доход
+                    description = `Player won against bot in ${gameType} game - platform payout`;
+                }
+                
+            } else if (isDraw) {
+                // Ничья между игроками: с каждого игрока 5% комиссии, остальное возвращается
+                // Ставки уже списаны при входе в игру
                 commissionRate = 5;
                 const commissionPerPlayer = betAmount * 0.05;
-                const returnAmount = betAmount - commissionPerPlayer;
+                const returnAmount = betAmount - commissionPerPlayer; // возвращаем 95%
                 
                 platformRevenue = commissionPerPlayer * 2; // с двух игроков
                 description = `Draw commission from ${gameType} game`;
 
-                // Обновляем балансы игроков (возвращаем 95% ставки)
+                // Возвращаем 95% ставки каждому игроку (ставки уже списаны)
                 const updatedWinner = await User.findByIdAndUpdate(
                     winner.user._id,
                     { $inc: { balance: returnAmount } },
@@ -57,21 +105,20 @@ export class PlatformRevenueService {
                 loserNewBalance = updatedLoser?.balance;
 
             } else {
-                // Победа: победитель получает всю ставку проигравшего + свою ставку
-                // От общей суммы берется 10% комиссии платформе
+                // Победа между игроками: победитель получает ставку проигравшего + свою ставку - 10% комиссии
+                // Ставки уже списаны при входе в игру
                 commissionRate = 10;
                 const totalAmount = betAmount * 2; // ставка победителя + ставка проигравшего
                 const platformCommission = totalAmount * 0.10; // 10% комиссии с общей суммы
-                const winnerGetsTotal = totalAmount; // победитель получает всё
-                const winnerNetAmount = winnerGetsTotal - platformCommission; // за вычетом комиссии
+                const winnerGetsAmount = totalAmount - platformCommission; // победитель получает 90% от общей суммы
                 
                 platformRevenue = platformCommission;
                 description = `Win commission from ${gameType} game (winner: ${winner.user.username})`;
 
-                // Обновляем баланс победителя: он получает свою ставку + ставку противника - 10% комиссии
+                // Добавляем победителю выигрыш (ставки уже списаны при входе)
                 const updatedWinner = await User.findByIdAndUpdate(
                     winner.user._id,
-                    { $inc: { balance: winnerNetAmount } },
+                    { $inc: { balance: winnerGetsAmount } },
                     { new: true, session }
                 );
 
@@ -92,18 +139,18 @@ export class PlatformRevenueService {
                 gameId: roomId,
                 players: [
                     {
-                        playerId: winner.user._id,
+                        playerId: this.getValidPlayerId(winner.user._id),
                         username: winner.user.username,
                         betAmount,
                         result: isDraw ? 'DRAW' : 'WIN',
-                        isBot: winner.user._id.toString().startsWith('bot-')
+                        isBot: winner.user._id.toString().startsWith('bot') || winner.user._id === 'bot'
                     },
                     {
-                        playerId: loser.user._id,
+                        playerId: this.getValidPlayerId(loser.user._id),
                         username: loser.user.username,
                         betAmount,
                         result: isDraw ? 'DRAW' : 'LOSE',
-                        isBot: loser.user._id.toString().startsWith('bot-')
+                        isBot: loser.user._id.toString().startsWith('bot') || loser.user._id === 'bot'
                     }
                 ]
             });
@@ -111,7 +158,13 @@ export class PlatformRevenueService {
             await revenueRecord.save({ session });
             await session.commitTransaction();
 
-            console.log(`[PlatformRevenue] Lobby game revenue processed: $${platformRevenue} from ${gameType} game`);
+            console.log(`[PlatformRevenue] ✅ Lobby game revenue processed successfully:`);
+            console.log(`  - Amount: $${platformRevenue}`);
+            console.log(`  - Game Type: ${gameType}`);
+            console.log(`  - Room ID: ${roomId}`);
+            console.log(`  - Description: ${description}`);
+            console.log(`  - Players:`, revenueRecord.players.map(p => `${p.username} (${p.result})`));
+            console.log(`  - Record ID: ${revenueRecord._id}`);
 
             return {
                 winnerNewBalance,
@@ -120,9 +173,18 @@ export class PlatformRevenueService {
                 revenueRecord
             };
 
-        } catch (error) {
+        } catch (error: any) {
             await session.abortTransaction();
-            console.error('[PlatformRevenue] Error processing lobby game revenue:', error);
+            console.error('[PlatformRevenue] ❌ Error processing lobby game revenue:', error);
+            console.error('[PlatformRevenue] Error details:', {
+                roomId,
+                gameType,
+                betAmount,
+                isDraw,
+                isPlayerVsBotScenario,
+                error: error?.message || 'Unknown error',
+                stack: error?.stack || 'No stack trace'
+            });
             throw error;
         } finally {
             session.endSession();
@@ -267,6 +329,29 @@ export class PlatformRevenueService {
         } catch (error) {
             console.error('[PlatformRevenue] Error getting revenue history:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Получает валидный ObjectId для игрока (включая ботов)
+     */
+    private static getValidPlayerId(playerId: any): mongoose.Types.ObjectId {
+        // Если это строка "bot" или начинается с "bot-", используем специальный ObjectId
+        if (typeof playerId === 'string' && (playerId === 'bot' || playerId.startsWith('bot-'))) {
+            return BOT_OBJECT_ID;
+        }
+        
+        // Если это уже ObjectId, возвращаем как есть
+        if (playerId instanceof mongoose.Types.ObjectId) {
+            return playerId;
+        }
+        
+        // Пытаемся преобразовать в ObjectId
+        try {
+            return new mongoose.Types.ObjectId(playerId);
+        } catch (error) {
+            console.warn(`[PlatformRevenue] Invalid playerId: ${playerId}, using BOT_OBJECT_ID`);
+            return BOT_OBJECT_ID;
         }
     }
 }

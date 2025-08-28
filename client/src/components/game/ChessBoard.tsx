@@ -254,11 +254,12 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
     const [possibleMoves, setPossibleMoves] = useState<Position[]>([]);
     const [promotionMove, setPromotionMove] = useState<ChessMove | null>(null);
-    const [draggedPiece, setDraggedPiece] = useState<{
-        piece: ChessPiece;
-        from: Position;
-        mousePos: { x: number; y: number };
-    } | null>(null);
+    // Drag and drop temporarily disabled
+    // const [draggedPiece, setDraggedPiece] = useState<{
+    //     piece: ChessPiece;
+    //     from: Position;
+    //     mousePos: { x: number; y: number };
+    // } | null>(null);
     const [showWarningModal, setShowWarningModal] = useState(false);
     const { socket } = useSocket();
 
@@ -383,187 +384,85 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         setPossibleMoves(moves);
     }, [gameState.board, myPlayerIndex, getPossibleMovesForPiece]);
 
-    const onMouseDown = useCallback((e: React.MouseEvent, row: number, col: number) => {
-        if (!isMyTurn || isGameFinished) return;
+    // Drag and drop temporarily disabled - using click-only interface
+    // const handlePieceMouseDown = useCallback((e: React.MouseEvent, row: number, col: number) => {
+    //     if (!isMyTurn || isGameFinished) return;
 
-        const piece = gameState.board[row][col];
-        if (!piece) return;
+    //     const piece = gameState.board[row][col];
+    //     if (!piece) return;
 
-        const myColor: PieceColor = myPlayerIndex === 0 ? 'white' : 'black';
-        if (piece.color !== myColor) return;
+    //     const myColor: PieceColor = myPlayerIndex === 0 ? 'white' : 'black';
+    //     if (piece.color !== myColor) return;
 
-        e.preventDefault();
-        setDraggedPiece({
-            piece,
-            from: { row, col },
-            mousePos: { x: e.clientX, y: e.clientY }
-        });
+    //     e.preventDefault();
+        
+    //     const handleMouseMove = (moveEvent: MouseEvent) => {
+    //         setDraggedPiece({
+    //             piece,
+    //             from: { row, col },
+    //             mousePos: { x: moveEvent.clientX, y: moveEvent.clientY }
+    //         });
+    //     };
 
-        const moves = getPossibleMovesForPiece({ row, col });
-        setPossibleMoves(moves);
-    }, [isMyTurn, isGameFinished, gameState.board, myPlayerIndex, getPossibleMovesForPiece]);
-
-    const onTouchStart = useCallback((e: React.TouchEvent, row: number, col: number) => {
-        if (!isMyTurn || isGameFinished) return;
-
-        const piece = gameState.board[row][col];
-        if (!piece) return;
-
-        const myColor: PieceColor = myPlayerIndex === 0 ? 'white' : 'black';
-        if (piece.color !== myColor) return;
-
-        e.preventDefault();
-        const touch = e.touches[0];
-        setDraggedPiece({
-            piece,
-            from: { row, col },
-            mousePos: { x: touch.clientX, y: touch.clientY }
-        });
-
-        const moves = getPossibleMovesForPiece({ row, col });
-        setPossibleMoves(moves);
-    }, [isMyTurn, isGameFinished, gameState.board, myPlayerIndex, getPossibleMovesForPiece]);
-
-    const onMouseMove = useCallback((e: MouseEvent) => {
-        if (draggedPiece) {
-            setDraggedPiece(prev => prev ? {
-                ...prev,
-                mousePos: { x: e.clientX, y: e.clientY }
-            } : null);
-        }
-    }, [draggedPiece]);
-
-    const onTouchMove = useCallback((e: TouchEvent) => {
-        if (draggedPiece) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            setDraggedPiece(prev => prev ? {
-                ...prev,
-                mousePos: { x: touch.clientX, y: touch.clientY }
-            } : null);
-        }
-    }, [draggedPiece]);
-
-    const onMouseUp = useCallback((e: MouseEvent) => {
-        if (!draggedPiece) return;
-
-        const boardElement = document.querySelector(`.${styles.boardGrid}`);
-        if (boardElement) {
-            const rect = boardElement.getBoundingClientRect();
+    //     const handleMouseUp = (upEvent: MouseEvent) => {
+    //         document.removeEventListener('mousemove', handleMouseMove);
+    //         document.removeEventListener('mouseup', handleMouseUp);
             
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+    //         const boardElement = document.querySelector(`.${styles.boardGrid}`);
+    //         if (boardElement) {
+    //             const rect = boardElement.getBoundingClientRect();
+    //             const x = upEvent.clientX - rect.left;
+    //             const y = upEvent.clientY - rect.top;
+                
+    //             if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+    //                 const squareSize = rect.width / 8;
+    //                 let targetCol = Math.floor(x / squareSize);
+    //                 let targetRow = Math.floor(y / squareSize);
+
+    //                 if (isFlipped) {
+    //                     targetRow = 7 - targetRow;
+    //                     targetCol = 7 - targetCol;
+    //                 }
+
+    //                 const moves = getPossibleMovesForPiece({ row, col });
+    //                 const isValidMove = moves.some(move =>
+    //                     move.row === targetRow && move.col === targetCol
+    //                 );
+
+    //                 if (isValidMove && (targetRow !== row || targetCol !== col)) {
+    //                     const move: ChessMove = {
+    //                         from: { row, col },
+    //                         to: { row: targetRow, col: targetCol },
+    //                     };
+
+    //                     if (piece.type === 'pawn' &&
+    //                         ((piece.color === 'white' && targetRow === 0) ||
+    //                          (piece.color === 'black' && targetRow === 7))) {
+    //                         setPromotionMove(move);
+    //                     } else {
+    //                         onMove(move);
+    //                         timer.resetTimer();
+    //                     }
+    //                 }
+    //             }
+    //         }
             
-            if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
-                setDraggedPiece(null);
-                setPossibleMoves([]);
-                return;
-            }
-            
-            const squareSize = rect.width / 8;
-            let col = Math.floor(x / squareSize);
-            let row = Math.floor(y / squareSize);
+    //         setDraggedPiece(null);
+    //         setPossibleMoves([]);
+    //     };
 
-            if (isFlipped) {
-                row = 7 - row;
-                col = 7 - col;
-            }
+    //     setDraggedPiece({
+    //         piece,
+    //         from: { row, col },
+    //         mousePos: { x: e.clientX, y: e.clientY }
+    //     });
 
-            if (row >= 0 && row < 8 && col >= 0 && col < 8) {
-                const isValidMove = possibleMoves.some(move =>
-                    move.row === row && move.col === col
-                );
+    //     const moves = getPossibleMovesForPiece({ row, col });
+    //     setPossibleMoves(moves);
 
-                if (isValidMove) {
-                    const move: ChessMove = {
-                        from: draggedPiece.from,
-                        to: { row, col },
-                    };
-
-                    if (draggedPiece.piece.type === 'pawn' &&
-                        ((draggedPiece.piece.color === 'white' && row === 0) ||
-                         (draggedPiece.piece.color === 'black' && row === 7))) {
-                        setPromotionMove(move);
-                    } else {
-                        onMove(move);
-                        timer.resetTimer(); // Reset timer after move
-                    }
-                }
-            }
-        }
-
-        setDraggedPiece(null);
-        setPossibleMoves([]);
-    }, [draggedPiece, possibleMoves, isFlipped, onMove]);
-
-    const onTouchEnd = useCallback((e: TouchEvent) => {
-        if (!draggedPiece) return;
-
-        e.preventDefault();
-        const boardElement = document.querySelector(`.${styles.boardGrid}`);
-        if (boardElement) {
-            const rect = boardElement.getBoundingClientRect();
-            
-            const touch = e.changedTouches[0];
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            
-            if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
-                setDraggedPiece(null);
-                setPossibleMoves([]);
-                return;
-            }
-            
-            const squareSize = rect.width / 8;
-            let col = Math.floor(x / squareSize);
-            let row = Math.floor(y / squareSize);
-
-            if (isFlipped) {
-                row = 7 - row;
-                col = 7 - col;
-            }
-
-            if (row >= 0 && row < 8 && col >= 0 && col < 8) {
-                const isValidMove = possibleMoves.some(move =>
-                    move.row === row && move.col === col
-                );
-
-                if (isValidMove) {
-                    const move: ChessMove = {
-                        from: draggedPiece.from,
-                        to: { row, col },
-                    };
-
-                    if (draggedPiece.piece.type === 'pawn' &&
-                        ((draggedPiece.piece.color === 'white' && row === 0) ||
-                         (draggedPiece.piece.color === 'black' && row === 7))) {
-                        setPromotionMove(move);
-                    } else {
-                        onMove(move);
-                        timer.resetTimer(); // Reset timer after move
-                    }
-                }
-            }
-        }
-
-        setDraggedPiece(null);
-        setPossibleMoves([]);
-    }, [draggedPiece, possibleMoves, isFlipped, onMove]);
-
-    useEffect(() => {
-        if (draggedPiece) {
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-            document.addEventListener('touchmove', onTouchMove, { passive: false });
-            document.addEventListener('touchend', onTouchEnd, { passive: false });
-            return () => {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-                document.removeEventListener('touchmove', onTouchMove);
-                document.removeEventListener('touchend', onTouchEnd);
-            };
-        }
-    }, [draggedPiece, onMouseMove, onMouseUp, onTouchMove, onTouchEnd]);
+    //     document.addEventListener('mousemove', handleMouseMove);
+    //     document.addEventListener('mouseup', handleMouseUp);
+    // }, [isMyTurn, isGameFinished, gameState.board, myPlayerIndex, getPossibleMovesForPiece, onMove, timer, isFlipped]);
 
     // Socket event handlers for server-side timer synchronization
     useEffect(() => {
@@ -669,25 +568,25 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     const renderPiece = useCallback((piece: ChessPiece | null, row: number, col: number) => {
         if (!piece) return null;
 
-        if (draggedPiece && 
-            draggedPiece.from.row === row && 
-            draggedPiece.from.col === col) {
-            return null;
-        }
+        // Drag and drop temporarily disabled
+        // if (draggedPiece &&
+        //     draggedPiece.from.row === row &&
+        //     draggedPiece.from.col === col) {
+        //     return null;
+        // }
 
         const pieceClass = `${styles.piece} ${piece.color === 'black' ? styles.blackPiece : styles.whitePiece}`;
 
         return (
             <div
                 className={pieceClass}
-                onMouseDown={(e) => onMouseDown(e, row, col)}
-                onTouchStart={(e) => onTouchStart(e, row, col)}
+                // onMouseDown={(e) => handlePieceMouseDown(e, row, col)}
                 style={{ touchAction: 'none' }}
             >
                 {PIECE_SYMBOLS[piece.color][piece.type]}
             </div>
         );
-    }, [draggedPiece, onMouseDown, onTouchStart]);
+    }, []);
 
     const renderBoard = () => {
         const squares = [];
@@ -748,7 +647,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                     )}
                 </div>
                 
-                {isMyTurn && !isGameFinished && (
+                {isMyTurn && !isGameFinished && hasOpponent && (
                     <MoveTimer
                         timeLeft={timer.timeLeft}
                         isWarning={timer.isWarning}
@@ -786,6 +685,8 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
             }`}>
                 {isGameFinished ? (
                     <span>Game Finished</span>
+                ) : !hasOpponent ? (
+                    <span>Waiting for Opponent</span>
                 ) : isInCheck && isMyTurn ? (
                     <span style={{ color: '#ef4444' }}>⚠️ CHECK! Your Turn</span>
                 ) : isOpponentInCheck && !isMyTurn ? (
@@ -849,7 +750,8 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                 </div>
             )}
 
-            {draggedPiece && (
+            {/* Drag and drop temporarily disabled */}
+            {/* {draggedPiece && (
                 <div
                     className={`${styles.dragPreview} ${draggedPiece.piece.color === 'black' ? styles.blackPiece : styles.whitePiece}`}
                     style={{
@@ -859,7 +761,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
                 >
                     {PIECE_SYMBOLS[draggedPiece.piece.color][draggedPiece.piece.type]}
                 </div>
-            )}
+            )} */}
 
             <TimeoutWarningModal
                 isOpen={showWarningModal}

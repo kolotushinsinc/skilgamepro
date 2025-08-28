@@ -35,8 +35,8 @@ const platformRevenueSchema = new Schema<IPlatformRevenue>({
     },
     amount: {
         type: Number,
-        required: true,
-        min: 0
+        required: true
+        // Убираем min: 0 чтобы разрешить отрицательные значения для выплат игрокам
     },
     commissionRate: {
         type: Number,

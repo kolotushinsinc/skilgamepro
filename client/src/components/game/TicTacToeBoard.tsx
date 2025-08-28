@@ -170,6 +170,12 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
             }
             return "Game Over";
         }
+        
+        // Don't reveal turn order when waiting for opponent
+        if (!hasOpponent) {
+            return "Waiting for Opponent";
+        }
+        
         return isMyTurn ? "Your Turn" : "Opponent's Turn";
     };
 
@@ -194,7 +200,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
                     {getGameStatusText()}
                 </div>
                 
-                {isMyTurn && !isGameFinished && (
+                {isMyTurn && !isGameFinished && hasOpponent && (
                     <MoveTimer
                         timeLeft={timer.timeLeft}
                         isWarning={timer.isWarning}

@@ -231,9 +231,10 @@ async function startTournamentWithBots(io: Server, tournamentId: string): Promis
                 };
 
                 tournament.players.push(botPlayer);
+                console.log(`[Tournament] 🤖 Added bot ${botName} - NO ENTRY FEE REQUIRED`);
             }
 
-            console.log(`[Tournament] Added ${botsNeeded} bots to tournament ${tournamentId}`);
+            console.log(`[Tournament] ✅ Added ${botsNeeded} bots to tournament ${tournamentId} (free entry)`);
         }
 
         await startTournament(io, tournamentId);

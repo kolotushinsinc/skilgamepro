@@ -11,8 +11,11 @@ export class PlatformRevenueController {
      */
     static async getRevenueStats(req: Request, res: Response) {
         try {
+            console.log(`[PlatformRevenueController] 📊 GET /stats called by user:`, req.user?.username || 'unknown');
+            
             // Проверяем права администратора
             if (req.user?.role !== 'ADMIN') {
+                console.log(`[PlatformRevenueController] ❌ Access denied for user role:`, req.user?.role);
                 return res.status(403).json({
                     success: false,
                     message: 'Access denied. Admin rights required.'
@@ -20,6 +23,7 @@ export class PlatformRevenueController {
             }
 
             const { startDate, endDate } = req.query;
+            console.log(`[PlatformRevenueController] Query params:`, { startDate, endDate });
             
             let start: Date | undefined;
             let end: Date | undefined;
@@ -44,7 +48,9 @@ export class PlatformRevenueController {
                 }
             }
 
+            console.log(`[PlatformRevenueController] Calling getRevenueStats with dates:`, { start, end });
             const stats = await PlatformRevenueService.getRevenueStats(start, end);
+            console.log(`[PlatformRevenueController] ✅ Revenue stats result:`, stats);
 
             res.json({
                 success: true,
@@ -52,7 +58,7 @@ export class PlatformRevenueController {
             });
 
         } catch (error) {
-            console.error('[PlatformRevenueController] Error getting revenue stats:', error);
+            console.error('[PlatformRevenueController] ❌ Error getting revenue stats:', error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -66,21 +72,26 @@ export class PlatformRevenueController {
      */
     static async getRevenueHistory(req: Request, res: Response) {
         try {
+            console.log(`[PlatformRevenueController] 📋 GET /history called by user:`, req.user?.username || 'unknown');
+            
             // Проверяем права администратора
             if (req.user?.role !== 'ADMIN') {
+                console.log(`[PlatformRevenueController] ❌ Access denied for user role:`, req.user?.role);
                 return res.status(403).json({
                     success: false,
                     message: 'Access denied. Admin rights required.'
                 });
             }
 
-            const { 
-                page = '1', 
-                limit = '20', 
-                source, 
-                startDate, 
-                endDate 
+            const {
+                page = '1',
+                limit = '20',
+                source,
+                startDate,
+                endDate
             } = req.query;
+
+            console.log(`[PlatformRevenueController] History query params:`, { page, limit, source, startDate, endDate });
 
             const pageNum = parseInt(page as string, 10);
             const limitNum = parseInt(limit as string, 10);
@@ -129,6 +140,7 @@ export class PlatformRevenueController {
                 }
             }
 
+            console.log(`[PlatformRevenueController] Calling getRevenueHistory...`);
             const result = await PlatformRevenueService.getRevenueHistory(
                 pageNum,
                 limitNum,
@@ -137,13 +149,18 @@ export class PlatformRevenueController {
                 end
             );
 
+            console.log(`[PlatformRevenueController] ✅ Revenue history result:`, {
+                totalRevenues: result.revenues.length,
+                pagination: result.pagination
+            });
+
             res.json({
                 success: true,
                 data: result
             });
 
         } catch (error) {
-            console.error('[PlatformRevenueController] Error getting revenue history:', error);
+            console.error('[PlatformRevenueController] ❌ Error getting revenue history:', error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'

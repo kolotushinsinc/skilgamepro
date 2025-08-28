@@ -561,7 +561,17 @@ const GamePage: React.FC = () => {
                 {isWaitingForOpponent ? (
                     <div className={styles.statusWaiting}>
                         <div className={styles.statusIcon}>⏰</div>
-                        <h3 className={styles.statusTitle}>Waiting for Opponent</h3>
+                        <h3 className={styles.statusTitle}>
+                            Waiting for Opponent
+                            <div className={styles.loadingDots}>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </h3>
+                        <div className={styles.loadingBar}>
+                            <div className={styles.loadingProgress}></div>
+                        </div>
                         <p className={styles.statusDescription}>
                             Auto-cancel in: <span className={styles.countdown}>{countdown}s</span>
                         </p>

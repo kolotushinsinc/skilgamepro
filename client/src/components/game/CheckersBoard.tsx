@@ -349,6 +349,8 @@ const CheckersBoard: React.FC<CheckersBoardProps> = ({
                 }}>
                     {isGameFinished ? (
                         <span style={{ color: '#dc2626' }}>Game Finished</span>
+                    ) : !hasOpponent ? (
+                        <span>Waiting for Opponent</span>
                     ) : isMyTurn ? (
                         <span>Your Turn</span>
                     ) : (
@@ -356,7 +358,7 @@ const CheckersBoard: React.FC<CheckersBoardProps> = ({
                     )}
                 </div>
                 
-                {isMyTurn && !isGameFinished && (
+                {isMyTurn && !isGameFinished && hasOpponent && (
                     <MoveTimer
                         timeLeft={timer.timeLeft}
                         isWarning={timer.isWarning}

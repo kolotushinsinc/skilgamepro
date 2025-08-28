@@ -11,6 +11,57 @@
     overflow: hidden;
 }
 
+/* Mobile menu button */
+.mobileMenuButton {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1001;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(139, 92, 246, 0.95));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 0.875rem;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    backdrop-filter: blur(15px);
+    transition: all 0.3s ease;
+    width: 56px;
+    height: 56px;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobileMenuButton:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(139, 92, 246, 1));
+}
+
+.mobileMenuButton:active {
+    transform: scale(0.95);
+}
+
+/* Mobile overlay */
+.mobileOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobileOverlay.show {
+    opacity: 1;
+}
+
 .layoutContainer::before {
     content: '';
     position: absolute;
@@ -290,83 +341,124 @@
     }
 }
 
-/* Mobile responsive */
+
+/* Mobile menu button hidden state */
+.menuButtonHidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+}
+
+/* Mobile and tablet sidebar styles */
 @media (max-width: 1024px) {
-    .layoutContainer {
-        flex-direction: column;
+    .mobileMenuButton {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
-    
+
+    .mobileOverlay {
+        display: block;
+    }
+
+    /* Hide sidebar by default on mobile */
     .sidebar {
-        width: 100%;
-        position: relative;
-        height: auto;
-        order: 2;
-        margin-left: 0;
+        display: none;
     }
-    
-    .mainContent {
-        order: 1;
-        width: 100%;
-        margin-left: 0;
+
+    /* Mobile sidebar when it has mobile classes */
+    .sidebar.mobileSidebar {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 320px;
+        height: 100vh;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-direction: column;
         padding: 0;
+        border-radius: 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .sidebar.mobileSidebar.mobileMenuOpen {
+        transform: translateX(0);
+    }
+
+    .sidebar.mobileSidebar .sidebarHeader {
+        display: flex;
+        flex-direction: column;
+        padding: 2rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+
+    .sidebar.mobileSidebar .sidebarNav {
+        flex-direction: column;
+        padding: 1.5rem;
+        overflow-y: auto;
+        overflow-x: hidden;
+        flex: 1;
+        gap: 0.75rem;
+    }
+
+    .sidebar.mobileSidebar .navLink {
+        flex-direction: row;
+        padding: 1rem 1.25rem;
+        font-size: 0.95rem;
+        border-radius: 16px;
+        justify-content: space-between;
+    }
+
+    .sidebar.mobileSidebar .navLink svg {
+        margin-right: 1rem;
+        margin-bottom: 0;
+        width: 20px;
+        height: 20px;
+    }
+
+    .sidebar.mobileSidebar .navLinkContent {
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+
+    .sidebar.mobileSidebar .logoutButton {
+        margin: 1.5rem;
+        flex-direction: row;
+        font-size: 1rem;
+        padding: 1rem 1.25rem;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .mainContent {
+        margin-left: 0;
+        width: 100%;
+        padding-top: 5rem; /* Space for mobile menu button */
     }
 }
 
-@media (max-width: 768px) {
-    .sidebar {
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .sidebar.mobileSidebar {
         width: 100%;
-        position: fixed;
-        bottom: 0;
+        left: -100%;
+    }
+
+    .sidebar.mobileSidebar.mobileMenuOpen {
         left: 0;
-        right: 0;
-        height: auto;
-        z-index: 1000;
-        flex-direction: row;
-        padding: 1rem;
-        border-radius: 24px 24px 0 0;
     }
-    
-    .sidebarHeader {
-        display: none;
-    }
-    
-    .sidebarNav {
-        flex-direction: row;
-        padding: 0;
-        overflow-x: auto;
-        overflow-y: hidden;
-        flex: 1;
-        gap: 0.5rem;
-    }
-    
-    .navLink {
-        flex-direction: column;
-        padding: 0.75rem;
-        min-width: 80px;
-        font-size: 0.75rem;
-        gap: 0.25rem;
-        border-radius: 12px;
-    }
-    
-    .navLink svg {
-        margin-right: 0;
-        margin-bottom: 0.25rem;
-        width: 16px;
-        height: 16px;
-    }
-    
-    .logoutButton {
-        margin: 0;
-        min-width: 80px;
-        padding: 0.75rem;
-        flex-direction: column;
-        font-size: 0.75rem;
-        gap: 0.25rem;
-    }
-    
-    .mainContent {
-        padding-bottom: 6rem;
-        margin-left: 0;
-        width: 100%;
-    }
+}
+
+/* Animation for smooth transitions */
+.sidebar.mobileSidebar {
+    will-change: transform;
+}
+
+.mobileOverlay {
+    will-change: opacity;
 }

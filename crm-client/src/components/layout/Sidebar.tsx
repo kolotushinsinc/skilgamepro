@@ -15,16 +15,23 @@ import {
     LogOut,
     Crown,
     Settings,
-    Shield,
     DollarSign
 } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 
 interface SidebarProps {
     onLogoutClick: () => void;
+    isMobileMenuOpen?: boolean;
+    closeMobileMenu?: () => void;
+    isMobile?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onLogoutClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+    onLogoutClick,
+    isMobileMenuOpen = false,
+    closeMobileMenu,
+    isMobile = false
+}) => {
     const { unreadChatsCount, isConnected } = useNotifications();
 
     const menuItems = [
@@ -38,13 +45,25 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogoutClick }) => {
         { path: '/auto-tournaments', icon: Zap, label: 'Auto Tournaments' },
         { path: '/game-lobby-scheduler', icon: Settings, label: 'Lobby Scheduler' },
         { path: '/support-chat', icon: MessageCircle, label: 'Support Chat', badge: unreadChatsCount },
-        { path: '/security', icon: Shield, label: 'Security Monitor' },
         { path: '/kyc', icon: ShieldCheck, label: 'KYC Verification' },
         { path: '/create-room', icon: PlusSquare, label: 'Create Room' },
     ];
 
+    const handleNavLinkClick = () => {
+        if (isMobile && closeMobileMenu) {
+            closeMobileMenu();
+        }
+    };
+
+    const handleLogout = () => {
+        onLogoutClick();
+        if (isMobile && closeMobileMenu) {
+            closeMobileMenu();
+        }
+    };
+
     return (
-        <aside className={styles.sidebar}>
+        <aside className={`${styles.sidebar} ${isMobile ? styles.mobileSidebar : ''} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
             <div className={styles.sidebarHeader}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <Crown size={24} />
@@ -64,6 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogoutClick }) => {
                         to={item.path}
                         end={item.path === '/'}
                         className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}
+                        onClick={handleNavLinkClick}
                     >
                         <div className={styles.navLinkContent}>
                             <item.icon size={20} />
@@ -75,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogoutClick }) => {
                     </NavLink>
                 ))}
             </nav>
-            <button onClick={onLogoutClick} className={styles.logoutButton}>
+            <button onClick={handleLogout} className={styles.logoutButton}>
                 <LogOut size={16} />
                 <span>Sign Out</span>
             </button>

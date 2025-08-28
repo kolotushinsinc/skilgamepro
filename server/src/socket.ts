@@ -710,13 +710,41 @@ export const initializeSocket = (io: Server) => {
             if (!currentUser) return socket.emit('error', { message: "User not found." });
             if (currentUser.balance < bet) return socket.emit('error', { message: 'Insufficient funds.' });
 
+            // Deduct bet from player's balance
+            currentUser.balance -= bet;
+            await currentUser.save();
+
+            // Create transaction record for bet deduction
+            await new Transaction({
+                user: currentUser._id,
+                type: 'WAGER_LOSS',
+                amount: -bet
+            }).save();
+
+            console.log(`[CreateRoom] Deducted bet ${bet} from user ${currentUser.username}. New balance: ${currentUser.balance}`);
+
             const roomId = `room-${socket.id}`;
-            const players: Player[] = [{ socketId: socket.id, user: currentUser }];
+            const players: Player[] = [{ socketId: socket.id, user: { ...currentUser.toObject(), balance: currentUser.balance } }];
             const newRoom: Room = { id: roomId, gameType, bet, players, gameState: gameLogic.createInitialState(players) };
             rooms[roomId] = newRoom;
             socket.join(roomId);
 
             socket.emit('gameStart', getPublicRoomState(newRoom));
+            
+            // Notify user about balance update
+            if (globalIO) {
+                globalIO.emit('balanceUpdated', {
+                    userId: (currentUser._id as any).toString(),
+                    newBalance: currentUser.balance,
+                    transaction: {
+                        type: 'WAGER_LOSS',
+                        amount: -bet,
+                        status: 'COMPLETED',
+                        createdAt: new Date()
+                    }
+                });
+            }
+            
             broadcastLobbyState(io, gameType);
 
             newRoom.botJoinTimer = setTimeout(async () => {
@@ -763,11 +791,24 @@ export const initializeSocket = (io: Server) => {
             if (!currentUser) return socket.emit('error', { message: "User not found." });
             if (currentUser.balance < bet) return socket.emit('error', { message: 'Insufficient funds.' });
 
+            // Deduct bet from player's balance
+            currentUser.balance -= bet;
+            await currentUser.save();
+
+            // Create transaction record for bet deduction
+            await new Transaction({
+                user: currentUser._id,
+                type: 'WAGER_LOSS',
+                amount: -bet
+            }).save();
+
+            console.log(`[CreatePrivateRoom] Deducted bet ${bet} from user ${currentUser.username}. New balance: ${currentUser.balance}`);
+
             const roomId = `private-room-${socket.id}-${Date.now()}`;
             const invitationToken = generateInvitationToken();
             const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
             
-            const players: Player[] = [{ socketId: socket.id, user: currentUser }];
+            const players: Player[] = [{ socketId: socket.id, user: { ...currentUser.toObject(), balance: currentUser.balance } }];
             const newRoom: Room = {
                 id: roomId,
                 gameType,
@@ -806,6 +847,20 @@ export const initializeSocket = (io: Server) => {
                 invitationUrl,
                 expiresAt
             });
+
+            // Notify user about balance update
+            if (globalIO) {
+                globalIO.emit('balanceUpdated', {
+                    userId: (currentUser._id as any).toString(),
+                    newBalance: currentUser.balance,
+                    transaction: {
+                        type: 'WAGER_LOSS',
+                        amount: -bet,
+                        status: 'completed',
+                        createdAt: new Date()
+                    }
+                });
+            }
 
             console.log(`Private room created: ${roomId} with token: ${invitationToken}`);
         });
@@ -848,8 +903,22 @@ export const initializeSocket = (io: Server) => {
                 return socket.emit('error', { message: 'Cannot join your own private room via invitation' });
             }
 
+            // Deduct bet from player's balance
+            currentUser.balance -= room.bet;
+            await currentUser.save();
+
+            // Create transaction record for bet deduction
+            await new Transaction({
+                user: currentUser._id,
+                type: 'WAGER_LOSS',
+                amount: -room.bet,
+                description: `Bet deducted for joining private ${room.gameType} game`
+            }).save();
+
+            console.log(`[JoinPrivateRoom] Deducted bet ${room.bet} from user ${currentUser.username}. New balance: ${currentUser.balance}`);
+
             const gameLogic = gameLogics[room.gameType];
-            room.players.push({ socketId: socket.id, user: currentUser });
+            room.players.push({ socketId: socket.id, user: { ...currentUser.toObject(), balance: currentUser.balance } });
             socket.join(room.id);
 
             // Mark invitation as used
@@ -865,6 +934,20 @@ export const initializeSocket = (io: Server) => {
             const firstPlayer = room.players.find(p => p.user._id.toString() === room.gameState.turn);
             if (firstPlayer && !isBot(firstPlayer)) {
                 startMoveTimer(io, room);
+            }
+
+            // Notify user about balance update
+            if (globalIO) {
+                globalIO.emit('balanceUpdated', {
+                    userId: (currentUser._id as any).toString(),
+                    newBalance: currentUser.balance,
+                    transaction: {
+                        type: 'WAGER_LOSS',
+                        amount: -room.bet,
+                        status: 'completed',
+                        createdAt: new Date()
+                    }
+                });
             }
 
             console.log(`User ${currentUser.username} joined private room ${room.id} using token ${token}`);
@@ -915,8 +998,22 @@ export const initializeSocket = (io: Server) => {
                 return socket.emit('error', { message: 'Insufficient funds to join.' });
             }
 
+            // Deduct bet from player's balance
+            currentUser.balance -= room.bet;
+            await currentUser.save();
+
+            // Create transaction record for bet deduction
+            await new Transaction({
+                user: currentUser._id,
+                type: 'WAGER_LOSS',
+                amount: -room.bet,
+                description: `Bet deducted for joining ${room.gameType} game`
+            }).save();
+
+            console.log(`[JoinRoom] Deducted bet ${room.bet} from user ${currentUser.username}. New balance: ${currentUser.balance}`);
+
             const gameLogic = gameLogics[room.gameType];
-            room.players.push({ socketId: socket.id, user: currentUser });
+            room.players.push({ socketId: socket.id, user: { ...currentUser.toObject(), balance: currentUser.balance } });
             socket.join(roomId);
 
             if (room.players.length === 1) {
@@ -978,6 +1075,20 @@ export const initializeSocket = (io: Server) => {
                         }, 1500);
                     }
                 }
+            }
+
+            // Notify user about balance update
+            if (globalIO) {
+                globalIO.emit('balanceUpdated', {
+                    userId: (currentUser._id as any).toString(),
+                    newBalance: currentUser.balance,
+                    transaction: {
+                        type: 'WAGER_LOSS',
+                        amount: -room.bet,
+                        status: 'completed',
+                        createdAt: new Date()
+                    }
+                });
             }
             
             broadcastLobbyState(io, room.gameType);
@@ -1049,12 +1160,15 @@ export const initializeSocket = (io: Server) => {
             }
         });
 
-        socket.on('leaveGame', (roomId: string) => {
+        socket.on('leaveGame', async (roomId: string) => {
             const room = rooms[roomId];
             if (!room) return;
             
+            const leavingPlayer = room.players.find(p => p.socketId === socket.id);
             const winningPlayer = room.players.find(p => p.socketId !== socket.id);
+            
             if (winningPlayer) {
+                // Есть второй игрок - завершаем игру с победителем
                 // @ts-ignore
                 if (gameService) {
                     gameService.endGame(room, (winningPlayer.user._id as any).toString());
@@ -1062,6 +1176,42 @@ export const initializeSocket = (io: Server) => {
                     endGame(io, room, (winningPlayer.user._id as any).toString());
                 }
             } else {
+                // Только один игрок в комнате - возвращаем ему деньги
+                if (leavingPlayer && !isBot(leavingPlayer)) {
+                    try {
+                        const user = await User.findById(leavingPlayer.user._id);
+                        if (user) {
+                            user.balance += room.bet;
+                            await user.save();
+
+                            // Создаем транзакцию возврата
+                            await new Transaction({
+                                user: user._id,
+                                type: 'DEPOSIT', // Возврат как депозит
+                                amount: room.bet
+                            }).save();
+
+                            console.log(`[LeaveGame] Refunded bet ${room.bet} to user ${user.username}. New balance: ${user.balance}`);
+
+                            // Уведомляем об обновлении баланса
+                            if (globalIO) {
+                                globalIO.emit('balanceUpdated', {
+                                    userId: (user._id as any).toString(),
+                                    newBalance: user.balance,
+                                    transaction: {
+                                        type: 'DEPOSIT',
+                                        amount: room.bet,
+                                        status: 'COMPLETED',
+                                        createdAt: new Date()
+                                    }
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        console.error('[LeaveGame] Error refunding bet:', error);
+                    }
+                }
+                
                 if (room.botJoinTimer) clearTimeout(room.botJoinTimer);
                 delete rooms[roomId];
                 broadcastLobbyState(io, room.gameType);
@@ -1075,7 +1225,7 @@ export const initializeSocket = (io: Server) => {
             }
         });
         
-        socket.on('disconnect', () => {
+        socket.on('disconnect', async () => {
             if (initialUser) {
                 console.log(`[-] User disconnected: ${initialUser.username}`);
                 // @ts-ignore
@@ -1090,9 +1240,46 @@ export const initializeSocket = (io: Server) => {
             const room = rooms[roomId];
             if (room.botJoinTimer) clearTimeout(room.botJoinTimer);
             
+            const disconnectedPlayer = room.players.find(p => p.socketId === socket.id);
             const remainingPlayer = room.players.find(p => p.socketId !== socket.id);
 
             if (room.players.length < 2 || !remainingPlayer) {
+                // Только один игрок был в комнате - возвращаем ему деньги
+                if (disconnectedPlayer && !isBot(disconnectedPlayer)) {
+                    try {
+                        const user = await User.findById(disconnectedPlayer.user._id);
+                        if (user) {
+                            user.balance += room.bet;
+                            await user.save();
+
+                            // Создаем транзакцию возврата
+                            await new Transaction({
+                                user: user._id,
+                                type: 'DEPOSIT', // Возврат как депозит
+                                amount: room.bet
+                            }).save();
+
+                            console.log(`[Disconnect] Refunded bet ${room.bet} to user ${user.username}. New balance: ${user.balance}`);
+
+                            // Уведомляем об обновлении баланса
+                            if (globalIO) {
+                                globalIO.emit('balanceUpdated', {
+                                    userId: (user._id as any).toString(),
+                                    newBalance: user.balance,
+                                    transaction: {
+                                        type: 'DEPOSIT',
+                                        amount: room.bet,
+                                        status: 'COMPLETED',
+                                        createdAt: new Date()
+                                    }
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        console.error('[Disconnect] Error refunding bet:', error);
+                    }
+                }
+                
                 delete rooms[roomId];
                 broadcastLobbyState(io, room.gameType);
             } else {

@@ -779,15 +779,50 @@ async function finishTournament(io: Server, tournament: ITournament, winner: any
         tournament.winner = winner;
         tournament.finishedAt = new Date();
 
-        // Рассчитываем доходы от турнира
         const realPlayers = tournament.players.filter(p => !p.isBot);
-        const totalEntryFees = realPlayers.length * tournament.entryFee;
-        const winnerPrize = Math.floor(tournament.prizePool * 0.6); // 60% победителю
+        const botPlayers = tournament.players.filter(p => p.isBot);
+        const totalEntryFees = realPlayers.length * tournament.entryFee; // Только игроки платят взносы!
+        const hasBotsInTournament = botPlayers.length > 0;
         
-        console.log(`[TournamentRoom] Tournament revenue calculation: totalEntryFees=${totalEntryFees}, winnerPrize=${winnerPrize}, realPlayers=${realPlayers.length}`);
+        console.log(`[TournamentRoom] Tournament analysis:`);
+        console.log(`  - Real players: ${realPlayers.length}`);
+        console.log(`  - Bot players: ${botPlayers.length}`);
+        console.log(`  - Has bots: ${hasBotsInTournament}`);
+        console.log(`  - Total entry fees (players only): ${totalEntryFees}`);
+        console.log(`  - Winner is bot: ${winner.isBot}`);
 
-        // Выплачиваем приз победителю (если это не бот)
-        if (!winner.isBot) {
+        let winnerPrize = 0;
+        let platformRevenue = 0;
+
+        if (hasBotsInTournament) {
+            // ЛОГИКА С БОТАМИ: боты не платят взносы, но влияют на распределение
+            console.log(`[TournamentRoom] 🤖 Tournament with bots - special monetization`);
+            
+            if (winner.isBot) {
+                // Бот выиграл - все взносы игроков остаются у платформы
+                winnerPrize = 0; // бот не получает приз
+                platformRevenue = totalEntryFees; // все взносы игроков
+                console.log(`  - Bot won: all player entry fees (${totalEntryFees}) → platform`);
+            } else {
+                // Игрок выиграл против ботов - платформа доплачивает приз из своих средств
+                winnerPrize = Math.floor(tournament.prizePool * 0.6); // стандартный приз
+                platformRevenue = totalEntryFees - winnerPrize; // может быть отрицательным!
+                console.log(`  - Player won vs bots: prize=${winnerPrize} (platform pays), revenue=${platformRevenue}`);
+                
+                if (platformRevenue < 0) {
+                    console.log(`  - ⚠️ Platform pays out: ${Math.abs(platformRevenue)} (negative revenue)`);
+                }
+            }
+        } else {
+            // ЛОГИКА БЕЗ БОТОВ: только игроки - стандартное распределение призов
+            console.log(`[TournamentRoom] 👥 Tournament with players only - standard prize distribution`);
+            winnerPrize = Math.floor(tournament.prizePool * 0.6); // 60% победителю
+            platformRevenue = totalEntryFees - winnerPrize;
+            console.log(`  - Standard distribution: prize=${winnerPrize}, platform=${platformRevenue}`);
+        }
+
+        // Выплачиваем приз победителю (если это игрок и есть приз)
+        if (!winner.isBot && winnerPrize > 0) {
             const winnerUser = await User.findById(winner._id);
             if (winnerUser) {
                 winnerUser.balance += winnerPrize;
@@ -798,10 +833,12 @@ async function finishTournament(io: Server, tournament: ITournament, winner: any
                     user: winner._id,
                     type: 'TOURNAMENT_WIN',
                     amount: winnerPrize,
-                    description: `Tournament "${tournament.name}" victory prize`
+                    description: hasBotsInTournament
+                        ? `Tournament "${tournament.name}" entry refund (won vs bots)`
+                        : `Tournament "${tournament.name}" victory prize`
                 });
 
-                console.log(`[TournamentRoom] Paid prize ${winnerPrize} to winner ${winner.username}`);
+                console.log(`[TournamentRoom] 💰 Paid prize ${winnerPrize} to winner ${winner.username}`);
             }
         }
 
@@ -810,13 +847,14 @@ async function finishTournament(io: Server, tournament: ITournament, winner: any
             const revenueRecord = await PlatformRevenueService.processTournamentRevenue(
                 tournament._id.toString(),
                 totalEntryFees,
-                winner.isBot ? 0 : winnerPrize, // если победитель бот, приз не выплачивается
+                winnerPrize,
                 realPlayers.length
             );
             
-            console.log(`[TournamentRoom] Tournament revenue recorded: $${revenueRecord.amount} from tournament ${tournament.name}`);
+            console.log(`[TournamentRoom] 📊 Tournament revenue recorded: $${revenueRecord.amount} from tournament ${tournament.name}`);
+            console.log(`  - Revenue calculation: totalFees=${totalEntryFees} - prizePaid=${winnerPrize} = platformRevenue=${revenueRecord.amount}`);
         } catch (revenueError) {
-            console.error(`[TournamentRoom] Error recording tournament revenue:`, revenueError);
+            console.error(`[TournamentRoom] ❌ Error recording tournament revenue:`, revenueError);
         }
 
         await tournament.save();

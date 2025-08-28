@@ -124,13 +124,21 @@ export class GameService {
     }
 
     async endGame(room: Room, winnerId?: string, isDraw: boolean = false): Promise<void> {
-        console.log(`[GameService] Ending game in room ${room.id}, winner: ${winnerId}, draw: ${isDraw}`);
+        console.log(`[GameService] 🎮 Starting endGame for room ${room.id}, winner: ${winnerId}, draw: ${isDraw}`);
+        console.log(`[GameService] 👥 Players in room:`, room.players.map(p => ({
+            id: (p.user._id as any).toString(),
+            username: p.user.username,
+            isBot: this.isBot(p)
+        })));
+        console.log(`[GameService] 💰 Room bet: ${room.bet}, gameType: ${room.gameType}`);
         
         if (room.id.startsWith('tourney-')) {
+            console.log(`[GameService] 🏆 This is a tournament game, delegating to endTournamentGame`);
             await this.endTournamentGame(room, winnerId, isDraw);
             return;
         }
 
+        console.log(`[GameService] 🎯 This is a regular lobby game, processing revenue...`);
         await this.endRegularGame(room, winnerId, isDraw);
     }
 
@@ -172,18 +180,35 @@ export class GameService {
     }
 
     private async endRegularGame(room: Room, winnerId?: string, isDraw: boolean = false): Promise<void> {
+        console.log(`[GameService] 🎯 Starting endRegularGame for room ${room.id}`);
+        
         if (room.disconnectTimer) clearTimeout(room.disconnectTimer);
         if (room.botJoinTimer) clearTimeout(room.botJoinTimer);
         
-        const winner = room.players.find(p => (p.user._id as any).toString() === winnerId);
-        const loser = room.players.find(p => (p.user._id as any).toString() !== winnerId);
+        let winner, loser;
+        
+        if (isDraw) {
+            // При ничьей просто берем двух игроков без привязки к winner/loser
+            winner = room.players[0];
+            loser = room.players[1];
+            console.log(`[GameService] 🤝 Draw game - assigning players arbitrarily for revenue processing`);
+        } else {
+            // При победе определяем по winnerId
+            winner = room.players.find(p => (p.user._id as any).toString() === winnerId);
+            loser = room.players.find(p => (p.user._id as any).toString() !== winnerId);
+        }
+        
         const gameNameForDB = this.formatGameNameForDB(room.gameType);
         const globalIO = getIO();
+
+        console.log(`[GameService] 🏆 Winner:`, winner ? { id: (winner.user._id as any).toString(), username: winner.user.username, isBot: this.isBot(winner) } : 'none');
+        console.log(`[GameService] 😞 Loser:`, loser ? { id: (loser.user._id as any).toString(), username: loser.user.username, isBot: this.isBot(loser) } : 'none');
 
         // Проверяем, что в игре есть хотя бы один реальный игрок (не бот)
         const hasRealPlayers = room.players.some(p => !this.isBot(p));
         
         if (!hasRealPlayers) {
+            console.log(`[GameService] ⚠️ Only bots in game, skipping revenue processing`);
             // Если только боты, просто удаляем комнату без обработки доходов
             this.io.to(room.id).emit('gameEnd', {
                 winner: isDraw ? null : winner,
@@ -195,6 +220,8 @@ export class GameService {
             return;
         }
 
+        console.log(`[GameService] ✅ Real players detected, processing revenue...`);
+
         try {
             let revenueResult;
             const isWinnerBot = winner ? this.isBot(winner) : false;
@@ -203,27 +230,61 @@ export class GameService {
             const isPlayerVsBot = (isWinnerBot && !isLoserBot) || (!isWinnerBot && isLoserBot);
             const isPlayerVsPlayer = !isWinnerBot && !isLoserBot;
             
+            console.log(`[GameService] 🤖 Game type analysis:`);
+            console.log(`[GameService] - Winner is bot: ${isWinnerBot}`);
+            console.log(`[GameService] - Loser is bot: ${isLoserBot}`);
+            console.log(`[GameService] - Bot vs Bot: ${isBotGame}`);
+            console.log(`[GameService] - Player vs Bot: ${isPlayerVsBot}`);
+            console.log(`[GameService] - Player vs Player: ${isPlayerVsPlayer}`);
+            console.log(`[GameService] - Is draw: ${isDraw}`);
+            
             if (isDraw) {
+                console.log(`[GameService] 🤝 Processing DRAW scenario`);
                 // Логика для ничьи
                 if (isPlayerVsPlayer) {
-                    // Игрок против игрока - берем 5% комиссию с каждого
+                    console.log(`[GameService] 👥 Player vs Player draw - processing 5% commission`);
+                    // Игрок против игрока - берем 5% комиссию с каждого, возвращаем 95%
                     revenueResult = await PlatformRevenueService.processLobbyGameRevenue(
                         room.id,
                         gameNameForDB,
                         winner,
                         loser,
                         room.bet,
-                        true // isDraw
+                        true, // isDraw
+                        false // not player vs bot
                     );
+                    console.log(`[GameService] ✅ Player vs Player draw revenue processed:`, revenueResult);
                 } else if (isPlayerVsBot) {
-                    // Игрок против бота - просто возвращаем ставку игроку без комиссии
+                    console.log(`[GameService] 🤖 Player vs Bot draw - processing 5% commission`);
+                    // Игрок против бота - ничья: 5% комиссия с игрока, возвращаем 95%
                     const realPlayer = !isWinnerBot ? winner : loser;
                     if (realPlayer) {
+                        console.log(`[GameService] 👤 Real player in draw:`, { id: (realPlayer.user._id as any).toString(), username: realPlayer.user.username });
+                        const commissionAmount = room.bet * 0.05; // 5% комиссии
+                        const returnAmount = room.bet * 0.95; // возвращаем 95%
+                        
+                        console.log(`[GameService] 💰 Draw amounts - Commission: ${commissionAmount}, Return: ${returnAmount}`);
+                        
                         const updatedPlayer = await User.findByIdAndUpdate(
                             realPlayer.user._id,
-                            { $inc: { balance: room.bet } },
+                            { $inc: { balance: returnAmount } },
                             { new: true }
                         );
+                        
+                        console.log(`[GameService] 💳 Player balance updated to: ${updatedPlayer?.balance}`);
+                        
+                        // Создаем запись о доходе платформы от игры с ботом (ничья)
+                        console.log(`[GameService] 📝 Creating platform revenue record for Player vs Bot draw...`);
+                        revenueResult = await PlatformRevenueService.processLobbyGameRevenue(
+                            room.id,
+                            gameNameForDB,
+                            realPlayer, // передаем как winner для структуры
+                            { user: { _id: 'bot', username: 'Bot' } }, // фиктивный бот как loser
+                            room.bet,
+                            true, // isDraw
+                            true // player vs bot scenario
+                        );
+                        console.log(`[GameService] ✅ Player vs Bot draw revenue processed:`, revenueResult);
                         
                         if (updatedPlayer && globalIO) {
                             globalIO.emit('balanceUpdated', {
@@ -231,7 +292,7 @@ export class GameService {
                                 newBalance: updatedPlayer.balance,
                                 transaction: {
                                     type: 'GAME_REFUND',
-                                    amount: room.bet,
+                                    amount: returnAmount,
                                     status: 'completed',
                                     createdAt: new Date()
                                 }
@@ -248,8 +309,8 @@ export class GameService {
                         let amountChanged: number;
                         
                         if (isVsBot) {
-                            // Против бота - полный возврат ставки (0 изменений)
-                            amountChanged = 0;
+                            // Против бота - ничья: возврат 95%, потеря 5%
+                            amountChanged = -room.bet * 0.05;
                         } else {
                             // Против игрока - возврат 95%, т.е. потеря 5%
                             amountChanged = -room.bet * 0.05;
@@ -268,17 +329,22 @@ export class GameService {
                 this.io.to(room.id).emit('gameEnd', { winner: null, isDraw: true });
 
             } else if (winner && loser) {
+                console.log(`[GameService] 🏆 Processing WIN scenario`);
                 // Логика для победы
                 if (isPlayerVsPlayer) {
-                    // Игрок против игрока - новая система монетизации
+                    console.log(`[GameService] 👥 Player vs Player win - processing 10% commission`);
+                    // Игрок против игрока - новая система монетизации (ставки уже списаны)
+                    console.log(`[GameService] 📝 Creating platform revenue record for Player vs Player win...`);
                     revenueResult = await PlatformRevenueService.processLobbyGameRevenue(
                         room.id,
                         gameNameForDB,
                         winner,
                         loser,
                         room.bet,
-                        false // not draw
+                        false, // not draw
+                        false // not player vs bot
                     );
+                    console.log(`[GameService] ✅ Player vs Player win revenue processed:`, revenueResult);
                     
                     // Победитель получает свою ставку + ставку противника - 10% комиссии
                     const totalWon = room.bet * 2; // общая сумма выигрыша
@@ -332,15 +398,22 @@ export class GameService {
                     }
                     
                 } else if (isPlayerVsBot) {
-                    // Игрок против бота - старая логика без комиссии
+                    console.log(`[GameService] 🤖 Player vs Bot win scenario`);
+                    // Игрок против бота - новая монетизация
                     const realPlayer = !isWinnerBot ? winner : loser;
                     const isRealPlayerWinner = realPlayer && (realPlayer.user._id as any).toString() === (winner.user._id as any).toString();
                     
+                    console.log(`[GameService] 👤 Real player:`, realPlayer ? { id: (realPlayer.user._id as any).toString(), username: realPlayer.user.username } : 'none');
+                    console.log(`[GameService] 🏆 Real player won: ${isRealPlayerWinner}`);
+                    
                     if (realPlayer) {
                         if (isRealPlayerWinner) {
-                            // Реальный игрок выиграл против бота - получает удвоенную ставку (свою + бота)
-                            const winAmount = room.bet * 2; // полный выигрыш
-                            const netWin = room.bet; // чистый выигрыш (выигрыш - уже списанная ставка)
+                            console.log(`[GameService] 🎉 Player won against bot - platform pays out`);
+                            // Реальный игрок выиграл против бота - платформа платит ему из своих средств
+                            const winAmount = room.bet * 2; // полный выигрыш (своя ставка + выигрыш)
+                            const netWin = room.bet; // чистая прибыль
+                            
+                            console.log(`[GameService] 💰 Win amounts - Total: ${winAmount}, Net: ${netWin}`);
                             
                             const updatedPlayer = await User.findByIdAndUpdate(
                                 realPlayer.user._id,
@@ -348,11 +421,26 @@ export class GameService {
                                 { new: true }
                             );
                             
+                            console.log(`[GameService] 💳 Player balance updated to: ${updatedPlayer?.balance}`);
+                            
+                            // Записываем как расход платформы (отрицательный доход)
+                            console.log(`[GameService] 📝 Creating NEGATIVE platform revenue record (player won vs bot)...`);
+                            revenueResult = await PlatformRevenueService.processLobbyGameRevenue(
+                                room.id,
+                                gameNameForDB,
+                                realPlayer,
+                                { user: { _id: 'bot', username: 'Bot' } },
+                                room.bet,
+                                false, // not draw
+                                true // player won against bot - platform pays
+                            );
+                            console.log(`[GameService] ✅ Player won vs Bot revenue processed:`, revenueResult);
+                            
                             await GameRecord.create({
                                 user: realPlayer.user._id,
                                 gameName: gameNameForDB,
                                 status: 'WON',
-                                amountChanged: netWin, // чистая прибыль
+                                amountChanged: netWin,
                                 opponent: 'Bot'
                             });
 
@@ -369,7 +457,20 @@ export class GameService {
                                 });
                             }
                         } else {
-                            // Реальный игрок проиграл боту - только теряет ставку (уже списана при входе)
+                            console.log(`[GameService] 😞 Player lost to bot - platform gains full bet`);
+                            // Реальный игрок проиграл боту - вся ставка игрока идет платформе
+                            console.log(`[GameService] 📝 Creating POSITIVE platform revenue record (player lost vs bot)...`);
+                            revenueResult = await PlatformRevenueService.processLobbyGameRevenue(
+                                room.id,
+                                gameNameForDB,
+                                { user: { _id: 'bot', username: 'Bot' } }, // бот как winner для структуры
+                                realPlayer, // игрок как loser
+                                room.bet,
+                                false, // not draw
+                                true // player lost to bot - platform gains
+                            );
+                            console.log(`[GameService] ✅ Player lost vs Bot revenue processed:`, revenueResult);
+                            
                             await GameRecord.create({
                                 user: realPlayer.user._id,
                                 gameName: gameNameForDB,
@@ -384,10 +485,13 @@ export class GameService {
                 this.io.to(room.id).emit('gameEnd', { winner, isDraw: false });
             }
 
-            console.log(`[GameService] Regular game ended in room ${room.id}. Platform revenue: $${revenueResult?.platformRevenue || 0}. Bot game: ${isBotGame}, Player vs Bot: ${isPlayerVsBot}`);
+            console.log(`[GameService] 🎯 Regular game ended in room ${room.id}`);
+            console.log(`[GameService] 💰 Platform revenue: $${revenueResult?.platformRevenue || 0}`);
+            console.log(`[GameService] 🏷️ Game classification - Bot vs Bot: ${isBotGame}, Player vs Bot: ${isPlayerVsBot}, Player vs Player: ${isPlayerVsPlayer}`);
 
         } catch (error) {
-            console.error('[GameService] Error processing game revenue:', error);
+            console.error('[GameService] ❌ Error processing game revenue:', error);
+            console.error('[GameService] ❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
             // В случае ошибки используем старую логику как fallback
             this.io.to(room.id).emit('gameEnd', {
                 winner: isDraw ? null : winner,
