@@ -61,7 +61,7 @@ const HomePage: React.FC = () => {
         const saved = localStorage.getItem('gamesCategory');
         return saved || 'All games';
     });
-    const [feeFilter, setFeeFilter] = useState('Free');
+    const [feeFilter, setFeeFilter] = useState('$1-10');
     const [difficultyFilter, setDifficultyFilter] = useState('Medium');
     const [sortBy, setSortBy] = useState('Prize Pool');
 
@@ -81,10 +81,8 @@ const HomePage: React.FC = () => {
             filtered = filtered.filter(game => game.category === categoryFilter);
         }
 
-        // Fee filter (all games are free for now, but structure for future)
-        if (feeFilter === 'Free') {
-            // All current games are free
-        } else if (feeFilter === '$1-10') {
+        // Fee filter (structure for future paid games)
+        if (feeFilter === '$1-10') {
             // filtered = filtered.filter(game => game.entryFee >= 1 && game.entryFee <= 10);
         } else if (feeFilter === '$11+') {
             // filtered = filtered.filter(game => game.entryFee >= 11);
@@ -143,7 +141,7 @@ const HomePage: React.FC = () => {
         // Reset all filters to default
         setSearchQuery('');
         setCategoryFilter('All games');
-        setFeeFilter('Free');
+        setFeeFilter('$1-10');
         setDifficultyFilter('Medium');
         setSortBy('Prize Pool');
         localStorage.removeItem('gamesCategory');
@@ -202,12 +200,6 @@ const HomePage: React.FC = () => {
                 <div className={styles.filterGroup} data-testid="fee-filter">
                     <span>Entry Fee:</span>
                     <div className={styles.filterButtons}>
-                        <button
-                            onClick={() => setFeeFilter('Free')}
-                            className={`${styles.filterButton} ${feeFilter === 'Free' ? styles.active : ''}`}
-                        >
-                            Free
-                        </button>
                         <button
                             onClick={() => setFeeFilter('$1-10')}
                             className={`${styles.filterButton} ${feeFilter === '$1-10' ? styles.active : ''}`}

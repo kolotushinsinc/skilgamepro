@@ -411,10 +411,17 @@
     padding: 20px 20px 16px;
     flex-shrink: 0;
   }
+  
+  .closeButton {
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+  }
 
   .title {
     font-size: 24px;
-    padding-right: 44px;
+    padding-right: 40px;
   }
 
   .content {
@@ -515,10 +522,17 @@
   .header {
     padding: 16px 16px 12px;
   }
+  
+  .closeButton {
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+  }
 
   .title {
     font-size: 20px;
-    padding-right: 40px;
+    padding-right: 36px;
   }
 
   .content {
