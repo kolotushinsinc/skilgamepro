@@ -1,7 +1,7 @@
 
 # SkillGame Pro API Documentation
 
-**Base URL:** `https://sklgmsapi.koltech.dev`
+**Base URL:** `https://sklgmsapi.skillgame.pro`
 
 ## Table of Contents
 
@@ -2060,14 +2060,14 @@ The API uses Socket.IO for real-time communication. Connect to the WebSocket ser
 ```javascript
 import io from 'socket.io-client';
 
-const socket = io('https://sklgmsapi.koltech.dev', {
+const socket = io('https://sklgmsapi.skillgame.pro', {
   auth: {
     token: 'Bearer your_jwt_token' // Required for authenticated users
   }
 });
 
 // For guest users (chat support)
-const guestSocket = io('https://sklgmsapi.koltech.dev');
+const guestSocket = io('https://sklgmsapi.skillgame.pro');
 ```
 
 #### Authentication
@@ -2730,7 +2730,7 @@ import io from 'socket.io-client';
 
 class SkillGameSocketClient {
   constructor(token = null) {
-    this.socket = io('https://sklgmsapi.koltech.dev', {
+    this.socket = io('https://sklgmsapi.skillgame.pro', {
       auth: token ? { token: `Bearer ${token}` } : {}
     });
     

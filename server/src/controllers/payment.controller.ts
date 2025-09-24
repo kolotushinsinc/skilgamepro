@@ -39,7 +39,7 @@ export const createDeposit = async (req: Request, res: Response) => {
             orderId,
             description,
             returnUrl: `${process.env.CLIENT_URL || 'https://platform.skillgame.pro'}/profile?payment=success`,
-            webhookUrl: `${process.env.G2PAY_WEBHOOK_URL || 'https://sklgmsapi.koltech.dev/api/payments/webhook'}`,
+            webhookUrl: `${process.env.G2PAY_WEBHOOK_URL || 'https://sklgmsapi.skillgame.pro/api/payments/webhook'}`,
             customerEmail: user.email
         });
 

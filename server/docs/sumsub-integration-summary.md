@@ -101,7 +101,7 @@ Successfully implemented complete Sumsub KYC integration replacing the legacy ma
 
 #### Webhook Configuration
 - ✅ **Endpoint Setup**
-  - Production: `https://sklgmsapi.koltech.dev/api/sumsub/webhook`
+  - Production: `https://sklgmsapi.skillgame.pro/api/sumsub/webhook`
   - Development: `http://localhost:5001/api/sumsub/webhook`
   - Raw body parsing for signature verification
 
@@ -135,7 +135,7 @@ Password: [provided separately]
 Dashboard URL: [provided by user]
 
 Required Settings:
-- Webhook URL: https://sklgmsapi.koltech.dev/api/sumsub/webhook
+- Webhook URL: https://sklgmsapi.skillgame.pro/api/sumsub/webhook
 - Webhook Secret: iouLJAHP7ZlOrWk012XQLCQT8gBOpAND
 - Events: applicantReviewed, applicantPending, applicantOnHold
 ```

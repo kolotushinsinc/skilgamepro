@@ -7,7 +7,7 @@ Configure the following webhook URL in your Sumsub Dashboard:
 
 **Production:**
 ```
-https://sklgmsapi.koltech.dev/api/sumsub/webhook
+https://sklgmsapi.skillgame.pro/api/sumsub/webhook
 ```
 
 **Development:**
